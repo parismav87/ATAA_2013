@@ -1,0 +1,14 @@
+*.pyc
+docs/Makefile
+docs/_*
+_tmp/*
+replays/*
+t/*
+*.DS_Store
+domination/test.pickle
+.tm_properties
+test.py
+buggy_replay
+vacubot.py
+agent_vacubot.py
+domination/agent_adjustable.py
