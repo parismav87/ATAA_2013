@@ -14,13 +14,41 @@ class Agent(object):
         self.settings = settings
         self.goal = None
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
+
+        if os.path.isfile("pickle.pck"):
+            file = open("pickle.pck", "r") # read mode
+            self.qtable = pickle.load(file)
+            file.close()
+            print self.qtable
+        else:
+            print "nope"
+            self.qtable = self.createQTable()
+
     
     def observe(self, observation):
+        """ Each agent is passed an observation using this function,
+            before being asked for an action. You can store either
+            the observation object or its properties to use them
+            to determine your action. Note that the observation object
+            is modified in place.
+        """
         self.observation = observation
         self.selected = observation.selected
-
+            
         if observation.selected:
             print observation
+
+    def createQTable(self):
+        Qtable = dict()
+        for i in range(26):
+            for j in range(16):
+                Qtable[i,j] = dict()
+                for ai in range(-2,3):
+                    for aj in range(-2,3):
+                        Qtable[i,j][ai,aj] = 10
+        return Qtable
+
+
 
     def state_position(self, state):
         """ This function returns the middle state_position
@@ -36,7 +64,7 @@ class Agent(object):
         dx = goalLoc[0]-loc[0]
         dy = goalLoc[1]-loc[1]
         turn = angle_fix(math.atan2(dy, dx) - self.observation.angle)
-        speed = (dx**2 + dy**2)**0.5
+        speed = 10*(dx**2 + dy**2)**0.5
         shoot = 0
         return (turn, speed, shoot)
 
@@ -45,11 +73,13 @@ class Agent(object):
 
     def move_list(self):
         location = self.observation.loc
+        walls = self.observation.walls
         moves = []
-        for i in range(-1,2):
-            for j in range(-1,2):
-                position = [(location[0]/16) + i, (location[1]/16) + j]
-                moves.append(position)
+        for i in range(-2,3):
+            for j in range(-2,3):
+                if(walls[2+i][2+j] == 0):
+                    position = [(location[0]/16) + j, (location[1]/16) + i]
+                    moves.append(position)
         return moves
 
     def action_selection(self, moves):
@@ -69,6 +99,23 @@ class Agent(object):
         # action assigned to the agent
         previous_state = current_state
         return drive
+
+
+    def debug(self, surface):
+        """ Allows the agents to draw on the game UI,
+            Refer to the pygame reference to see how you can
+            draw on a pygame.surface. The given surface is
+            not cleared automatically. Additionally, this
+            function will only be called when the renderer is
+            active, and it will only be called for the active team.
+        """
+        import pygame
+        # First agent clears the screen
+        surface.fill((0,0,0,0))
+        # Selected agents draw their info
+        if self.goal is not None:
+            surface.draw.circle(surface, (255,255,255), self.observation.loc, 16, 1)
+        
         
     def finalize(self, interrupted=False):
         """ This function is called after the game ends, 
@@ -77,4 +124,7 @@ class Agent(object):
             store any learned variables and write logs/reports.
         """
         pass
+        file = open("pickle.pck", "w") # write mode
+        pickle.dump(self.qtable, file)
+        file.close()
         

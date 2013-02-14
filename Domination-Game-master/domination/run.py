@@ -85,7 +85,7 @@ class Scenario(object):
     """ You shouldn't have to override any
         of the methods below, but you may.
     """ 
-    def _single(self, red, blue, matchinfo=None, rendered=False, verbose=True, hard_error = True):
+    def _single(self, red, blue, matchinfo=None, rendered=True, verbose=True, hard_error = True):
         """ Runs a single game, returns results, called repeatedly
             by :meth:`Scenario._multi`.
         """
@@ -110,7 +110,7 @@ class Scenario(object):
         game = core.Game(red, blue, 
                     red_init=red_init, blue_init=blue_init,
                     field=self.FIELD, settings=self.SETTINGS,
-                    record=True, verbose=verbose, rendered=False)
+                    record=True, verbose=verbose, rendered=True)
         if rendered:
             game.add_renderer()
         game.run()
@@ -122,7 +122,7 @@ class Scenario(object):
         self.after_each(game)
         return game
         
-    def _multi(self, games, output_folder=None, rendered=False, verbose=False, hard_error = True):
+    def _multi(self, games, output_folder=None, rendered=True, verbose=False, hard_error = True):
         """ Runs multiple games, given as  a list of
             (red, red_init, blue, blue_init) tuples. 
         """
