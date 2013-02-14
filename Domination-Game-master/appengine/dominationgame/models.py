@@ -28,6 +28,7 @@ from django.template.defaultfilters import slugify
 
 # Library Imports
 from domination import core as domcore
+from domination.run import MatchInfo
 import trueskill
 
 
@@ -155,7 +156,7 @@ class Team(db.Model):
         db.run_in_transaction(txn)
     
     def send_invites(self, new_emails):
-        self.emails = list(set(self.emails + new_emails))
+        self.emails = list(set(email.lower() for email in (self.emails + new_emails)))
         secret_code = b64.urlsafe_b64encode(os.urandom(32))
         self.hashed_code = b64.urlsafe_b64encode(hashlib.sha224(secret_code).digest())
         url = APP_URL + reverse("dominationgame.views.connect_account") + '?c=' + secret_code
@@ -267,7 +268,7 @@ class Brain(db.Model):
     data         = db.ReferenceProperty(BrainData)    
     
     def __str__(self):
-        return mark_safe("%s v%d"%(self.name, self.version))
+        return mark_safe("%s v%d"%(self.name[:20], self.version))
         
     def identifier(self):
         return "t%dv%d"%(self.team.number, self.version)
@@ -368,16 +369,18 @@ class Game(db.Model):
         settings = group.gamesettings_obj()
         field = group.field_obj()
         logging.info("Running game: %s %s vs %s %s with %s"%(red.team, red, blue.team, blue, settings))
+
+        # Create the agent_inits
+        red_init = {'matchinfo': MatchInfo(1, 1, 0, 1.0)}
+        blue_init = {'matchinfo': MatchInfo(1, 1, 0, 1.0)}
         if red.data is not None:
-            red_init = {'blob':red.data_reader()}
-        else:
-            red_init = {}
+            red_init['blob'] = red.data_reader()
         if blue.data is not None:
-            blue_init = {'blob':blue.data_reader()}
-        else:
-            blue_init = {}
-        dg = domcore.Game(red=domcore.Team(red.source, name=red.identifier(), init_kwargs=red_init),
-                          blue=domcore.Team(blue.source, name=blue.identifier(), init_kwargs=blue_init),
+            blue_init['blob'] = blue.data_reader()
+
+        # Initialize and run the game
+        dg = domcore.Game(red=domcore.Team(red.source + '\n', name=red.identifier(), init_kwargs=red_init),
+                          blue=domcore.Team(blue.source + '\n', name=blue.identifier(), init_kwargs=blue_init),
                           settings=settings, field=field,
                           verbose=False, rendered=False, record=True)
         dg.run()
