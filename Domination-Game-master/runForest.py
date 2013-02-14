@@ -36,7 +36,7 @@ class Agent(object):
         y = (state[1]*16+(state[1]+1)*16)/2
         return [x,y]
 
-    def move_list(state):
+    def move_list(*state):
         moves = []
         for i in range(-1,2):
             for j in range(-1,2):
@@ -55,10 +55,10 @@ class Agent(object):
         if obs.step == 1:
             previous_state = [obs.loc[0]/16,obs.loc[1]/16]
 
-        # possible_moves = self.move_list(current_state)
-        # action = action_selection(possible_moves)
-        # f.write(str(action)+'\n')
-        # f.close()
+        possible_moves = self.move_list(obs.loc)
+        action = action_selection(possible_moves)
+        f.write(str(action)+'\n')
+        f.close()
         # action assigned to the agent
         turn = 0
         speed = 0
