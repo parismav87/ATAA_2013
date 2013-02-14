@@ -22,50 +22,53 @@ class Agent(object):
         if observation.selected:
             print observation
 
-    def drive(self):
-        pass
+    def state_position(self, state):
+        """ This function returns the middle state_position
+            in an input state grid position
+        """
+        x = math.floor((state[0]*16+(state[0]+1)*16)/2)
+        y = math.floor((state[1]*16+(state[1]+1)*16)/2)
+        return [x,y]
+
+    def drive(self, current_state, goalLoc):
+        goalLoc = self.state_position(goalLoc)
+        loc = self.state_position(current_state)
+        dx = goalLoc[0]-loc[0]
+        dy = goalLoc[1]-loc[1]
+        turn = angle_fix(math.atan2(dy, dx) - self.observation.angle)
+        speed = (dx**2 + dy**2)**0.5
+        shoot = 0
+        return (turn, speed, shoot)
 
     def reward_function(current, previous):
         pass
 
-    def state_position(state):
-        """ This function returns the middle state_position
-            in an input state grid position
-        """
-        x = (state[0]*16+(state[0]+1)*16)/2
-        y = (state[1]*16+(state[1]+1)*16)/2
-        return [x,y]
-
-    def move_list(*state):
+    def move_list(self):
+        location = self.observation.loc
         moves = []
         for i in range(-1,2):
             for j in range(-1,2):
-                position = [state[0]+i, state[1]+j]
+                position = [(location[0]/16) + i, (location[1]/16) + j]
                 moves.append(position)
         return moves
 
-    def action_selection(moves):
+    def action_selection(self, moves):
+        pass
         r = math.floor(random.random() * len(moves))
-        return moves[r]
+        return moves[int(r)]
 
     def action(self):
         obs = self.observation
-        f = open("test.txt",'a')
         current_state = [obs.loc[0]/16,obs.loc[1]/16]
         if obs.step == 1:
             previous_state = [obs.loc[0]/16,obs.loc[1]/16]
 
-        possible_moves = self.move_list(obs.loc)
-        action = action_selection(possible_moves)
-        f.write(str(action)+'\n')
-        f.close()
+        possible_moves = self.move_list()
+        action = self.action_selection(possible_moves)
+        drive = self.drive(current_state, action)
         # action assigned to the agent
-        turn = 0
-        speed = 0
-        shoot = 0
-
-        previous_state = [obs.loc[0]/16,obs.loc[1]/16]
-        return (turn,speed,shoot)
+        previous_state = current_state
+        return drive
         
     def finalize(self, interrupted=False):
         """ This function is called after the game ends, 
