@@ -34,6 +34,5 @@ class Tournament1(run.Scenario):
                               max_score=100)
 
 
-# Tournament1.one_on_one(red="domination/agent.py", blue="domination/agent.py", output_folder='_tmp')
-for i in xrange(1,100):
-	Tournament1.test(red="domination/agent.py", blue="runForest.py")
+Tournament1.one_on_one(red="domination/agent.py", blue="runForest.py", output_folder='_tmp')
+# Tournament1.test(red="domination/agent.py", blue="runForest.py")

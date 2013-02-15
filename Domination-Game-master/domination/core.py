@@ -152,8 +152,7 @@ class GameLog(object):
     def write(self, string):
         if self.verbose and string != '\n':
             try:
-                pass
-                # print >> sys.__stdout__, string
+                print >> sys.__stdout__, string
             except:
                 pass
         self.log.append(string)
@@ -313,8 +312,7 @@ class Game(object):
         # Load up a replay
         else:
             if replay.version != __version__:
-                pass
-                # print >> sys.stderr, ("WARNING: Replay is for version %s, you have %s."%(replay.version, __version__))
+                print >> sys.stderr, ("WARNING: Replay is for version %s, you have %s."%(replay.version, __version__))
             self.settings = replay.settings
             self.field = replay.field
             self.red.setname(replay.red_name)
@@ -455,8 +453,7 @@ class Game(object):
             for s in xrange(settings.max_steps):
                 self.step = s+1
                 if self.step % 10 == 0:
-                    pass
-                    # print "Step %d: %d - %d"%(self.step, self.score_red, self.score_blue)
+                    print "Step %d: %d - %d"%(self.step, self.score_red, self.score_blue)
                 if self.step_callback is not None:
                     self.step_callback(self)
                 ## UPDATE & CHECK VICTORY

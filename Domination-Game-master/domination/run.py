@@ -58,8 +58,8 @@ class Scenario(object):
     #: The field that these games will be played on
     GENERATOR   = core.FieldGenerator() #: Will generate FIELD before each game if defined
     FIELD       = None   #: Will play on this field if GENERATOR is None
-    REPEATS     = 4      #: How many times to repeat each game
-    SWAP_TEAMS  = True   #: Repeat each run with blue/red swapped
+    REPEATS     = 100      #: How many times to repeat each game
+    SWAP_TEAMS  = False   #: Repeat each run with blue/red swapped
     DRAW_MARGIN = 0.05
     SCORING     = SCORING_LINEAR
             
@@ -133,12 +133,8 @@ class Scenario(object):
         # print '\n'.join("%r vs. %r"%(r,b) for (r, b) in teams)
         for i, (red, blue, matchinfo) in enumerate(games):
             game = self._single(red, blue, matchinfo=matchinfo, rendered=rendered, verbose=verbose)
-            # print "======= Game %d/%d done. =======" % (i+1, len(games))
-            # print game.stats
-            if(game.stats.score_blue == 100):
-                print "blue won!",game.stats.steps
-            else:
-                print "red won!",game.stats.steps
+            print "======= Game %d/%d done. =======" % (i+1, len(games))
+            print game.stats
             gameinfo.append((red, blue, matchinfo, game.stats, game.replay, game.log))
             
         if output_folder is not None:
