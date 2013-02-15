@@ -107,7 +107,6 @@ class Agent(object):
         drive = self.drive(current_state, action)
         # action assigned to the agent
         previous_state = current_state
-        print self.qtable[obs.loc[0]/16,obs.loc[1]/16][obs.loc[0]/16,obs.loc[1]/16]
         return drive
 
 
