@@ -15,11 +15,10 @@ class Agent(object):
         self.goal = None
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
 
-        if os.path.isfile("pickle.pck"):
-            file = open("pickle.pck", "r") # read mode
+        if os.path.isfile("runForest.pck"):
+            file = open("runForest.pck", "r") # read mode
             self.qtable = pickle.load(file)
             file.close()
-            print self.qtable
         else:
             print "nope"
             self.qtable = self.createQTable()
@@ -40,15 +39,13 @@ class Agent(object):
 
     def createQTable(self):
         Qtable = dict()
-        for i in range(26):
+        for i in range(28):
             for j in range(16):
                 Qtable[i,j] = dict()
                 for ai in range(-2,3):
                     for aj in range(-2,3):
-                        Qtable[i,j][ai,aj] = 10
+                        Qtable[i,j][i+ai,j+aj] = 10.0
         return Qtable
-
-
 
     def state_position(self, state):
         """ This function returns the middle state_position
@@ -82,10 +79,22 @@ class Agent(object):
                     moves.append(position)
         return moves
 
-    def action_selection(self, moves):
-        pass
-        r = math.floor(random.random() * len(moves))
-        return moves[int(r)]
+    def eGreedy(self, moves, e):
+        if random.random() < 0.1 :
+            r = math.floor(random.random() * len(moves))
+            return moves[int(r)]
+        else:
+            bestMoves = []
+            bestValue = 0.0
+            for action, value in self.qtable[self.observation.loc[0]/16,self.observation.loc[1]/16].iteritems():
+                if value > bestValue:
+                    bestValue = value
+                    bestMoves = []
+                    bestMoves.append(action)
+                if value == bestValue:
+                    bestMoves.append(action)
+            r = math.floor(random.random() * len(bestMoves))
+            return bestMoves[int(r)]
 
     def action(self):
         obs = self.observation
@@ -94,10 +103,11 @@ class Agent(object):
             previous_state = [obs.loc[0]/16,obs.loc[1]/16]
 
         possible_moves = self.move_list()
-        action = self.action_selection(possible_moves)
+        action = self.eGreedy(possible_moves, 0.1)
         drive = self.drive(current_state, action)
         # action assigned to the agent
         previous_state = current_state
+        print self.qtable[obs.loc[0]/16,obs.loc[1]/16][obs.loc[0]/16,obs.loc[1]/16]
         return drive
 
 
@@ -124,7 +134,7 @@ class Agent(object):
             store any learned variables and write logs/reports.
         """
         pass
-        file = open("pickle.pck", "w") # write mode
+        file = open("runForest.pck", "w") # write mode
         pickle.dump(self.qtable, file)
         file.close()
         
