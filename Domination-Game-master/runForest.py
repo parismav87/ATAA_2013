@@ -16,11 +16,10 @@ class Agent(object):
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
 
         if os.path.isfile("runForest.pck"):
-            file = open("runForest.pck", "r") # read mode
+            file = open("runForest.pck", "r")
             self.qtable = pickle.load(file)
             file.close()
         else:
-            print "nope"
             self.qtable = self.createQTable()
 
     
@@ -39,7 +38,7 @@ class Agent(object):
 
     def createQTable(self):
         Qtable = dict()
-        for i in range(28):
+        for i in range(29):
             for j in range(16):
                 Qtable[i,j] = dict()
                 for c1 in range(-1,2):
@@ -47,7 +46,7 @@ class Agent(object):
                         Qtable[i,j][c1,c2] = dict()
                         for ai in range(-2,3):
                             for aj in range(-2,3):
-                                Qtable[i,j][c1,c2][i+ai,j+aj] = 10.0
+                                Qtable[i,j][c1,c2][i+ai,j+aj] = 200.0
         return Qtable
 
     def state_position(self, state):
@@ -68,8 +67,11 @@ class Agent(object):
         shoot = 0
         return (turn, speed, shoot)
 
-    def reward_function(current, previous):
-        pass
+    def reward_function(self, cps):
+        reward = 0
+        for i in range(len(cps)):
+            reward += cps[i] * 100
+        return reward
 
     def move_list(self):
         location = self.observation.loc
@@ -82,14 +84,17 @@ class Agent(object):
                     moves.append(position)
         return moves
 
-    def eGreedy(self, moves, e):
+    def eGreedy(self, moves, cps, e):
         if random.random() < 0.1 :
             r = math.floor(random.random() * len(moves))
             return moves[int(r)]
         else:
             bestMoves = []
             bestValue = 0.0
-            for action, value in self.qtable[self.observation.loc[0]/16, self.observation.loc[1]/16].iteritems():
+            for move in moves:
+                print move
+                value = self.qtable[self.observation.loc[0]/16, self.observation.loc[1]/16][cps][move[0], move[1]]
+                action = move
                 if value > bestValue:
                     bestValue = value
                     bestMoves = []
@@ -100,48 +105,61 @@ class Agent(object):
             return bestMoves[int(r)]
 
 
+
     def check_cps(self):
+        """ Check the control points and return the state of these
+            control points.
+            1 is ours
+            0 is neutral
+            -1 is opponent's
+        """
         controlPoint1 = 0
         controlPoint2 = 0
-        for i in range(len(self.observation.cps)):
-            if self.observation.cps[i][2] == 1:
-                controlCounter += 1
-            if self.observation.cps[i][2] == 0:
-                controlCounter -= 1
-        return controlCounter
+        if self.observation.cps[0][2] == 1:
+            controlPoint1 += 1
+        if self.observation.cps[0][2] == 0:
+            controlPoint1 -= 1
+        if self.observation.cps[1][2] == 1:
+            controlPoint2 += 1
+        if self.observation.cps[1][2] == 0:
+            controlPoint2 -= 1
+        return (controlPoint1,controlPoint2)
+
+    def returnMaxValue(self, cps):
+        MaxValue = 0
+        obs = self.observation
+        for action, value in self.qtable[obs.loc[0]/16, obs.loc[1]/16][cps].iteritems():
+            if value > MaxValue:
+                MaxValue = value
+        return MaxValue
 
     def action(self):
+        # take observation
         obs = self.observation
+        # translate cps to state variable
         cps = self.check_cps()
-        print cps
-        print obs
-        current_state = [obs.loc[0]/16,obs.loc[1]/16]
-        # if obs.step == 1:
-        #     previous_state = [obs.loc[0]/16,obs.loc[1]/16]
+        # determine the current state
+        current_state = [obs.loc[0]/16,obs.loc[1]/16],[cps]
+        # if first step previous state is the same as current
+        if obs.step == 1:
+            previous_state = [obs.loc[0]/16,obs.loc[1]/16],[cps]
+        # return the possible movements that agent can do
+        possible_moves = self.move_list()
+        # select from the actions with eGreedy action selection
+        action = self.eGreedy(possible_moves, cps, 0.1)
 
-        # print obs
-        # possible_moves = self.move_list()
-        # action = self.eGreedy(possible_moves, 0, 0.1)
-        # drive = self.drive(current_state, action)
+        # # Q-learning update rule
+        # reward = self.reward_function(cps)
+        # maxValue = self.returnMaxValue(cps)
+        # print maxValue
+        # print self.qtable[current_state[0][0],current_state[0][1]][cps[0], cps[1]][action[0], action[1]]
+
+
+        # given the action drive the tank to this position
+        drive = self.drive(current_state[0], action)
         # action assigned to the agent
         previous_state = current_state
-        return (0,0,0)
-
-
-    def debug(self, surface):
-        """ Allows the agents to draw on the game UI,
-            Refer to the pygame reference to see how you can
-            draw on a pygame.surface. The given surface is
-            not cleared automatically. Additionally, this
-            function will only be called when the renderer is
-            active, and it will only be called for the active team.
-        """
-        import pygame
-        # First agent clears the screen
-        surface.fill((0,0,0,0))
-        # Selected agents draw their info
-        if self.goal is not None:
-            surface.draw.circle(surface, (255,255,255), self.observation.loc, 16, 1)
+        return drive
         
         
     def finalize(self, interrupted=False):
