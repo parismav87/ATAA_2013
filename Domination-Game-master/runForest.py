@@ -44,8 +44,8 @@ class Agent(object):
                 for c1 in range(-1,2):
                     for c2 in range(-1,2):
                         Qtable[i,j][c1,c2] = dict()
-                        for ai in range(-2,3):
-                            for aj in range(-2,3):
+                        for ai in range(-1,2):
+                            for aj in range(-1,2):
                                 Qtable[i,j][c1,c2][i+ai,j+aj] = 200.0
         return Qtable
 
@@ -63,7 +63,7 @@ class Agent(object):
         dx = goalLoc[0]-loc[0]
         dy = goalLoc[1]-loc[1]
         turn = angle_fix(math.atan2(dy, dx) - self.observation.angle)
-        speed = 10*(dx**2 + dy**2)**0.5
+        speed = (dx**2 + dy**2)**0.5
         shoot = 0
         return (turn, speed, shoot)
 
@@ -77,8 +77,8 @@ class Agent(object):
         location = self.observation.loc
         walls = self.observation.walls
         moves = []
-        for i in range(-2,3):
-            for j in range(-2,3):
+        for i in range(-1,2):
+            for j in range(-1,2):
                 if(walls[2+i][2+j] == 0):
                     position = [(location[0]/16) + j, (location[1]/16) + i]
                     moves.append(position)
@@ -125,7 +125,7 @@ class Agent(object):
             controlPoint2 -= 1
         return (controlPoint1,controlPoint2)
 
-    def returnMaxValue(self, cps):
+    def returnMaxValue(self, action, cps):
         MaxValue = 0
         obs = self.observation
         for action, value in self.qtable[obs.loc[0]/16, obs.loc[1]/16][cps].iteritems():
@@ -149,8 +149,10 @@ class Agent(object):
         action = self.eGreedy(possible_moves, cps, 0.1)
 
         # # Q-learning update rule
-        # reward = self.reward_function(cps)
-        # maxValue = self.returnMaxValue(cps)
+        # get reward for current state action pair
+        reward = self.reward_function(cps)
+        # get the max potential value from next state
+        maxValue = self.returnMaxValue(action, cps)
         # print maxValue
         # print self.qtable[current_state[0][0],current_state[0][1]][cps[0], cps[1]][action[0], action[1]]
 
