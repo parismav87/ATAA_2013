@@ -42,9 +42,12 @@ class Agent(object):
         for i in range(28):
             for j in range(16):
                 Qtable[i,j] = dict()
-                for ai in range(-2,3):
-                    for aj in range(-2,3):
-                        Qtable[i,j][i+ai,j+aj] = 10.0
+                for c1 in range(-1,2):
+                    for c2 in range(-1,2):
+                        Qtable[i,j][c1,c2] = dict()
+                        for ai in range(-2,3):
+                            for aj in range(-2,3):
+                                Qtable[i,j][c1,c2][i+ai,j+aj] = 10.0
         return Qtable
 
     def state_position(self, state):
@@ -86,7 +89,7 @@ class Agent(object):
         else:
             bestMoves = []
             bestValue = 0.0
-            for action, value in self.qtable[self.observation.loc[0]/16,self.observation.loc[1]/16].iteritems():
+            for action, value in self.qtable[self.observation.loc[0]/16, self.observation.loc[1]/16].iteritems():
                 if value > bestValue:
                     bestValue = value
                     bestMoves = []
@@ -96,18 +99,33 @@ class Agent(object):
             r = math.floor(random.random() * len(bestMoves))
             return bestMoves[int(r)]
 
+
+    def check_cps(self):
+        controlPoint1 = 0
+        controlPoint2 = 0
+        for i in range(len(self.observation.cps)):
+            if self.observation.cps[i][2] == 1:
+                controlCounter += 1
+            if self.observation.cps[i][2] == 0:
+                controlCounter -= 1
+        return controlCounter
+
     def action(self):
         obs = self.observation
+        cps = self.check_cps()
+        print cps
+        print obs
         current_state = [obs.loc[0]/16,obs.loc[1]/16]
-        if obs.step == 1:
-            previous_state = [obs.loc[0]/16,obs.loc[1]/16]
+        # if obs.step == 1:
+        #     previous_state = [obs.loc[0]/16,obs.loc[1]/16]
 
-        possible_moves = self.move_list()
-        action = self.eGreedy(possible_moves, 0.1)
-        drive = self.drive(current_state, action)
+        # print obs
+        # possible_moves = self.move_list()
+        # action = self.eGreedy(possible_moves, 0, 0.1)
+        # drive = self.drive(current_state, action)
         # action assigned to the agent
         previous_state = current_state
-        return drive
+        return (0,0,0)
 
 
     def debug(self, surface):
