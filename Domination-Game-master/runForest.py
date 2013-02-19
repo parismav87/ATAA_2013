@@ -12,6 +12,8 @@ class Agent(object):
         self.mesh = nav_mesh
         self.grid = field_grid
         self.settings = settings
+        self.previousState = None
+        self.previousAction = None
         self.goal = None
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
 
@@ -44,9 +46,9 @@ class Agent(object):
                 for c1 in range(-1,2):
                     for c2 in range(-1,2):
                         Qtable[i,j][c1,c2] = dict()
-                        for ai in range(-1,2):
-                            for aj in range(-1,2):
-                                Qtable[i,j][c1,c2][i+ai,j+aj] = 200.0
+                        for ai in range(-2,3):
+                            for aj in range(-2,3):
+                                Qtable[i,j][c1,c2][i+ai,j+aj] = 10.0
         return Qtable
 
     def state_position(self, state):
@@ -63,7 +65,7 @@ class Agent(object):
         dx = goalLoc[0]-loc[0]
         dy = goalLoc[1]-loc[1]
         turn = angle_fix(math.atan2(dy, dx) - self.observation.angle)
-        speed = (dx**2 + dy**2)**0.5
+        speed = 10*(dx**2 + dy**2)**0.5
         shoot = 0
         return (turn, speed, shoot)
 
@@ -77,11 +79,10 @@ class Agent(object):
         location = self.observation.loc
         walls = self.observation.walls
         moves = []
-        for i in range(-1,2):
-            for j in range(-1,2):
-                if(walls[2+i][2+j] == 0):
-                    position = [(location[0]/16) + j, (location[1]/16) + i]
-                    moves.append(position)
+        for i in range(-2,3):
+            for j in range(-2,3):
+                position = [(location[0]/16) + j, (location[1]/16) + i]
+                moves.append(position)
         return moves
 
     def eGreedy(self, moves, cps, e):
@@ -92,7 +93,6 @@ class Agent(object):
             bestMoves = []
             bestValue = 0.0
             for move in moves:
-                print move
                 value = self.qtable[self.observation.loc[0]/16, self.observation.loc[1]/16][cps][move[0], move[1]]
                 action = move
                 if value > bestValue:
@@ -125,7 +125,7 @@ class Agent(object):
             controlPoint2 -= 1
         return (controlPoint1,controlPoint2)
 
-    def returnMaxValue(self, action, cps):
+    def returnMaxValue(self, cps):
         MaxValue = 0
         obs = self.observation
         for action, value in self.qtable[obs.loc[0]/16, obs.loc[1]/16][cps].iteritems():
@@ -140,27 +140,28 @@ class Agent(object):
         cps = self.check_cps()
         # determine the current state
         current_state = [obs.loc[0]/16,obs.loc[1]/16],[cps]
-        # if first step previous state is the same as current
-        if obs.step == 1:
-            previous_state = [obs.loc[0]/16,obs.loc[1]/16],[cps]
         # return the possible movements that agent can do
         possible_moves = self.move_list()
         # select from the actions with eGreedy action selection
         action = self.eGreedy(possible_moves, cps, 0.1)
-
         # # Q-learning update rule
         # get reward for current state action pair
         reward = self.reward_function(cps)
         # get the max potential value from next state
-        maxValue = self.returnMaxValue(action, cps)
-        # print maxValue
-        # print self.qtable[current_state[0][0],current_state[0][1]][cps[0], cps[1]][action[0], action[1]]
+        maxValue = self.returnMaxValue(cps)
+
+        print self.previousState
+        print self.previousAction
+
+        # if obs.step > 1:
+        #     print self.qtable[self.previousState[0][0],self.previousState[0][1]][self.previousState[1][0], self.previousState[1][1]][self.previousAction[0], self.previousAction[1]]
 
 
         # given the action drive the tank to this position
         drive = self.drive(current_state[0], action)
         # action assigned to the agent
-        previous_state = current_state
+        self.previousState = current_state
+        self.previousAction = action
         return drive
         
         
