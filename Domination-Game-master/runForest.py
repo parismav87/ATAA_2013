@@ -16,16 +16,15 @@ class Agent(object):
         self.previousAction = None
         self.previousCPS = None
         self.goal = None
-        self.gamma = 0.5
-        self.alpha = 0.5
-        self.epsilon = 0.2
+        self.gamma = 0.7
+        self.alpha = 0.7
+        self.epsilon = 0.01
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
 
         if os.path.isfile("runForest.pck"):
             file = open("runForest.pck", "r")
             self.qtable = pickle.load(file)
-            file.close()
-            print self.qtable
+            file.close()                                    
         else:
             self.qtable = self.createQTable()
 
@@ -53,7 +52,7 @@ class Agent(object):
                         Qtable[i,j][c1,c2] = dict()
                         for ai in range(-2,3):
                             for aj in range(-2,3):
-                                Qtable[i,j][c1,c2][i+ai,j+aj] = 0.0
+                                Qtable[i,j][c1,c2][i+ai,j+aj] = 2.0
         return Qtable
 
     def state_position(self, state):
@@ -77,19 +76,12 @@ class Agent(object):
     def reward_function(self, cps):
         reward = 0
         for i in range(len(cps)):
-            reward += cps[i] * 100
+            reward += cps[i]
         return reward
 
-    def move_list(self, current_state):
-        location = self.observation.loc
-        moves = []
-        for i in range(-2,3):
-            for j in range(-2,3):
-                position = (current_state[0] + j, current_state[1] + i)
-                moves.append(position)
-        return moves
-
-    def eGreedy(self, current_state, moves, cps):
+    def eGreedy(self, current_state, cps):
+        # for i in range(-2,3):
+        #     for j in range(-2,3):
         if random.random() < self.epsilon :
             r = math.floor(random.random() * len(moves))
             return (moves[int(r)][0], moves[int(r)][1])
@@ -141,9 +133,7 @@ class Agent(object):
         # translate cps to state variable
         cps = self.check_cps()
         # determine the current state
-        current_state = (obs.loc[0]/16,obs.loc[1]/16)
-        # return the possible movements that agent can do
-        possible_moves = self.move_list(current_state)
+        current_state = (obs.loc[0]/16,obs.loc[1]/16)    
         # select from the actions with eGreedy action selection
         action = self.eGreedy(current_state, possible_moves, cps)
         # # Q-learning update rule
@@ -152,14 +142,8 @@ class Agent(object):
         # get the max potential value from next state
         maxValue = self.returnMaxValue(cps)
 
-        print "----------"
-        print self.observation.loc
-        print current_state
-
         if self.previousState is not None:                        
             self.qtable[self.previousState][self.previousCPS][self.previousAction] = self.qtable[self.previousState][self.previousCPS][self.previousAction] + self.alpha * (reward + self.gamma * maxValue - self.qtable[self.previousState][self.previousCPS][self.previousAction])
-
-
         # given the action drive the tank to this position
         drive = self.drive(current_state, action)
         # action assigned to the agent
