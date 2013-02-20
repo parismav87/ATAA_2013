@@ -46,47 +46,138 @@ class Agent(object):
         """ This function is called every step and should
             return a tuple in the form: (turn, speed, shoot)
         """
-        obs = self.observation
-        # Check if agent reached goal.
-        if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
-            self.goal = None
-            
-        # Walk to ammo
-        ammopacks = filter(lambda x: x[2] == "Ammo", obs.objects)
-        if ammopacks:
-            pass
-            
-        # Drive to where the user clicked
-        # Clicked is a list of tuples of (x, y, shift_down, is_selected)
-        if self.selected and self.observation.clicked:
-            pass
-        
-        # Walk to random CP
-        if self.goal is None:
-            self.goal = obs.cps[random.randint(0,len(obs.cps)-1)][0:2]
-        
-        # Shoot enemies
-        shoot = False
-        if (obs.ammo > 0 and 
-            obs.foes and 
-            point_dist(obs.foes[0][0:2], obs.loc) < self.settings.max_range and
-            not line_intersects_grid(obs.loc, obs.foes[0][0:2], self.grid, self.settings.tilesize)):
-            pass
+        if self.id==0:    
+            obs = self.observation
 
-        # Compute path, angle and drive
-        path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
-        if path:
-            dx = path[0][0] - obs.loc[0]
-            dy = path[0][1] - obs.loc[1]
-            turn = angle_fix(math.atan2(dy, dx) - obs.angle)
-            if turn > self.settings.max_turn or turn < -self.settings.max_turn:
-                shoot = False
-            speed = (dx**2 + dy**2)**0.5
+            # Check if agent reached goal.
+            if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
+                self.goal = None
+                
+            # Walk to ammo
+            ammopacks = filter(lambda x: x[2] == "Ammo", obs.objects)
+            if ammopacks:
+                pass
+                
+            # Drive to where the user clicked
+            # Clicked is a list of tuples of (x, y, shift_down, is_selected)
+            if self.selected and self.observation.clicked:
+                pass
+            
+            # Walk to random CP
+            if self.goal is None and (obs.cps[0][2]==0 or obs.cps[0][2]==2):
+                self.goal = obs.cps[0][0:2]
+                        
+            # Shoot enemies
+            shoot = False
+            if (obs.ammo > 0 and 
+                obs.foes and 
+                point_dist(obs.foes[0][0:2], obs.loc) < self.settings.max_range and
+                not line_intersects_grid(obs.loc, obs.foes[0][0:2], self.grid, self.settings.tilesize)):
+                pass
+
+            # Compute path, angle and drive
+            path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
+            if path:
+                dx = path[0][0] - obs.loc[0]
+                dy = path[0][1] - obs.loc[1]
+                turn = angle_fix(math.atan2(dy, dx) - obs.angle)
+                if turn > self.settings.max_turn or turn < -self.settings.max_turn:
+                    shoot = False
+                speed = (dx**2 + dy**2)**0.5
+            else:
+                turn = 0
+                speed = 0
+            
+            return (turn,speed,shoot)
+
+
+        elif self.id==1:    
+            obs = self.observation
+
+            # Check if agent reached goal.
+            if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
+                self.goal = None
+                
+            # Walk to ammo
+            ammopacks = filter(lambda x: x[2] == "Ammo", obs.objects)
+            if ammopacks:
+                pass
+                
+            # Drive to where the user clicked
+            # Clicked is a list of tuples of (x, y, shift_down, is_selected)
+            if self.selected and self.observation.clicked:
+                pass
+            
+            # Walk to random CP
+            if self.goal is None and (obs.cps[1][2]==0 or obs.cps[1][2]==2):
+                self.goal = obs.cps[1][0:2]
+                        
+            # Shoot enemies
+            shoot = False
+            if (obs.ammo > 0 and 
+                obs.foes and 
+                point_dist(obs.foes[0][0:2], obs.loc) < self.settings.max_range and
+                not line_intersects_grid(obs.loc, obs.foes[0][0:2], self.grid, self.settings.tilesize)):
+                pass
+
+            # Compute path, angle and drive
+            path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
+            if path:
+                dx = path[0][0] - obs.loc[0]
+                dy = path[0][1] - obs.loc[1]
+                turn = angle_fix(math.atan2(dy, dx) - obs.angle)
+                if turn > self.settings.max_turn or turn < -self.settings.max_turn:
+                    shoot = False
+                speed = (dx**2 + dy**2)**0.5
+            else:
+                turn = 0
+                speed = 0
+            
+            return (turn,speed,shoot)
+
         else:
-            turn = 0
-            speed = 0
-        
-        return (turn,speed,shoot)
+            obs = self.observation
+            # Check if agent reached goal.
+            if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
+                self.goal = None
+                
+            # Walk to ammo
+            ammopacks = filter(lambda x: x[2] == "Ammo", obs.objects)
+            if ammopacks:
+                self.goal = ammopacks[0][0:2]
+                
+            # Drive to where the user clicked
+            # Clicked is a list of tuples of (x, y, shift_down, is_selected)
+            if self.selected and self.observation.clicked:
+                self.goal = self.observation.clicked[0][0:2]
+            
+            # Walk to random CP
+            if self.goal is None:
+                self.goal = obs.cps[random.randint(0,len(obs.cps)-1)][0:2]
+            
+            # Shoot enemies
+            shoot = False
+            if (obs.ammo > 0 and 
+                obs.foes and 
+                point_dist(obs.foes[0][0:2], obs.loc) < self.settings.max_range and
+                not line_intersects_grid(obs.loc, obs.foes[0][0:2], self.grid, self.settings.tilesize)):
+                self.goal = obs.foes[0][0:2]
+                shoot = True
+
+            # Compute path, angle and drive
+            path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
+            if path:
+                dx = path[0][0] - obs.loc[0]
+                dy = path[0][1] - obs.loc[1]
+                turn = angle_fix(math.atan2(dy, dx) - obs.angle)
+                if turn > self.settings.max_turn or turn < -self.settings.max_turn:
+                    shoot = False
+                speed = (dx**2 + dy**2)**0.5
+            else:
+                turn = 0
+                speed = 0
+            
+            return (turn,speed,shoot)
         
     def debug(self, surface):
         """ Allows the agents to draw on the game UI,
