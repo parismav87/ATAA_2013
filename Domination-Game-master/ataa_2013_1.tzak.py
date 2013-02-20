@@ -2,7 +2,7 @@
 class Agent(object):
     
     NAME = "default_agent"
-    
+
     def __init__(self, id, team, settings=None, field_rects=None, field_grid=None, nav_mesh=None, blob=None, **kwargs):
         """ Each agent is initialized at the beginning of each game.
             The first agent (id==0) can use this to set up global variables.
@@ -16,7 +16,8 @@ class Agent(object):
         self.settings = settings
         self.goal = None
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
-        
+        self.control = True
+
         # Read the binary blob, we're not using it though
         if blob is not None:
             print "Agent %s received binary blob of %s" % (
@@ -29,6 +30,7 @@ class Agent(object):
             self.all_agents = self.__class__.all_agents = []
         self.all_agents.append(self)
     
+
     def observe(self, observation):
         """ Each agent is passed an observation using this function,
             before being asked for an action. You can store either
@@ -41,14 +43,14 @@ class Agent(object):
 
         if observation.selected:
             print observation
-                    
+
     def action(self):
         """ This function is called every step and should
             return a tuple in the form: (turn, speed, shoot)
         """
-        if self.id==0:    
+        #action for AGENT1
+        if self.id==0:
             obs = self.observation
-
             # Check if agent reached goal.
             if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
                 self.goal = None
@@ -64,9 +66,14 @@ class Agent(object):
                 pass
             
             # Walk to random CP
-            if self.goal is None and (obs.cps[0][2]==0 or obs.cps[0][2]==2):
+            if self.goal is None and self.control is True:
                 self.goal = obs.cps[0][0:2]
-                        
+                self.control = False
+            elif self.goal is None and self.control is False:
+                self.goal = obs.cps[1][0:2]
+                self.control = True   
+
+            
             # Shoot enemies
             shoot = False
             if (obs.ammo > 0 and 
@@ -87,13 +94,13 @@ class Agent(object):
             else:
                 turn = 0
                 speed = 0
-            
+
             return (turn,speed,shoot)
 
 
-        elif self.id==1:    
+        #action for AGENT2
+        elif self.id==1:
             obs = self.observation
-
             # Check if agent reached goal.
             if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
                 self.goal = None
@@ -109,9 +116,13 @@ class Agent(object):
                 pass
             
             # Walk to random CP
-            if self.goal is None and (obs.cps[1][2]==0 or obs.cps[1][2]==2):
+            if self.goal is None and self.control is True:
                 self.goal = obs.cps[1][0:2]
-                        
+                self.control = False
+            elif self.goal is None and self.control is False:
+                self.goal = obs.cps[0][0:2]
+                self.control = True  
+            
             # Shoot enemies
             shoot = False
             if (obs.ammo > 0 and 
@@ -132,10 +143,11 @@ class Agent(object):
             else:
                 turn = 0
                 speed = 0
-            
+
             return (turn,speed,shoot)
 
-        else:
+        #Action for Agent3
+        elif self.id==2:
             obs = self.observation
             # Check if agent reached goal.
             if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
@@ -154,6 +166,7 @@ class Agent(object):
             # Walk to random CP
             if self.goal is None:
                 self.goal = obs.cps[random.randint(0,len(obs.cps)-1)][0:2]
+                pass
             
             # Shoot enemies
             shoot = False
@@ -178,7 +191,7 @@ class Agent(object):
                 speed = 0
             
             return (turn,speed,shoot)
-        
+
     def debug(self, surface):
         """ Allows the agents to draw on the game UI,
             Refer to the pygame reference to see how you can

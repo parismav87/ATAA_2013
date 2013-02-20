@@ -10,9 +10,9 @@ w _ _ _ _ _ _ _ _ _ _ w _ C _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w _ _ _ _ _ _ _ _ _ _ w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w _ _ _ _ _ _ w _ _ _ w w w w w w w w w w w _ _ _ _ _ _ w
 w _ _ w _ _ _ w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w _ _ w
-w _ _ w _ _ _ w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w _ _ w
+w R _ w _ _ _ w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w _ B w
 w R _ w _ _ _ w _ A _ _ w w w w w _ _ A _ w _ _ _ w _ B w
-w _ _ w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w _ _ _ w _ _ w
+w R _ w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w _ _ _ w _ B w
 w _ _ w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w _ _ _ w _ _ w
 w _ _ _ _ _ _ w w w w w w w w w w w _ _ _ w _ _ _ _ _ _ w
 w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w _ _ _ _ _ _ _ _ _ _ w
@@ -34,5 +34,5 @@ class Tournament1(run.Scenario):
                               max_score=100)
 
 
-# Tournament1.one_on_one(red="domination/agent.py", blue="retardedAgent.py", output_folder='_tmp')
-Tournament1.test(red="domination/agent.py", blue="retardedAgent.py")
+Tournament1.one_on_one(red="domination/agent.py", blue="retardedAgent.py", output_folder='_tmp')
+#Tournament1.test(red="domination/agent.py", blue="retardedAgent.py")
