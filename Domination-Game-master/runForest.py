@@ -16,9 +16,9 @@ class Agent(object):
         self.previousAction = None
         self.previousCPS = None
         self.goal = None
-        self.gamma = 0.7
+        self.gamma = 0.5
         self.alpha = 0.7
-        self.epsilon = 0.01
+        self.epsilon = 0.2
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
 
         if os.path.isfile("runForest.pck"):
@@ -74,14 +74,22 @@ class Agent(object):
         return (turn, speed, shoot)
 
     def reward_function(self, cps):
-        reward = 0
+        reward_NEW = 0
+        reward_OLD = 0
         for i in range(len(cps)):
-            reward += cps[i]
+            reward_NEW += cps[i]
+
+        for i in range(len(self.previousCPS)):
+            reward_OLD += self.previousCPS[i]
         return reward
 
     def eGreedy(self, current_state, cps):
-        # for i in range(-2,3):
-        #     for j in range(-2,3):
+        moves = []
+        for i in range(-2,3):
+            for j in range(-2,3):
+                position = (current_state[0]+i, current_state[1]+j)
+                moves.append(position)
+
         if random.random() < self.epsilon :
             r = math.floor(random.random() * len(moves))
             return (moves[int(r)][0], moves[int(r)][1])
@@ -90,15 +98,10 @@ class Agent(object):
             bestValue = 0.0
             for move in moves:
                 value = self.qtable[current_state][cps][move]
-                action = move
                 if value > bestValue:
                     bestValue = value
-                    bestMoves = []
-                    bestMoves.append(action)
-                if value == bestValue:
-                    bestMoves.append(action)
-            r = math.floor(random.random() * len(bestMoves))
-            return (bestMoves[int(r)][0], bestMoves[int(r)][1])
+                    action  = move
+            return (action[0], action[1])
 
     def check_cps(self):
         """ Check the control points and return the state of these
@@ -119,10 +122,10 @@ class Agent(object):
             controlPoint2 -= 1
         return (controlPoint1,controlPoint2)
 
-    def returnMaxValue(self, cps):
+    def returnMaxValue(self,current_state, cps):
         MaxValue = 0
         obs = self.observation
-        for action, value in self.qtable[obs.loc[0]/16, obs.loc[1]/16][cps].iteritems():
+        for action, value in self.qtable[current_state][cps].iteritems():
             if value > MaxValue:
                 MaxValue = value
         return MaxValue
@@ -135,12 +138,12 @@ class Agent(object):
         # determine the current state
         current_state = (obs.loc[0]/16,obs.loc[1]/16)    
         # select from the actions with eGreedy action selection
-        action = self.eGreedy(current_state, possible_moves, cps)
+        action = self.eGreedy(current_state, cps)
         # # Q-learning update rule
         # get reward for current state action pair
         reward = self.reward_function(cps)
         # get the max potential value from next state
-        maxValue = self.returnMaxValue(cps)
+        maxValue = self.returnMaxValue(current_state, cps)
 
         if self.previousState is not None:                        
             self.qtable[self.previousState][self.previousCPS][self.previousAction] = self.qtable[self.previousState][self.previousCPS][self.previousAction] + self.alpha * (reward + self.gamma * maxValue - self.qtable[self.previousState][self.previousCPS][self.previousAction])
