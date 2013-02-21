@@ -19,7 +19,7 @@ class Agent(object):
         self.goal = None
         self.gamma = 0.5
         self.alpha = 0.7
-        self.epsilon = 0.2
+        self.epsilon = 0.0
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
 
         if os.path.isfile("runForest.pck"):
@@ -51,8 +51,8 @@ class Agent(object):
                 for c1 in range(-1,2):
                     for c2 in range(-1,2):
                         Qtable[i,j][c1,c2] = dict()
-                        for ai in range(-2,3):
-                            for aj in range(-2,3):
+                        for ai in range(-1,2):
+                            for aj in range(-1,2):
                                 Qtable[i,j][c1,c2][i+ai,j+aj] = 20.0
         return Qtable
 
@@ -89,28 +89,45 @@ class Agent(object):
 
     def eGreedy(self, current_state, cps):
         moves = []
-        for i in range(-2,3):
-            for j in range(-2,3):
-                position = (current_state[0]+i, current_state[1]+j)
-                moves.append(position)
+        for i in range(-1,2):
+            for j in range(-1,2):
+                if self.observation.walls[2+j][2+i] == 0 and (i != 0 or j != 0):
+                    position = (current_state[0]+i, current_state[1]+j)
+                    moves.append(position)
 
-        if random.random() < self.epsilon :
-            r = math.floor(random.random() * len(moves))
-            return (moves[int(r)][0], moves[int(r)][1])
-        else:
-            bestMoves = []
-            bestValue = 0.0
-            for move in moves:
-                value = self.qtable[current_state][cps][move]
-                if value > bestValue:
-                    bestMoves = []
-                    bestMoves.append(move)
-                    bestValue = value
-                    action  = move
-                if value == bestValue:
-                    bestMoves.append(move)
-            r = math.floor(random.random() * len(bestMoves))
-            return (bestMoves[int(r)][0], bestMoves[int(r)][1])
+        loc = self.state_position(current_state)
+        best = 360
+        best_move = 0
+        print "--------"
+        for i in range(len(moves)):
+            goalLoc = self.state_position(moves[i])
+            dx = goalLoc[0]-loc[0]
+            dy = goalLoc[1]-loc[1]
+            turn = abs(angle_fix(math.atan2(dy, dx) - self.observation.angle))
+            print turn
+            if turn < best:
+                best = turn
+                best_move = i
+        return (moves[best_move][0], moves[best_move][1])
+
+
+        # if random.random() < self.epsilon :
+        #     r = math.floor(random.random() * len(moves))
+        #     return (moves[int(r)][0], moves[int(r)][1])
+        # else:
+        #     bestMoves = []
+        #     bestValue = 0.0
+        #     for move in moves:
+        #         value = self.qtable[current_state][cps][move]
+        #         if value > bestValue:
+        #             bestMoves = []
+        #             bestMoves.append(move)
+        #             bestValue = value
+        #             action  = move
+        #         if value == bestValue:
+        #             bestMoves.append(move)
+        #     r = math.floor(random.random() * len(bestMoves))
+        #     return (bestMoves[int(r)][0], bestMoves[int(r)][1])
 
 
     def check_cps(self):
@@ -151,15 +168,15 @@ class Agent(object):
         action = self.eGreedy(current_state, cps)
         # # Q-learning update rule
         # get reward for current state action pair
-        reward = self.reward_function(cps)
-        # get the max potential value from next state
-        maxValue = self.returnMaxValue(current_state, cps)
+        # reward = self.reward_function(cps)
+        # # get the max potential value from next state
+        # maxValue = self.returnMaxValue(current_state, cps)
 
-        print reward
+        # print reward
 
-        if self.previousState is not None:                        
-            self.qtable[self.previousState][self.previousCPS][self.previousAction] = self.qtable[self.previousState][self.previousCPS][self.previousAction] 
-            + self.alpha * (reward + self.gamma * maxValue - self.qtable[self.previousState][self.previousCPS][self.previousAction])
+        # if self.previousState is not None:                        
+        #     self.qtable[self.previousState][self.previousCPS][self.previousAction] = self.qtable[self.previousState][self.previousCPS][self.previousAction] 
+        #     + self.alpha * (reward + self.gamma * maxValue - self.qtable[self.previousState][self.previousCPS][self.previousAction])
         # given the action drive the tank to this position
         drive = self.drive(current_state, action)
         # action assigned to the agent
