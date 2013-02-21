@@ -2,6 +2,7 @@ import sys
 import core
 import random
 import math
+import cPickle as pickle
 class Agent(object):
     
     NAME = "default_agent"
@@ -52,7 +53,7 @@ class Agent(object):
                         Qtable[i,j][c1,c2] = dict()
                         for ai in range(-2,3):
                             for aj in range(-2,3):
-                                Qtable[i,j][c1,c2][i+ai,j+aj] = 2.0
+                                Qtable[i,j][c1,c2][i+ai,j+aj] = 20.0
         return Qtable
 
     def state_position(self, state):
@@ -79,9 +80,12 @@ class Agent(object):
         for i in range(len(cps)):
             reward_NEW += cps[i]
 
-        for i in range(len(self.previousCPS)):
-            reward_OLD += self.previousCPS[i]
-        return reward
+        if self.previousCPS is not None:
+            for i in range(len(self.previousCPS)):
+                reward_OLD += self.previousCPS[i]
+
+
+        return reward_NEW
 
     def eGreedy(self, current_state, cps):
         moves = []
@@ -99,9 +103,15 @@ class Agent(object):
             for move in moves:
                 value = self.qtable[current_state][cps][move]
                 if value > bestValue:
+                    bestMoves = []
+                    bestMoves.append(move)
                     bestValue = value
                     action  = move
-            return (action[0], action[1])
+                if value == bestValue:
+                    bestMoves.append(move)
+            r = math.floor(random.random() * len(bestMoves))
+            return (bestMoves[int(r)][0], bestMoves[int(r)][1])
+
 
     def check_cps(self):
         """ Check the control points and return the state of these
@@ -145,8 +155,11 @@ class Agent(object):
         # get the max potential value from next state
         maxValue = self.returnMaxValue(current_state, cps)
 
+        print reward
+
         if self.previousState is not None:                        
-            self.qtable[self.previousState][self.previousCPS][self.previousAction] = self.qtable[self.previousState][self.previousCPS][self.previousAction] + self.alpha * (reward + self.gamma * maxValue - self.qtable[self.previousState][self.previousCPS][self.previousAction])
+            self.qtable[self.previousState][self.previousCPS][self.previousAction] = self.qtable[self.previousState][self.previousCPS][self.previousAction] 
+            + self.alpha * (reward + self.gamma * maxValue - self.qtable[self.previousState][self.previousCPS][self.previousAction])
         # given the action drive the tank to this position
         drive = self.drive(current_state, action)
         # action assigned to the agent

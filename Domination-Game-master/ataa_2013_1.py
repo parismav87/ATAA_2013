@@ -35,4 +35,9 @@ class Tournament1(run.Scenario):
 
 
 # Tournament1.one_on_one(red="domination/agent.py", blue="runForest.py", output_folder='_tmp')
-Tournament1.test(red="domination/agent.py", blue="runForest.py")
+
+for x in xrange(1,10000):
+	print x,"/",10000
+	Tournament1.test(red="domination/agent.py", blue="runForest.py")
+
+# Tournament1.test(red="domination/agent.py", blue="runForest.py")
