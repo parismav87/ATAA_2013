@@ -50,7 +50,7 @@ class Agent(object):
         if self.id==0:    
             obs = self.observation
             shoot =False
-            print obs.cps[0][2]
+            
 
 
             # Check if agent reached goal.
@@ -71,7 +71,7 @@ class Agent(object):
             if self.goal is None and (obs.cps[0][2]==0 or obs.cps[0][2]==2):
                 self.goal = obs.cps[0][0:2]
              
-           
+        
 
 
 
@@ -83,23 +83,27 @@ class Agent(object):
                 not line_intersects_grid(obs.loc, obs.foes[0][0:2], self.grid, self.settings.tilesize)):
                 pass
 
+
+
             # Compute path, angle and drive
-            path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
-            if path and obs.cps[0][2] != 1:
-                dx = path[0][0] - obs.loc[0]
-                dy = path[0][1] - obs.loc[1]
-                turn = angle_fix(math.atan2(dy, dx) - obs.angle)
-                if turn > self.settings.max_turn or turn < -self.settings.max_turn:
-                    shoot = False
-                speed = (dx**2 + dy**2)**0.5
-            else:
-                turn = 0
-                speed = 0
+            if obs.cps[0][2]!=1:
+                path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
+                if path:
+                    dx = path[0][0] - obs.loc[0]
+                    dy = path[0][1] - obs.loc[1]
+                    turn = angle_fix(math.atan2(dy, dx) - obs.angle)
+                    if turn > self.settings.max_turn or turn < -self.settings.max_turn:
+                        shoot = False
+                    speed = (dx**2 + dy**2)**0.5
+                else:
+                    turn = 0
+                    speed = 0
             
-            return (turn,speed,shoot)
+                return (turn,speed,shoot)
+            else: 
+                return (0,0,shoot)
 
-
-        elif self.id==1:    
+        elif self.id==2:    
             obs = self.observation
             shoot = False
             print obs.cps[1][2]
@@ -138,19 +142,22 @@ class Agent(object):
                 pass
 
             # Compute path, angle and drive
-            path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
-            if path and obs.cps[1][2] != 1:
-                dx = path[0][0] - obs.loc[0]
-                dy = path[0][1] - obs.loc[1]
-                turn = angle_fix(math.atan2(dy, dx) - obs.angle)
-                if turn > self.settings.max_turn or turn < -self.settings.max_turn:
-                    shoot = False
-                speed = (dx**2 + dy**2)**0.5
+            if obs.cps[1][2]!=1:
+                path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
+                if path:
+                    dx = path[0][0] - obs.loc[0]
+                    dy = path[0][1] - obs.loc[1]
+                    turn = angle_fix(math.atan2(dy, dx) - obs.angle)
+                    if turn > self.settings.max_turn or turn < -self.settings.max_turn:
+                        shoot = False
+                    speed = (dx**2 + dy**2)**0.5
+                else:
+                    turn = 0
+                    speed = 0
+                
+                return (turn,speed,shoot)
             else:
-                turn = 0
-                speed = 0
-            
-            return (turn,speed,shoot)
+                return(0,0,shoot)
 
         else:
                     """ This function is called every step and should
