@@ -46,14 +46,13 @@ class Agent(object):
         Qtable = dict()
         for i in range(56):
             for j in range(32):
-                for k in range(8):
-                    Qtable[i,j,k] = dict()
-                    for c1 in range(-1,2):
-                        for c2 in range(-1,2):
-                            Qtable[i,j,k][c1,c2] = dict()
-                            for ai in range(-1,2):
-                                for aj in range(-1,2):
-                                    Qtable[i,j,k][c1,c2][i+ai,j+aj] = 20.0
+                Qtable[i,j] = dict()
+                for c1 in range(-1,2):
+                    for c2 in range(-1,2):
+                        Qtable[i,j][c1,c2] = dict()
+                        for ai in range(-1,2):
+                            for aj in range(-1,2):
+                                Qtable[i,j][c1,c2][i+ai,j+aj] = 20.0
         return Qtable
 
     def state_position(self, state):
@@ -154,8 +153,18 @@ class Agent(object):
         # translate cps to state variable
         cps = self.check_cps()
         # determine the current state
-        current_state = (obs.loc[0]/8,obs.loc[1]/8,0)
+        current_state = (obs.loc[0]/8,obs.loc[1]/8)
+        # select from the actions with eGreedy action selection
         action = self.eGreedy(current_state, cps)
+        # Q-learning update rule
+        # get reward for current state action pair
+        reward = self.reward_function(cps)
+        # get the max potential value from next state
+        maxValue = self.returnMaxValue(current_state, cps)
+        if self.previousState is not None:                        
+            self.qtable[self.previousState][0,0][self.previousAction] = self.qtable[self.previousState][self.previousCPS][self.previousAction] 
+            + self.alpha * (reward + self.gamma * maxValue - self.qtable[self.previousState][self.previousCPS][self.previousAction])
+        # given the action drive the tank to this position
         drive = self.drive(current_state, action)
         # action assigned to the agent
         self.previousState = current_state
