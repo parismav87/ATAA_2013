@@ -17,7 +17,7 @@ class Agent(object):
         self.settings = settings
         self.goal = None
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
-        
+        self.count =0
         # Read the binary blob, we're not using it though
         if blob is not None:
             print "Agent %s received binary blob of %s" % (
@@ -50,7 +50,7 @@ class Agent(object):
         if self.id==0:    
             obs = self.observation
             shoot =False
-            print obs.cps[0][2]
+            
 
 
             # Check if agent reached goal.
@@ -71,7 +71,7 @@ class Agent(object):
             if self.goal is None and (obs.cps[0][2]==0 or obs.cps[0][2]==2):
                 self.goal = obs.cps[0][0:2]
              
-           
+        
 
 
 
@@ -83,26 +83,30 @@ class Agent(object):
                 not line_intersects_grid(obs.loc, obs.foes[0][0:2], self.grid, self.settings.tilesize)):
                 pass
 
+
+
             # Compute path, angle and drive
-            path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
-            if path and obs.cps[0][2] != 1:
-                dx = path[0][0] - obs.loc[0]
-                dy = path[0][1] - obs.loc[1]
-                turn = angle_fix(math.atan2(dy, dx) - obs.angle)
-                if turn > self.settings.max_turn or turn < -self.settings.max_turn:
-                    shoot = False
-                speed = (dx**2 + dy**2)**0.5
-            else:
-                turn = 0
-                speed = 0
+            if obs.cps[0][2]!=1:
+                path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
+                if path:
+                    dx = path[0][0] - obs.loc[0]
+                    dy = path[0][1] - obs.loc[1]
+                    turn = angle_fix(math.atan2(dy, dx) - obs.angle)
+                    if turn > self.settings.max_turn or turn < -self.settings.max_turn:
+                        shoot = False
+                    speed = (dx**2 + dy**2)**0.5
+                else:
+                    turn = 0
+                    speed = 0
             
-            return (turn,speed,shoot)
+                return (turn,speed,shoot)
+            else: 
+                return (0,0,shoot)
 
-
-        elif self.id==1:    
+        elif self.id==2:    
             obs = self.observation
             shoot = False
-            print obs.cps[1][2]
+            
 
 
 
@@ -138,43 +142,54 @@ class Agent(object):
                 pass
 
             # Compute path, angle and drive
-            path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
-            if path and obs.cps[1][2] is not 1:
-                dx = path[0][0] - obs.loc[0]
-                dy = path[0][1] - obs.loc[1]
-                turn = angle_fix(math.atan2(dy, dx) - obs.angle)
-                if turn > self.settings.max_turn or turn < -self.settings.max_turn:
-                    shoot = False
-                speed = (dx**2 + dy**2)**0.5
+            if obs.cps[1][2]!=1:
+                path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
+                if path:
+                    dx = path[0][0] - obs.loc[0]
+                    dy = path[0][1] - obs.loc[1]
+                    turn = angle_fix(math.atan2(dy, dx) - obs.angle)
+                    if turn > self.settings.max_turn or turn < -self.settings.max_turn:
+                        shoot = False
+                    speed = (dx**2 + dy**2)**0.5
+                else:
+                    turn = 0
+                    speed = 0
+                
+                return (turn,speed,shoot)
             else:
-                turn = 0
-                speed = 0
-            
-            return (turn,speed,shoot)
+                return(0,0,shoot)
 
         else:
                     """ This function is called every step and should
             return a tuple in the form: (turn, speed, shoot)
         """
+        
+        
         obs = self.observation
+        shoot = False
+
+
+        if self.goal is None and self.count%2==0:
+            self.goal = (152,136)
+            self.count =self.count+1
+
+        if self.goal is None and self.count%2==1:
+            self.goal = (312,136)
+            self.count=self.count+1
+
         # Check if agent reached goal.
         if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
-            self.goal = None
+            if self.count%2==1:
+                self.goal=(312,136)
+                self.count = self.count+1
+            elif self.count%2==0:
+                self.goal=(152,136)
+                self.count = self.count+1
+
             
-        # Walk to ammo
-        ammopacks = filter(lambda x: x[2] == "Ammo", obs.objects)
-        if ammopacks:
-            self.goal = ammopacks[0][0:2]
-            
-        # Drive to where the user clicked
-        # Clicked is a list of tuples of (x, y, shift_down, is_selected)
-        if self.selected and self.observation.clicked:
-            self.goal = self.observation.clicked[0][0:2]
-        
-        # Walk to random CP
-        if self.goal is None:
-            self.goal = obs.cps[random.randint(0,len(obs.cps)-1)][0:2]
-        
+
+       
+
         # Shoot enemies
         shoot = False
         if (obs.ammo > 0 and 

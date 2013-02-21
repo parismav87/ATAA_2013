@@ -31,7 +31,7 @@ class Tournament1(run.Scenario):
                               max_see=70,
                               think_time=0.06,
                               max_turn=math.pi/4,
-                              max_score=100)
+                              max_score=10000)
 
 
 #Tournament1.one_on_one(red="domination/agent.py", blue="retardedAgent.py", output_folder='_tmp')
