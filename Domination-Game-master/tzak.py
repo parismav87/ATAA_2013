@@ -3,12 +3,13 @@ class Agent(object):
     
     NAME = "lolAgent"
 
-    def __init__(self, id, team, settings=None, field_rects=None, field_grid=None, nav_mesh=None, blob=None, **kwargs,matchinfo=None):
+    def __init__(self, id, team, settings=None, field_rects=None, field_grid=None, nav_mesh=None, blob=None, **kwargs):
         """ Each agent is initialized at the beginning of each game.
             The first agent (id==0) can use this to set up global variables.
             Note that the properties pertaining to the game field might not be
             given for each game.
         """
+        matchinfo=kwargs['matchinfo']
         self.id = id
         self.team = team
         self.mesh = nav_mesh
