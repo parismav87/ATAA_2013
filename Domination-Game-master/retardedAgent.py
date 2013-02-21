@@ -139,7 +139,7 @@ class Agent(object):
 
             # Compute path, angle and drive
             path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
-            if path and obs.cps[1][2] is not 1:
+            if path and obs.cps[1][2] != 1:
                 dx = path[0][0] - obs.loc[0]
                 dy = path[0][1] - obs.loc[1]
                 turn = angle_fix(math.atan2(dy, dx) - obs.angle)
@@ -165,7 +165,8 @@ class Agent(object):
         ammopacks = filter(lambda x: x[2] == "Ammo", obs.objects)
         if ammopacks:
             self.goal = ammopacks[0][0:2]
-            
+            print self.goal
+
         # Drive to where the user clicked
         # Clicked is a list of tuples of (x, y, shift_down, is_selected)
         if self.selected and self.observation.clicked:
