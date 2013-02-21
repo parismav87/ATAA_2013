@@ -3,7 +3,7 @@ class Agent(object):
     
     NAME = "default_agent"
     
-    def __init__(self, id, team, settings=None, field_rects=None, field_grid=None, nav_mesh=None, blob=None, **kwargs):
+    def __init__(self, id, team, settings=None, field_rects=None, field_grid=None, nav_mesh=None, blob=None, matchinfo=None):
         """ Each agent is initialized at the beginning of each game.
             The first agent (id==0) can use this to set up global variables.
             Note that the properties pertaining to the game field might not be
@@ -85,7 +85,7 @@ class Agent(object):
 
             # Compute path, angle and drive
             path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
-            if path and obs.cps[0][2] is not 1:
+            if path and obs.cps[0][2] != 1:
                 dx = path[0][0] - obs.loc[0]
                 dy = path[0][1] - obs.loc[1]
                 turn = angle_fix(math.atan2(dy, dx) - obs.angle)
