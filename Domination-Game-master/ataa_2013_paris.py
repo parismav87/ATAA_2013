@@ -34,9 +34,7 @@ class Tournament1(run.Scenario):
                               max_score=10000)
 
 
-#Tournament1.one_on_one(red="domination/agent.py", blue="retardedAgent.py", output_folder='_tmp')
-<<<<<<< HEAD
+#Tournament1.one_on_one(red="domination/agent.py", blue="retardedAgent.py", output_folder='_tmp')<<<<<<< HEAD
 Tournament1.test(red="domination/agent.py", blue="agents/retardedAgent.py")
-=======
-Tournament1.test(red="tzak.py", blue="retardedAgent.py")
->>>>>>> pointless stuff
+#Tournament1.test(red="tzak.py", blue="retardedAgent.py")
+

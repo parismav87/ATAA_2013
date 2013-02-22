@@ -9,11 +9,8 @@ class Agent(object):
             Note that the properties pertaining to the game field might not be
             given for each game.
         """
-<<<<<<< HEAD:Domination-Game-master/agents/retardedAgent.py
-      #  matchinfo = kwargs['matchinfo']
-=======
         #matchinfo=kwargs['matchinfo']
->>>>>>> pointless stuff:Domination-Game-master/tzak.py
+
         self.id = id
         self.team = team
         self.mesh = nav_mesh
@@ -115,7 +112,6 @@ class Agent(object):
 
 
 
-
             # Check if agent reached goal.
             if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
                 self.goal = None
@@ -173,23 +169,34 @@ class Agent(object):
         shoot = False
 
 
-        if self.goal is None and self.count%2==0:
+        if self.goal is None and self.count%4==0:
             self.goal = (152,136)
             self.count =self.count+1
 
-        if self.goal is None and self.count%2==1:
+        if self.goal is None and self.count%4==1:
             self.goal = (312,136)
+            self.count=self.count+1
+        if self.goal is None and self.count%4==2:
+            self.goal = (216,56)
+            self.count=self.count+1
+        if self.goal is None and self.count%4==3:
+            self.goal = (248,216)
             self.count=self.count+1
 
         # Check if agent reached goal.
         if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
-            if self.count%2==1:
+            if self.count%4==1:
                 self.goal=(312,136)
                 self.count = self.count+1
-            elif self.count%2==0:
+            elif self.count%4==0:
                 self.goal=(152,136)
                 self.count = self.count+1
-
+            elif self.count%4==2:
+                self.goal=(216,56)
+                self.count = self.count+1
+            elif self.count%4==3:
+                self.goal=(248,216)
+                self.count = self.count+1
             
 
        
