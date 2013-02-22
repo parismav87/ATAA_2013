@@ -9,7 +9,11 @@ class Agent(object):
             Note that the properties pertaining to the game field might not be
             given for each game.
         """
+<<<<<<< HEAD:Domination-Game-master/agents/retardedAgent.py
       #  matchinfo = kwargs['matchinfo']
+=======
+        #matchinfo=kwargs['matchinfo']
+>>>>>>> pointless stuff:Domination-Game-master/tzak.py
         self.id = id
         self.team = team
         self.mesh = nav_mesh
