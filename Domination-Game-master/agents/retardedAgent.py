@@ -1,7 +1,7 @@
 
 class Agent(object):
     
-    NAME = "default_agent"
+    NAME = "harlemShake"
     
     def __init__(self, id, team, settings=None, field_rects=None, field_grid=None, nav_mesh=None, blob=None, matchinfo=None):
         """ Each agent is initialized at the beginning of each game.
@@ -48,10 +48,14 @@ class Agent(object):
         """ This function is called every step and should
             return a tuple in the form: (turn, speed, shoot)
         """
-        if self.id==0:    
+        if self.id == 0 or self.id == 2:
+            cps_id = 0
+            if self.id == 0:
+                cps_id = 0
+            else:
+                cps_id = 1 
             obs = self.observation
-            shoot =False
-            
+            shoot =False          
 
 
             # Check if agent reached goal.
@@ -69,70 +73,10 @@ class Agent(object):
                 pass
             
             # Walk to random CP
-            if self.goal is None and (obs.cps[0][2]==0 or obs.cps[0][2]==2):
-                self.goal = obs.cps[0][0:2]
+            if self.goal is None:
+                self.goal = obs.cps[cps_id][0:2]
              
         
-
-
-
-            # Shoot enemies
-            shoot = False
-            if (obs.ammo > 0 and 
-                obs.foes and 
-                point_dist(obs.foes[0][0:2], obs.loc) < self.settings.max_range and
-                not line_intersects_grid(obs.loc, obs.foes[0][0:2], self.grid, self.settings.tilesize)):
-                pass
-
-
-
-            # Compute path, angle and drive
-            if obs.cps[0][2]!=1:
-                path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
-                if path:
-                    dx = path[0][0] - obs.loc[0]
-                    dy = path[0][1] - obs.loc[1]
-                    turn = angle_fix(math.atan2(dy, dx) - obs.angle)
-                    if turn > self.settings.max_turn or turn < -self.settings.max_turn:
-                        shoot = False
-                    speed = (dx**2 + dy**2)**0.5
-                else:
-                    turn = 0
-                    speed = 0
-            
-                return (turn,speed,shoot)
-            else: 
-                return (0,0,shoot)
-
-        elif self.id==2:    
-            obs = self.observation
-            shoot = False
-            
-
-
-
-
-            # Check if agent reached goal.
-            if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
-                self.goal = None
-                
-            # Walk to ammo
-            ammopacks = filter(lambda x: x[2] == "Ammo", obs.objects)
-            if ammopacks:
-                pass
-                
-            # Drive to where the user clicked
-            # Clicked is a list of tuples of (x, y, shift_down, is_selected)
-            if self.selected and self.observation.clicked:
-                pass
-            
-            # Walk to random CP
-            if self.goal is None and (obs.cps[1][2]==0 or obs.cps[1][2]==2):
-                self.goal = obs.cps[1][0:2]
-                        
-            
-                
-                        
             # Shoot enemies
             shoot = False
             if (obs.ammo > 0 and 
@@ -142,29 +86,34 @@ class Agent(object):
                 pass
 
             # Compute path, angle and drive
-            if obs.cps[1][2]!=1:
-                path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
-                if path:
-                    dx = path[0][0] - obs.loc[0]
-                    dy = path[0][1] - obs.loc[1]
-                    turn = angle_fix(math.atan2(dy, dx) - obs.angle)
-                    if turn > self.settings.max_turn or turn < -self.settings.max_turn:
-                        shoot = False
-                    speed = (dx**2 + dy**2)**0.5
-                else:
-                    turn = 0
-                    speed = 0
-                
-                return (turn,speed,shoot)
+            
+            if point_dist((obs.cps[cps_id][0], obs.cps[cps_id][1]), obs.loc) < 1.6 * self.settings.tilesize and obs.cps[cps_id][2] == 1:
+                speed = 1
+                if obs.step%2 == 0:
+                    speed = -1
+                    
+                speed *= 30
+                return (0,speed,shoot)
+
             else:
-                return(0,0,shoot)
-
+                path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
+                if path:
+                    dx = path[0][0] - obs.loc[0]
+                    dy = path[0][1] - obs.loc[1]
+                    turn = angle_fix(math.atan2(dy, dx) - obs.angle)
+                    if turn > self.settings.max_turn or turn < -self.settings.max_turn:
+                        shoot = False
+                    speed = (dx**2 + dy**2)**0.5
+                else:
+                    turn = 0
+                    speed = 0
+                return (turn,speed,shoot)
+                
         else:
                     """ This function is called every step and should
             return a tuple in the form: (turn, speed, shoot)
         """
-        
-        
+          
         obs = self.observation
         shoot = False
 
