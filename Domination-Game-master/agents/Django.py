@@ -1,8 +1,6 @@
-import networkx as nx
-
 class Agent(object):
     
-    NAME = "default_agent"
+    NAME = "Django"
     
     def __init__(self, id, team, settings=None, field_rects=None, field_grid=None, nav_mesh=None, blob=None, **kwargs):
         """ Each agent is initialized at the beginning of each game.
@@ -17,12 +15,8 @@ class Agent(object):
         self.settings = settings
         self.goal = None
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
-
         self.blobpath = None
         self.blobcontent = None
-
-        g = nx.Graph() 
-        g.add_node(1)
         
         # Read the binary blob, we're not using it though
         if blob is not None:
@@ -38,6 +32,10 @@ class Agent(object):
         if id == 0:
             self.all_agents = self.__class__.all_agents = []
         self.all_agents.append(self)
+
+        # state space -- positions on the grid for x axis
+        self.grid_x = [[0, 48], [49, 113], [114, 218], [219, 324], [325, 388], [389, 442]]
+        self.grid_y = [[0, 0], [0, 0], [0, 0]]
     
     def observe(self, observation):
         """ Each agent is passed an observation using this function,
@@ -51,54 +49,90 @@ class Agent(object):
 
         if observation.selected:
             print observation
+
+    def eGreedy(self, current_state, cps):
+        moves = []
+        for i in range(-1,2):
+            for j in range(-1,2):
+                if self.observation.walls[2+j][2+i] == 0:
+                    position = (current_state[0]+i, current_state[1]+j)
+                    moves.append(position)
+        if random.random() < self.epsilon :
+            r = math.floor(random.random() * len(moves))
+            return (moves[int(r)][0], moves[int(r)][1])
+        else:
+            bestMoves = []
+            bestValue = 0.0
+            for move in moves:
+                value = self.qtable[current_state][cps][move]
+                if value > bestValue:
+                    bestMoves = []
+                    bestMoves.append(move)
+                    bestValue = value
+                    action  = move
+                if value == bestValue:
+                    bestMoves.append(move)
+            r = math.floor(random.random() * len(bestMoves))
+            return (bestMoves[int(r)][0], bestMoves[int(r)][1])
+
+    def find_state(self, location):
+        x = 0
+        y = 0
+        for i in range(len(self.grid_x)):
+            if location[0] >= self.grid_x[i][0] and location[0] <= self.grid_x[i][1]:
+                x = i
+                break
+
+        y = location[1] / 80
+        return x,y
                     
     def action(self):
         """ This function is called every step and should
             return a tuple in the form: (turn, speed, shoot)
         """
-        # obs = self.observation
-        # # Check if agent reached goal.
-        # if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
-        #     self.goal = None
-            
-        # # Walk to ammo
-        # ammopacks = filter(lambda x: x[2] == "Ammo", obs.objects)
-        # if ammopacks:
-        #     self.goal = ammopacks[0][0:2]
-            
-        # # Drive to where the user clicked
-        # # Clicked is a list of tuples of (x, y, shift_down, is_selected)
-        # if self.selected and self.observation.clicked:
-        #     self.goal = self.observation.clicked[0][0:2]
-        
-        # # Walk to random CP
-        # if self.goal is None:
-        #     self.goal = obs.cps[random.randint(0,len(obs.cps)-1)][0:2]
-        
-        # # Shoot enemies
-        # shoot = False
-        # if (obs.ammo > 0 and 
-        #     obs.foes and 
-        #     point_dist(obs.foes[0][0:2], obs.loc) < self.settings.max_range and
-        #     not line_intersects_grid(obs.loc, obs.foes[0][0:2], self.grid, self.settings.tilesize)):
-        #     self.goal = obs.foes[0][0:2]
-        #     shoot = True
+        obs = self.observation
+        if self.id == 0:
+            print self.find_state(self.all_agents[0].observation.loc),self.find_state(self.all_agents[1].observation.loc),self.find_state(self.all_agents[2].observation.loc)
 
-        # # Compute path, angle and drive
-        # path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
-        # if path:
-        #     dx = path[0][0] - obs.loc[0]
-        #     dy = path[0][1] - obs.loc[1]
-        #     turn = angle_fix(math.atan2(dy, dx) - obs.angle)
-        #     if turn > self.settings.max_turn or turn < -self.settings.max_turn:
-        #         shoot = False
-        #     speed = (dx**2 + dy**2)**0.5
-        # else:
-        #     turn = 0
-        #     speed = 0
-        speed = 5
-        shoot = 0
-        turn = math.radians(45)
+        # Check if agent reached goal.
+        if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
+            self.goal = None
+            
+        # Walk to ammo
+        ammopacks = filter(lambda x: x[2] == "Ammo", obs.objects)
+        if ammopacks:
+            self.goal = ammopacks[0][0:2]
+            
+        # Drive to where the user clicked
+        # Clicked is a list of tuples of (x, y, shift_down, is_selected)
+        if self.selected and self.observation.clicked:
+            self.goal = self.observation.clicked[0][0:2]
+        
+        # Walk to random CP
+        if self.goal is None:
+            self.goal = obs.cps[random.randint(0,len(obs.cps)-1)][0:2]
+        
+        # Shoot enemies
+        shoot = False
+        if (obs.ammo > 0 and 
+            obs.foes and 
+            point_dist(obs.foes[0][0:2], obs.loc) < self.settings.max_range and
+            not line_intersects_grid(obs.loc, obs.foes[0][0:2], self.grid, self.settings.tilesize)):
+            self.goal = obs.foes[0][0:2]
+            shoot = True
+
+        # Compute path, angle and drive
+        path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
+        if path:
+            dx = path[0][0] - obs.loc[0]
+            dy = path[0][1] - obs.loc[1]
+            turn = angle_fix(math.atan2(dy, dx) - obs.angle)
+            if turn > self.settings.max_turn or turn < -self.settings.max_turn:
+                shoot = False
+            speed = (dx**2 + dy**2)**0.5
+        else:
+            turn = 0
+            speed = 0
         
         return (turn,speed,shoot)
         

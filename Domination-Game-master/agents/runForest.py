@@ -86,20 +86,6 @@ class Agent(object):
                 if self.observation.walls[2+j][2+i] == 0:
                     position = (current_state[0]+i, current_state[1]+j)
                     moves.append(position)
-        # loc = self.state_position(current_state)
-        # best = 360
-        # best_move = 0
-        # print "--------"
-        # for i in range(len(moves)):
-        #     goalLoc = self.state_position(moves[i])
-        #     dx = goalLoc[0]-loc[0]
-        #     dy = goalLoc[1]-loc[1]
-        #     turn = abs(angle_fix(math.atan2(dy, dx) - self.observation.angle))
-        #     print turn
-        #     if turn < best:
-        #         best = turn
-        #         best_move = i
-        # return (moves[best_move][0], moves[best_move][1])
         if random.random() < self.epsilon :
             r = math.floor(random.random() * len(moves))
             return (moves[int(r)][0], moves[int(r)][1])
