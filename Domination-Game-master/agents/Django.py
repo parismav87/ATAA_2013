@@ -15,20 +15,10 @@ class Agent(object):
         self.settings = settings
         self.goal = None
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
-        self.blobpath = None
-        self.blobcontent = None
+        self.blobpath = "django_"+str(self.id)
         self.speed = None
         
-        # Read the binary blob, we're not using it though
-        if blob is not None:
-            # Remember the blob path so we can write back to it
-            self.blobpath = blob.name
-            self.blobcontent = pickle.loads(blob.read())
-            print "Agent %s received binary blob of %s" % (
-               self.callsign, type(self.blobcontent))
-            # Reset the file so other agents can read it too.
-            blob.seek(0) 
-        
+
         # Recommended way to share variables between agents.
         if id == 0:
             self.all_agents = self.__class__.all_agents = []
@@ -37,6 +27,28 @@ class Agent(object):
         # state space -- positions on the grid for x axis
         self.grid_x = [[0, 48], [49, 113], [114, 218], [219, 324], [325, 388], [389, 442]]
         self.grid_y = [[0, 0], [0, 0], [0, 0]]
+
+        if os.path.isfile(self.blobpath):
+            file = open(self.blobpath, "rb")
+            self.qtable = pickle.load(file)
+            file.close()                                    
+        else:
+            self.qtable = self.createQTable()
+
+    def createQTable(self):
+        Qtable = dict()
+        for i in range(len(self.grid_x)):
+            for j in range(len(self.grid_y)):
+                Qtable[i,j] = dict()
+                for c1 in range(-1,2):
+                    for c2 in range(-1,2):
+                        Qtable[i,j][c1,c2] = dict()
+                        for ai in range(-1,2):
+                            for aj in range(-1,2):
+                                if i+ai >= 0 and i+ai < len(self.grid_x):
+                                    if j+aj >= 0 and j+aj < len(self.grid_y):
+                                        Qtable[i,j][c1,c2][i+ai,j+aj] = 20.0
+        return Qtable
     
     def observe(self, observation):
         """ Each agent is passed an observation using this function,
@@ -164,13 +176,12 @@ class Agent(object):
             interrupt (CTRL+C) by the user. Use it to
             store any learned variables and write logs/reports.
         """
-        if self.id == 0 and self.blobpath is not None:
+        if self.blobpath is not None:
             try:
-                # We simply write the same content back into the blob.
-                # in a real situation, the new blob would include updates to 
-                # your learned data.
-                blobfile = open(self.blobpath, 'wb')
-                pickle.dump(self.blobcontent, blobfile, pickle.HIGHEST_PROTOCOL)
+                print "AAAAAAAAAAAAAAAAAAAAAAAAA"
+                file = open(self.blobpath, "wb")
+                pickle.dump(self.qtable, file)
+                file.close()
             except:
                 # We can't write to the blob, this is normal on AppEngine since
                 # we don't have filesystem access there.        
