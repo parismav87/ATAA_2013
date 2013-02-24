@@ -75,29 +75,7 @@ class Agent(object):
             print observation
 
     def eGreedy(self, current_state, cps):
-        moves = []
-        for i in range(-1,2):
-            for j in range(-1,2):
-                if self.observation.walls[2+j][2+i] == 0:
-                    position = (current_state[0]+i, current_state[1]+j)
-                    moves.append(position)
-        if random.random() < self.epsilon :
-            r = math.floor(random.random() * len(moves))
-            return (moves[int(r)][0], moves[int(r)][1])
-        else:
-            bestMoves = []
-            bestValue = 0.0
-            for move in moves:
-                value = self.qtable[current_state][cps][move]
-                if value > bestValue:
-                    bestMoves = []
-                    bestMoves.append(move)
-                    bestValue = value
-                    action  = move
-                if value == bestValue:
-                    bestMoves.append(move)
-            r = math.floor(random.random() * len(bestMoves))
-            return (bestMoves[int(r)][0], bestMoves[int(r)][1])
+
 
     def find_state(self, location):
         x = 0
