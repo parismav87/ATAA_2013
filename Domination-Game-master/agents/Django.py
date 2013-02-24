@@ -17,6 +17,7 @@ class Agent(object):
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
         self.blobpath = None
         self.blobcontent = None
+        self.speed = None
         
         # Read the binary blob, we're not using it though
         if blob is not None:
@@ -127,13 +128,17 @@ class Agent(object):
             dx = path[0][0] - obs.loc[0]
             dy = path[0][1] - obs.loc[1]
             turn = angle_fix(math.atan2(dy, dx) - obs.angle)
+            speed = (dx**2 + dy**2)**0.5
             if turn > self.settings.max_turn or turn < -self.settings.max_turn:
                 shoot = False
-            speed = (dx**2 + dy**2)**0.5
+            if abs(math.degrees(turn)) >= 45:
+                if self.speed is not None:
+                    speed = max(0.9 * self.speed, 1)
+            
         else:
             turn = 0
             speed = 0
-        
+        self.speed = speed        
         return (turn,speed,shoot)
         
     def debug(self, surface):
