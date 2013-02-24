@@ -1,3 +1,4 @@
+import itertools as it
 class Agent(object):
     
     NAME = "Django"
@@ -14,8 +15,9 @@ class Agent(object):
         self.grid = field_grid
         self.settings = settings
         self.goal = None
+        self.previouState = None
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
-        self.blobpath = "django_"+str(self.id)
+        self.blobpath = "agents/django_"+self.callsign
         self.speed = None
         
 
@@ -25,29 +27,38 @@ class Agent(object):
         self.all_agents.append(self)
 
         # state space -- positions on the grid for x axis
-        self.grid_x = [[0, 48], [49, 113], [114, 218], [219, 324], [325, 388], [389, 442]]
-        self.grid_y = [[0, 0], [0, 0], [0, 0]]
+        self.states = [(216,56),(248,216),(152,136),(312,136)]
 
-        if os.path.isfile(self.blobpath):
-            file = open(self.blobpath, "rb")
-            self.qtable = pickle.load(file)
-            file.close()                                    
-        else:
-            self.qtable = self.createQTable()
+        if self.id == 0:
+            if os.path.isfile(self.blobpath):
+                file = open(self.blobpath, "rb")
+                self.qtable = pickle.load(file)
+                file.close()                                    
+            else:
+                self.qtable = self.createQTable()
 
     def createQTable(self):
         Qtable = dict()
-        for i in range(len(self.grid_x)):
-            for j in range(len(self.grid_y)):
-                Qtable[i,j] = dict()
-                for c1 in range(-1,2):
-                    for c2 in range(-1,2):
-                        Qtable[i,j][c1,c2] = dict()
-                        for ai in range(-1,2):
-                            for aj in range(-1,2):
-                                if i+ai >= 0 and i+ai < len(self.grid_x):
-                                    if j+aj >= 0 and j+aj < len(self.grid_y):
-                                        Qtable[i,j][c1,c2][i+ai,j+aj] = 20.0
+        counter = 0
+        n_of_agents = 3
+        pos = it.product(self.states, repeat = n_of_agents)
+        for p in pos:
+            print p
+            Qtable[p] = dict()
+            cps_con = [0, 1]
+            cps = it.product(cps_con,cps_con, repeat = 1)
+            for c in cps:  
+                Qtable[p][c] = dict()
+                foes_con = range(0,4)
+                foes = it.product(foes_con,foes_con,foes_con, repeat = 1)
+                for f in foes:
+                    Qtable[p][c][f] = dict()
+                    actions_con = [-1, 0, 1]
+                    actions = it.product(actions_con,actions_con, repeat = 1)
+                    for a in self.states:
+                        Qtable[p][c][f][a] = 20.0
+                        counter += 1
+        print counter
         return Qtable
     
     def observe(self, observation):
@@ -104,8 +115,9 @@ class Agent(object):
             return a tuple in the form: (turn, speed, shoot)
         """
         obs = self.observation
-        if self.id == 0:
-            print self.find_state(self.all_agents[0].observation.loc),self.find_state(self.all_agents[1].observation.loc),self.find_state(self.all_agents[2].observation.loc)
+        print obs.foes
+        # if self.id == 0:
+        #     print self.find_state(self.all_agents[0].observation.loc),self.find_state(self.all_agents[1].observation.loc),self.find_state(self.all_agents[2].observation.loc)
 
         # Check if agent reached goal.
         if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
@@ -177,12 +189,13 @@ class Agent(object):
             store any learned variables and write logs/reports.
         """
         if self.blobpath is not None:
-            try:
-                print "AAAAAAAAAAAAAAAAAAAAAAAAA"
-                file = open(self.blobpath, "wb")
-                pickle.dump(self.qtable, file)
-                file.close()
-            except:
-                # We can't write to the blob, this is normal on AppEngine since
-                # we don't have filesystem access there.        
-                print "Agent %s can't write blob." % self.callsign
+            if self.id == 0:
+                try:
+                    print "AAAAAAAAAAAAAAAAAAAAAAAAA"
+                    file = open(self.blobpath, "wb")
+                    pickle.dump(self.qtable, file)
+                    file.close()
+                except:
+                    # We can't write to the blob, this is normal on AppEngine since
+                    # we don't have filesystem access there.        
+                    print "Agent %s can't write blob." % self.callsign
