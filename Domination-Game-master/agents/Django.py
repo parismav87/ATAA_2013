@@ -32,10 +32,10 @@ class Agent(object):
         if self.id == 0:
             if os.path.isfile(self.blobpath):
                 file = open(self.blobpath, "rb")
-                self.qtable = pickle.load(file)
+                self.__class__.qtable = pickle.load(file)
                 file.close()                                    
             else:
-                self.qtable = self.createQTable()
+                self.__class__.qtable = self.createQTable()
 
     def createQTable(self):
         Qtable = dict()
@@ -75,46 +75,18 @@ class Agent(object):
             print observation
 
     def eGreedy(self, current_state, cps):
+        pass
 
+    def stateMaxValue(self,current_state, cps):
+        pass
 
     def find_state(self, location):
-        x = 0
-        y = 0
-        for i in range(len(self.grid_x)):
-            if location[0] >= self.grid_x[i][0] and location[0] <= self.grid_x[i][1]:
-                x = i
-                break
+        for state in self.states:
+            if point_dist(state, location) < self.settings.tilesize:
+                return state
+        return None
 
-        y = location[1] / 80
-        return x,y
-                    
-    def action(self):
-        """ This function is called every step and should
-            return a tuple in the form: (turn, speed, shoot)
-        """
-        obs = self.observation
-        print obs.foes
-        # if self.id == 0:
-        #     print self.find_state(self.all_agents[0].observation.loc),self.find_state(self.all_agents[1].observation.loc),self.find_state(self.all_agents[2].observation.loc)
-
-        # Check if agent reached goal.
-        if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
-            self.goal = None
-            
-        # Walk to ammo
-        ammopacks = filter(lambda x: x[2] == "Ammo", obs.objects)
-        if ammopacks:
-            self.goal = ammopacks[0][0:2]
-            
-        # Drive to where the user clicked
-        # Clicked is a list of tuples of (x, y, shift_down, is_selected)
-        if self.selected and self.observation.clicked:
-            self.goal = self.observation.clicked[0][0:2]
-        
-        # Walk to random CP
-        if self.goal is None:
-            self.goal = obs.cps[random.randint(0,len(obs.cps)-1)][0:2]
-        
+    def shoot(self, obs):
         # Shoot enemies
         shoot = False
         if (obs.ammo > 0 and 
@@ -123,6 +95,72 @@ class Agent(object):
             not line_intersects_grid(obs.loc, obs.foes[0][0:2], self.grid, self.settings.tilesize)):
             self.goal = obs.foes[0][0:2]
             shoot = True
+        return shoot
+
+    def check_cps(self):
+        """ Check the control points and return the state of these
+            control points.
+            1 is ours
+            0 is neutral
+            -1 is opponent's
+        """
+        controlPoint1 = 0
+        controlPoint2 = 0
+        if self.observation.cps[0][2] == 1:
+            controlPoint1 += 1
+        if self.observation.cps[0][2] == 0:
+            controlPoint1 -= 1
+        if self.observation.cps[1][2] == 1:
+            controlPoint2 += 1
+        if self.observation.cps[1][2] == 0:
+            controlPoint2 -= 1
+        return (controlPoint1,controlPoint2)
+
+    def check_foes(self, team):
+        foes = [0,0,0]
+        for agent in team:
+            for foe in agent.observation.foes:
+                for i in range(len(self.states)):
+                    if point_dist(self.states[i], foe[0:2]) < 3.0 * self.settings.tilesize:
+                        foes[min(i,2)] += 1
+        return foes
+
+
+                    
+    def action(self):
+        """ This function is called every step and should
+            return a tuple in the form: (turn, speed, shoot)
+        """
+        obs = self.observation
+        cps = self.check_cps()
+        foes = self.check_foes(self.all_agents)
+
+        # Check if agent reached goal.
+        if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
+            self.previouState = self.find_state(self.goal)
+            # value table needs to be updated...
+
+            self.goal = None
+
+        # agent reach its goal, should be assigned a new action
+        if self.goal is None:
+            pass
+
+            
+        # # Walk to ammo
+        # ammopacks = filter(lambda x: x[2] == "Ammo", obs.objects)
+        # if ammopacks:
+        #     self.goal = ammopacks[0][0:2]
+        # shoot = self.shoot(obs)
+        # # Walk to random CP
+        # if self.goal is None:
+        #     self.goal = obs.cps[random.randint(0,len(obs.cps)-1)][0:2]
+
+        shoot = False
+        if self.goal is None:
+            self.goal = self.states[random.randint(0,len(self.states)-1)]
+        
+        
 
         # Compute path, angle and drive
         path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
@@ -171,7 +209,7 @@ class Agent(object):
                 try:
                     print "AAAAAAAAAAAAAAAAAAAAAAAAA"
                     file = open(self.blobpath, "wb")
-                    pickle.dump(self.qtable, file)
+                    pickle.dump(self.__class__.qtable, file)
                     file.close()
                 except:
                     # We can't write to the blob, this is normal on AppEngine since
