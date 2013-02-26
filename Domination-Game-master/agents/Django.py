@@ -27,7 +27,7 @@ class Agent(object):
         self.all_agents.append(self)
 
         # state space -- positions on the grid for x axis
-        self.states = [(216,56),(248,216),(152,136),(312,136)]
+        self.states = [(232,56),(264,216),(184,168),(312,104)]
 
         if self.id == 0:
             if os.path.isfile(self.blobpath):
@@ -134,6 +134,7 @@ class Agent(object):
         obs = self.observation
         cps = self.check_cps()
         foes = self.check_foes(self.all_agents)
+	print obs
 
         # Check if agent reached goal.
         if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
