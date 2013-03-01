@@ -61,7 +61,7 @@ class Tournament1(scenarios.Scenario):
                               think_time=0.06,)
 
 class Tournament2(scenarios.Scenario):
-    REPEATS   = 2
+    REPEATS   = 100
     GENERATOR = None
     FIELD     = core.Field.from_string(FIELD2)
     SETTINGS  = core.Settings(max_steps=300,
@@ -81,3 +81,9 @@ class Tournament2(scenarios.Scenario):
 # preserved. Please refer to "Running a Game" in the documentation for how
 # to set up your own learning environment.
 Tournament2.test(red="domination/agent.py", blue="agents/Django.py")
+
+
+
+# now = datetime.datetime.now()
+# folder = os.path.join('tournaments', now.strftime("%Y%m%d-%H%M"))
+# Tournament2.tournament(agents=sys.argv[1:], output_folder=folder, rendered=False)

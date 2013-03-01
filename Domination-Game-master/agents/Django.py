@@ -14,7 +14,7 @@ class Agent(object):
         self.mesh = nav_mesh
         self.grid = field_grid
         self.settings = settings
-        self.goal = None
+        self.goalState = None
         self.previouState = None
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
         self.blobpath = "agents/django_"+self.callsign
@@ -44,7 +44,7 @@ class Agent(object):
         for p in pos:
             print p
             Qtable[p] = dict()
-            cps_con = [0, 1]
+            cps_con = [-1, 0, 1]
             cps = it.product(cps_con,cps_con, repeat = 1)
             for c in cps:  
                 Qtable[p][c] = dict()
@@ -60,7 +60,7 @@ class Agent(object):
     
     def observe(self, observation):
         """ Each agent is passed an observation using this function,
-            before being asked for an action. You can store either
+            before being asked ffoes_conor an action. You can store either
             the observation object or its properties to use them
             to determine your action. Note that the observation object
             is modified in place.
@@ -90,7 +90,7 @@ class Agent(object):
             obs.foes and 
             point_dist(obs.foes[0][0:2], obs.loc) < self.settings.max_range and
             not line_intersects_grid(obs.loc, obs.foes[0][0:2], self.grid, self.settings.tilesize)):
-            self.goal = obs.foes[0][0:2]
+            self.goalState = obs.foes[0][0:2]
             shoot = True
         return shoot
 
@@ -119,7 +119,8 @@ class Agent(object):
             for foe in agent.observation.foes:
                 for i in range(len(self.states)):
                     if point_dist(self.states[i], foe[0:2]) < 3.0 * self.settings.tilesize:
-                        foes[min(i,2)] += 1
+                        if foes[min(i,2)] < 3:
+                            foes[min(i,2)] += 1
         return foes
 
     def check_friends(self):
@@ -136,6 +137,7 @@ class Agent(object):
         """
         obs = self.observation
         cps = self.check_cps()
+        print cps
         foes = self.check_foes(self.all_agents)
 
         print self.previouState, self.check_friends()
@@ -145,28 +147,30 @@ class Agent(object):
             if item is None:
                 not_none = False
         if not_none:
-            print self.__class__.qtable[friends[0],friends[1],friends[2]]
+            fr = (friends[0],friends[1],friends[2])
+            fo = (foes[0],foes[1],foes[2])
+            print self.__class__.qtable[fr][cps][fo]
 
 
-        # Check if agent reached goal.
-        if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
-            self.previouState = self.find_state(self.goal)
+        # Check if agent reached goalState.
+        if self.goalState is not None and point_dist(self.goalState, obs.loc) < self.settings.tilesize:
+            self.previouState = self.find_state(self.goalState)
             # value table needs to be updated...
-            self.goal = None
+            self.goalState = None
 
-        # agent reach its goal, should be assigned a new action
-        if self.goal is None:
+        # agent reach its goalState, should be assigned a new action
+        if self.goalState is None:
             pass
 
 
         shoot = False
-        if self.goal is None:
-            self.goal = self.states[random.randint(0,len(self.states)-1)]
+        if self.goalState is None:
+            self.goalState = self.states[random.randint(0,len(self.states)-1)]
         
         
 
         # Compute path, angle and drive
-        path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
+        path = find_path(obs.loc, self.goalState, self.mesh, self.grid, self.settings.tilesize)
         if path:
             dx = path[0][0] - obs.loc[0]
             dy = path[0][1] - obs.loc[1]
@@ -198,8 +202,8 @@ class Agent(object):
             surface.fill((0,0,0,0))
         # Selected agents draw their info
         if self.selected:
-            if self.goal is not None:
-                pygame.draw.line(surface,(0,0,0),self.observation.loc, self.goal)
+            if self.goalState is not None:
+                pygame.draw.line(surface,(0,0,0),self.observation.loc, self.goalState)
         
     def finalize(self, interrupted=False):
         """ This function is called after the game ends, 
