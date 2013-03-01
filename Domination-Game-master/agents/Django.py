@@ -39,7 +39,6 @@ class Agent(object):
 
     def createQTable(self):
         Qtable = dict()
-        counter = 0
         n_of_agents = 3
         pos = it.product(self.states, repeat = n_of_agents)
         for p in pos:
@@ -57,8 +56,6 @@ class Agent(object):
                     actions = it.product(actions_con,actions_con, repeat = 1)
                     for a in self.states:
                         Qtable[p][c][f][a] = 20.0
-                        counter += 1
-        print counter
         return Qtable
     
     def observe(self, observation):
@@ -125,7 +122,13 @@ class Agent(object):
                         foes[min(i,2)] += 1
         return foes
 
-
+    def check_friends(self):
+        friends = []
+        friends.append(self.previouState)
+        for team_obs in self.all_agents:
+            if team_obs.id != self.id:
+                friends.append(team_obs.previouState)
+        return friends
                     
     def action(self):
         """ This function is called every step and should
@@ -134,28 +137,27 @@ class Agent(object):
         obs = self.observation
         cps = self.check_cps()
         foes = self.check_foes(self.all_agents)
-	print obs
+
+        print self.previouState, self.check_friends()
+        not_none = True
+        friends = self.check_friends()
+        for item in friends:
+            if item is None:
+                not_none = False
+        if not_none:
+            print self.__class__.qtable[friends[0],friends[1],friends[2]]
+
 
         # Check if agent reached goal.
         if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
             self.previouState = self.find_state(self.goal)
             # value table needs to be updated...
-
             self.goal = None
 
         # agent reach its goal, should be assigned a new action
         if self.goal is None:
             pass
 
-            
-        # # Walk to ammo
-        # ammopacks = filter(lambda x: x[2] == "Ammo", obs.objects)
-        # if ammopacks:
-        #     self.goal = ammopacks[0][0:2]
-        # shoot = self.shoot(obs)
-        # # Walk to random CP
-        # if self.goal is None:
-        #     self.goal = obs.cps[random.randint(0,len(obs.cps)-1)][0:2]
 
         shoot = False
         if self.goal is None:
@@ -208,7 +210,7 @@ class Agent(object):
         if self.blobpath is not None:
             if self.id == 0:
                 try:
-                    print "AAAAAAAAAAAAAAAAAAAAAAAAA"
+                    print "writing the q table back..."
                     file = open(self.blobpath, "wb")
                     pickle.dump(self.__class__.qtable, file)
                     file.close()
