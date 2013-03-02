@@ -1,4 +1,5 @@
 import itertools as it
+
 class Agent(object):
     
     NAME = "Django"
@@ -49,7 +50,7 @@ class Agent(object):
             for c in cps:  
                 Qtable[p][c] = dict()
                 foes_con = range(0,4)
-                foes = it.product(foes_con,foes_con,foes_con, repeat = 1)
+                foes = it.product(foes_con, repeat = 4)
                 for f in foes:
                     Qtable[p][c][f] = dict()
                     actions_con = [-1, 0, 1]
@@ -114,14 +115,20 @@ class Agent(object):
         return (controlPoint1,controlPoint2)
 
     def check_foes(self, team):
-        foes = [0,0,0]
+        foes_table = [0,0,0,0]
+        foes = dict()
         for agent in team:
             for foe in agent.observation.foes:
-                for i in range(len(self.states)):
-                    if point_dist(self.states[i], foe[0:2]) < 3.0 * self.settings.tilesize:
-                        if foes[min(i,2)] < 3:
-                            foes[min(i,2)] += 1
-        return foes
+                if foe[0:2] in foes:
+                    pass
+                else:
+                    foes[foe[0:2]] = 1
+        for item, value in foes.iteritems():
+            for i in range(len(self.states)):
+                 if point_dist(self.states[i], item) < 3.0 * self.settings.tilesize:
+                     foes_table[i] += 1
+                            
+        return foes_table
 
     def check_friends(self):
         friends = []
@@ -130,45 +137,8 @@ class Agent(object):
             if team_obs.id != self.id:
                 friends.append(team_obs.previouState)
         return friends
-                    
-    def action(self):
-        """ This function is called every step and should
-            return a tuple in the form: (turn, speed, shoot)
-        """
-        obs = self.observation
-        cps = self.check_cps()
-        print cps
-        foes = self.check_foes(self.all_agents)
 
-        print self.previouState, self.check_friends()
-        not_none = True
-        friends = self.check_friends()
-        for item in friends:
-            if item is None:
-                not_none = False
-        if not_none:
-            fr = (friends[0],friends[1],friends[2])
-            fo = (foes[0],foes[1],foes[2])
-            print self.__class__.qtable[fr][cps][fo]
-
-
-        # Check if agent reached goalState.
-        if self.goalState is not None and point_dist(self.goalState, obs.loc) < self.settings.tilesize:
-            self.previouState = self.find_state(self.goalState)
-            # value table needs to be updated...
-            self.goalState = None
-
-        # agent reach its goalState, should be assigned a new action
-        if self.goalState is None:
-            pass
-
-
-        shoot = False
-        if self.goalState is None:
-            self.goalState = self.states[random.randint(0,len(self.states)-1)]
-        
-        
-
+    def drive_tank(self, obs):
         # Compute path, angle and drive
         path = find_path(obs.loc, self.goalState, self.mesh, self.grid, self.settings.tilesize)
         if path:
@@ -185,8 +155,46 @@ class Agent(object):
         else:
             turn = 0
             speed = 0
-        self.speed = speed        
-        return (turn,speed,shoot)
+        self.speed = speed
+        return (turn, speed)
+                    
+    def action(self):
+        """ This function is called every step and should
+            return a tuple in the form: (turn, speed, shoot)
+        """
+        # take the self observation
+        obs = self.observation
+        # check the control points
+        cps = self.check_cps()
+        # check the enemies
+        foes = self.check_foes(self.all_agents)
+        # check the positions of agent's friends
+        friends = self.check_friends()
+
+        not_none = True
+        for item in friends:
+            if item is None:
+                not_none = False
+        if not_none:
+            fr = (friends[0],friends[1],friends[2])
+            fo = (foes[0],foes[1],foes[2],foes[3])
+            print self.__class__.qtable[fr][cps][fo]
+
+
+        # Check if agent reached goalState.
+        if self.goalState is not None and point_dist(self.goalState, obs.loc) < self.settings.tilesize:
+            self.previouState = self.find_state(self.goalState)
+            # value table needs to be updated...
+            self.goalState = None
+
+        shoot = self.shoot(obs)
+        # agent reach its goalState, should be assigned a new action
+        if self.goalState is None:
+            self.goalState = self.states[random.randint(0,len(self.states)-1)]
+
+        drive = self.drive_tank(obs)
+
+        return (drive[0], drive[1], shoot)
         
     def debug(self, surface):
         """ Allows the agents to draw on the game UI,
