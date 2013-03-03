@@ -457,7 +457,8 @@ class Game(object):
             for s in xrange(settings.max_steps):
                 self.step = s+1
                 if self.step % 10 == 0:
-                    print "Step %d: %d - %d"%(self.step, self.score_red, self.score_blue)
+                    pass
+                    # print "Step %d: %d - %d"%(self.step, self.score_red, self.score_blue)
                 if self.step_callback is not None:
                     self.step_callback(self)
                 ## UPDATE & CHECK VICTORY

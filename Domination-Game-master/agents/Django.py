@@ -17,9 +17,14 @@ class Agent(object):
         self.settings = settings
         self.goalState = None
         self.previouState = None
+        self.previousCPS = None
+        self.previousFOES = None
+        self.previousFRIENDS = None
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
         self.blobpath = "agents/django_"+self.callsign
         self.speed = None
+        self.alpha = 0.5
+        self.gamma = 0.7
         
 
         # Recommended way to share variables between agents.
@@ -34,7 +39,7 @@ class Agent(object):
             if os.path.isfile(self.blobpath):
                 file = open(self.blobpath, "rb")
                 self.__class__.qtable = pickle.load(file)
-                file.close()                                    
+                file.close()
             else:
                 self.__class__.qtable = self.createQTable()
 
@@ -68,15 +73,46 @@ class Agent(object):
         """
         self.observation = observation
         self.selected = observation.selected
-
         if observation.selected:
             print observation
 
-    def eGreedy(self, current_state, cps):
-        pass
+    def friends_good(self, friends):
+        for item in friends:
+            if item is None:
+                return False
+        return True
 
-    def stateMaxValue(self,current_state, cps):
-        pass
+    def eGreedy(self, friends, cps, foes, epsilon):
+        fr = (friends[0],friends[1],friends[2])
+        fo = (foes[0],foes[1],foes[2],foes[3])
+        if self.friends_good(friends):
+            if random.random() < epsilon :
+                return self.states[random.randint(0,len(self.states)-1)]
+            else:
+                bestMoves = []
+                bestValue = -float('Inf')
+                for move, value in self.__class__.qtable[fr][cps][fo].iteritems():
+                    if value > bestValue:
+                        bestMoves = []
+                        bestMoves.append(move)
+                        bestValue = value
+                    if value == bestValue:
+                        bestMoves.append(move)
+                r = math.floor(random.random() * len(bestMoves))
+                return bestMoves[int(r)]
+        else:
+            return self.states[random.randint(0,len(self.states)-1)]
+
+    def stateMaxValue(self, friends, cps, foes):
+        fr = (friends[0],friends[1],friends[2])
+        fo = (foes[0],foes[1],foes[2],foes[3])
+        bestValue = -float('Inf')
+        if self.friends_good(friends):
+            for move, value in self.__class__.qtable[fr][cps][fo].iteritems():
+                if value > bestValue:
+                    bestValue = value
+        return bestValue
+
 
     def find_state(self, location):
         for state in self.states:
@@ -150,13 +186,23 @@ class Agent(object):
                 shoot = False
             if abs(math.degrees(turn)) >= 45:
                 if self.speed is not None:
-                    speed = max(0.9 * self.speed, 1)
+                    speed = max(0.8 * self.speed, 1)
             
         else:
             turn = 0
             speed = 0
         self.speed = speed
         return (turn, speed)
+
+    def updateValueTable(self, friends, cps, foes):
+        pass
+        s = (friends[0],friends[1],friends[2])
+        # fo = (foes[0],foes[1],foes[2],foes[3])
+        # if self.friends_good(friends):
+        #     self.__class__.qtable[fr][cps][fo] =
+        #     self.qtable[self.previousState][self.previousCPS][self.previousAction] 
+        #         + self.alpha 
+        #         * (reward + self.gamma * maxValue - self.qtable[self.previousState][self.previousCPS][self.previousAction])
                     
     def action(self):
         """ This function is called every step and should
@@ -170,29 +216,33 @@ class Agent(object):
         foes = self.check_foes(self.all_agents)
         # check the positions of agent's friends
         friends = self.check_friends()
-
-        not_none = True
-        for item in friends:
-            if item is None:
-                not_none = False
-        if not_none:
-            fr = (friends[0],friends[1],friends[2])
-            fo = (foes[0],foes[1],foes[2],foes[3])
-            print self.__class__.qtable[fr][cps][fo]
-
+        # shoot if you can...
+        shoot = self.shoot(obs)
 
         # Check if agent reached goalState.
         if self.goalState is not None and point_dist(self.goalState, obs.loc) < self.settings.tilesize:
+            # goalstate is reached, value table will be updated
+            self.updateValueTable(friends, cps, foes)
+            # previous state is now the previous goal state
             self.previouState = self.find_state(self.goalState)
-            # value table needs to be updated...
+            # next goal state is now none
             self.goalState = None
 
-        shoot = self.shoot(obs)
         # agent reach its goalState, should be assigned a new action
         if self.goalState is None:
-            self.goalState = self.states[random.randint(0,len(self.states)-1)]
+            if obs.step == 1:
+                self.goalState = self.states[self.id]
+            else:
+                self.goalState = self.eGreedy(friends, cps, foes, 0.1)
+                value = self.stateMaxValue(friends, cps, foes)
 
+        # driving function
         drive = self.drive_tank(obs)
+
+        # previous state representation
+        self.previousCPS = cps
+        self.previousFOES = foes
+        self.previousFRIENDS = friends
 
         return (drive[0], drive[1], shoot)
         
