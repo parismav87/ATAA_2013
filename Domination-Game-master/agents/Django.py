@@ -15,25 +15,24 @@ class Agent(object):
         self.mesh = nav_mesh
         self.grid = field_grid
         self.settings = settings
+        self.currentState = None
         self.goalState = None
-        self.previouState = None
-        self.previousCPS = None
-        self.previousFOES = None
         self.previousFRIENDS = None
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
         self.blobpath = "agents/django_"+self.callsign
         self.speed = None
         self.alpha = 0.5
         self.gamma = 0.7
-        
-
         # Recommended way to share variables between agents.
         if id == 0:
             self.all_agents = self.__class__.all_agents = []
         self.all_agents.append(self)
 
         # state space -- positions on the grid for x axis
-        self.states = [(232,56),(264,216),(184,168),(312,104)]
+        if team == TEAM_BLUE:
+            self.states = [(232,56),(264,216),(184,168),(312,104),(472,136)]
+
+        self.previouState = self.states[4]
 
         if self.id == 0:
             if os.path.isfile(self.blobpath):
@@ -48,20 +47,17 @@ class Agent(object):
         n_of_agents = 3
         pos = it.product(self.states, repeat = n_of_agents)
         for p in pos:
-            print p
             Qtable[p] = dict()
             cps_con = [-1, 0, 1]
             cps = it.product(cps_con,cps_con, repeat = 1)
             for c in cps:  
                 Qtable[p][c] = dict()
                 foes_con = range(0,4)
-                foes = it.product(foes_con, repeat = 4)
+                foes = it.product(foes_con, repeat = 3)
                 for f in foes:
                     Qtable[p][c][f] = dict()
-                    actions_con = [-1, 0, 1]
-                    actions = it.product(actions_con,actions_con, repeat = 1)
-                    for a in self.states:
-                        Qtable[p][c][f][a] = 20.0
+                    for action in self.states:
+                        Qtable[p][c][f][action] = 20.0
         return Qtable
     
     def observe(self, observation):
@@ -84,7 +80,7 @@ class Agent(object):
 
     def eGreedy(self, friends, cps, foes, epsilon):
         fr = (friends[0],friends[1],friends[2])
-        fo = (foes[0],foes[1],foes[2],foes[3])
+        fo = (foes[0],foes[1],foes[2])
         if self.friends_good(friends):
             if random.random() < epsilon :
                 return self.states[random.randint(0,len(self.states)-1)]
@@ -105,7 +101,7 @@ class Agent(object):
 
     def stateMaxValue(self, friends, cps, foes):
         fr = (friends[0],friends[1],friends[2])
-        fo = (foes[0],foes[1],foes[2],foes[3])
+        fo = (foes[0],foes[1],foes[2])
         bestValue = -float('Inf')
         if self.friends_good(friends):
             for move, value in self.__class__.qtable[fr][cps][fo].iteritems():
@@ -116,7 +112,7 @@ class Agent(object):
 
     def find_state(self, location):
         for state in self.states:
-            if point_dist(state, location) < self.settings.tilesize:
+            if point_dist(state, location) <= self.settings.tilesize + 5:
                 return state
         return None
 
@@ -151,7 +147,7 @@ class Agent(object):
         return (controlPoint1,controlPoint2)
 
     def check_foes(self, team):
-        foes_table = [0,0,0,0]
+        foes_table = [0,0,0]
         foes = dict()
         for agent in team:
             for foe in agent.observation.foes:
@@ -160,10 +156,9 @@ class Agent(object):
                 else:
                     foes[foe[0:2]] = 1
         for item, value in foes.iteritems():
-            for i in range(len(self.states)):
+            for i in range(len(self.states[0:4])):
                  if point_dist(self.states[i], item) < 3.0 * self.settings.tilesize:
-                     foes_table[i] += 1
-                            
+                     foes_table[min(i,2)] += 1                      
         return foes_table
 
     def check_friends(self):
@@ -186,8 +181,7 @@ class Agent(object):
                 shoot = False
             if abs(math.degrees(turn)) >= 45:
                 if self.speed is not None:
-                    speed = max(0.8 * self.speed, 1)
-            
+                    speed = max(0.8 * self.speed, 1)  
         else:
             turn = 0
             speed = 0
@@ -196,8 +190,6 @@ class Agent(object):
 
     def updateValueTable(self, friends, cps, foes):
         pass
-        s = (friends[0],friends[1],friends[2])
-        # fo = (foes[0],foes[1],foes[2],foes[3])
         # if self.friends_good(friends):
         #     self.__class__.qtable[fr][cps][fo] =
         #     self.qtable[self.previousState][self.previousCPS][self.previousAction] 
@@ -210,21 +202,23 @@ class Agent(object):
         """
         # take the self observation
         obs = self.observation
+        # check if i got hit
+        hit = (obs.respawn_in != -1)
         # check the control points
         cps = self.check_cps()
         # check the enemies
         foes = self.check_foes(self.all_agents)
         # check the positions of agent's friends
         friends = self.check_friends()
-        # shoot if you can...
-        shoot = self.shoot(obs)
 
+        shoot = self.shoot(obs)
         # Check if agent reached goalState.
         if self.goalState is not None and point_dist(self.goalState, obs.loc) < self.settings.tilesize:
             # goalstate is reached, value table will be updated
             self.updateValueTable(friends, cps, foes)
             # previous state is now the previous goal state
-            self.previouState = self.find_state(self.goalState)
+            print self.goalState
+            self.previouState = self.goalState
             # next goal state is now none
             self.goalState = None
 
@@ -233,16 +227,13 @@ class Agent(object):
             if obs.step == 1:
                 self.goalState = self.states[self.id]
             else:
+                # self.goalState = self.states[random.randint(0,len(self.states)-1)]
                 self.goalState = self.eGreedy(friends, cps, foes, 0.1)
-                value = self.stateMaxValue(friends, cps, foes)
+                # value = self.stateMaxValue(friends, cps, foes)
 
         # driving function
         drive = self.drive_tank(obs)
 
-        # previous state representation
-        self.previousCPS = cps
-        self.previousFOES = foes
-        self.previousFRIENDS = friends
 
         return (drive[0], drive[1], shoot)
         
