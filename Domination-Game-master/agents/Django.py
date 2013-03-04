@@ -15,8 +15,14 @@ class Agent(object):
         self.mesh = nav_mesh
         self.grid = field_grid
         self.settings = settings
-        self.currentState = None
-        self.goalState = None
+        self.goal_state = None
+        self.previous_action = None
+        self.previous_cps = None
+        self.previous_foes = None
+        self.previous_friends = None
+        self.cps = None
+        self.foes = None
+        self.friends = None
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
         self.blobpath = "agents/django_"+self.callsign
         self.speed = None
@@ -29,11 +35,11 @@ class Agent(object):
 
         # state space -- positions on the grid for x axis
         if team == TEAM_BLUE:
-            self.states = [(232,56),(264,216),(184,168),(312,104),(472,136)]
+            self.states = [(232,56),(264,216),(312,104),(184,168),(472,136)]
         else:
-            self.states = [(232,56),(264,216),(184,168),(312,104),(472,136)]
+            self.states = [(232,56),(264,216),(312,104),(184,168),(472,136)]
 
-        self.previouState = self.states[4]
+        self.previous_state = self.states[4]
 
         if self.id == 0:
             if os.path.isfile(self.blobpath):
@@ -57,7 +63,7 @@ class Agent(object):
                 foes = it.product(foes_con, repeat = 3)
                 for f in foes:
                     Qtable[p][c][f] = dict()
-                    for action in self.states:
+                    for action in self.states[0:4]:
                         Qtable[p][c][f][action] = 20.0
         return Qtable
     
@@ -73,32 +79,24 @@ class Agent(object):
         if observation.selected:
             print observation
 
-    def friends_good(self, friends):
-        for item in friends:
-            if item is None:
-                return False
-        return True
-
-    def eGreedy(self, friends, cps, foes, epsilon):
-        fr = (friends[0],friends[1],friends[2])
-        fo = (foes[0],foes[1],foes[2])
-        if self.friends_good(friends):
-            if random.random() < epsilon :
-                return self.states[random.randint(0,len(self.states)-1)]
-            else:
-                bestMoves = []
-                bestValue = -float('Inf')
-                for move, value in self.__class__.qtable[fr][cps][fo].iteritems():
-                    if value > bestValue:
-                        bestMoves = []
-                        bestMoves.append(move)
-                        bestValue = value
-                    if value == bestValue:
-                        bestMoves.append(move)
-                r = math.floor(random.random() * len(bestMoves))
-                return bestMoves[int(r)]
+    def eGreedy(self, epsilon):
+        fr = (self.friends[0],self.friends[1],self.friends[2])
+        fo = (self.foes[0],self.foes[1],self.foes[2])
+        cps = self.cps
+        if random.random() < epsilon :
+            return self.states[random.randint(0,len(self.states[0:4])-1)]
         else:
-            return self.states[random.randint(0,len(self.states)-1)]
+            bestMoves = []
+            bestValue = -float('Inf')
+            for move, value in self.__class__.qtable[fr][cps][fo].iteritems():
+                if value > bestValue:
+                    bestMoves = []
+                    bestMoves.append(move)
+                    bestValue = value
+                if value == bestValue:
+                    bestMoves.append(move)
+            r = math.floor(random.random() * len(bestMoves))
+            return bestMoves[int(r)]
 
     def stateMaxValue(self, friends, cps, foes):
         fr = (friends[0],friends[1],friends[2])
@@ -110,15 +108,9 @@ class Agent(object):
                     bestValue = value
         return bestValue
 
-
-    def find_state(self, location):
-        for state in self.states:
-            if point_dist(state, location) <= self.settings.tilesize + 5:
-                return state
-        return None
-
-    def shoot(self, obs):
+    def shoot(self):
         # Shoot enemies
+        obs = self.observation
         shoot = False
         if (obs.ammo > 0 and 
             obs.foes and 
@@ -146,7 +138,8 @@ class Agent(object):
             controlPoint2 -= 1
         return (controlPoint1,controlPoint2)
 
-    def check_foes(self, team):
+    def check_foes(self):
+        team = self.all_agents
         foes_table = [0,0,0]
         foes = dict()
         for agent in team:
@@ -161,17 +154,18 @@ class Agent(object):
                      foes_table[min(i,2)] += 1                      
         return foes_table
 
-    def check_friends(self):
+    def check_friends_previous(self):
         friends = []
-        friends.append(self.previouState)
+        friends.append(self.previous_state)
         for team_obs in self.all_agents:
             if team_obs.id != self.id:
-                friends.append(team_obs.previouState)
+                friends.append(team_obs.previous_state)
         return friends
 
-    def drive_tank(self, obs):
+    def drive_tank(self):
+        obs = self.observation
         # Compute path, angle and drive
-        path = find_path(obs.loc, self.goalState, self.mesh, self.grid, self.settings.tilesize)
+        path = find_path(obs.loc, self.goal_state, self.mesh, self.grid, self.settings.tilesize)
         if path:
             dx = path[0][0] - obs.loc[0]
             dy = path[0][1] - obs.loc[1]
@@ -188,7 +182,7 @@ class Agent(object):
         self.speed = speed
         return (turn, speed)
 
-    def updateValueTable(self, friends, cps, foes):
+    def updateValueTable(self):
         pass
         # if self.friends_good(friends):
         #     self.__class__.qtable[fr][cps][fo] =
@@ -202,38 +196,44 @@ class Agent(object):
         """
         # take the self observation
         obs = self.observation
-        # check if i got hit
-        hit = (obs.respawn_in != -1)
+        # check if i got hit and if i shoot another agent
+        died = (obs.respawn_in == 10)
+        if died:
+            self.goal_state = self.states[4]
+        hit = obs.hit
         # check the control points
-        cps = self.check_cps()
+        self.cps = self.check_cps()
         # check the enemies
-        foes = self.check_foes(self.all_agents)
+        self.foes = self.check_foes()
         # check the positions of agent's friends
-        friends = self.check_friends()
-        print friends
+        self.friends = self.check_friends_previous()
+        print self.friends
         # Check if agent reached goalState.
-        if self.goalState is not None and point_dist(self.goalState, obs.loc) < self.settings.tilesize:
+        if self.goal_state is not None and point_dist(self.goal_state, obs.loc) <= self.settings.tilesize:
             # goalstate is reached, value table will be updated
-            self.updateValueTable(friends, cps, foes)
+            self.updateValueTable()
             # previous state is now the previous goal state
-            self.previouState = self.goalState
+            self.previous_state = self.goal_state
             # next goal state is now none
-            self.goalState = None
+            self.goal_state = None
 
         # agent reach its goalState, should be assigned a new action
-        if self.goalState is None:
+        if self.goal_state is None:
             if obs.step == 1:
-                self.goalState = self.states[self.id]
+                self.goal_state = self.states[self.id]
             else:
-                self.goalState = self.eGreedy(friends, cps, foes, 0.1)
-                value = self.stateMaxValue(friends, cps, foes)
+                self.goal_state = self.eGreedy(0.1)
+            self.previous_action = self.goal_state
 
         # shoot opponents
-        shoot = self.shoot(obs)
+        shoot = self.shoot()
         # driving function
-        drive = self.drive_tank(obs)
+        drive = self.drive_tank()
 
-
+        # keep info about the previous state
+        self.previous_cps = self.cps
+        self.previous_foes = self.foes
+        self.previous_friends = self.friends
         return (drive[0], drive[1], shoot)
         
     def debug(self, surface):
@@ -250,8 +250,8 @@ class Agent(object):
             surface.fill((0,0,0,0))
         # Selected agents draw their info
         if self.selected:
-            if self.goalState is not None:
-                pygame.draw.line(surface,(0,0,0),self.observation.loc, self.goalState)
+            if self.goal_state is not None:
+                pygame.draw.line(surface,(0,0,0),self.observation.loc, self.goal_state)
         
     def finalize(self, interrupted=False):
         """ This function is called after the game ends, 
