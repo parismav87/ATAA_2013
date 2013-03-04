@@ -44,10 +44,10 @@ class Agent(object):
         if self.id == 0:
             if os.path.isfile(self.blobpath):
                 file = open(self.blobpath, "rb")
-                self.__class__.qtable = pickle.load(file)
+                self.__class__.q = pickle.load(file)
                 file.close()
             else:
-                self.__class__.qtable = self.createQTable()
+                self.__class__.q = self.createQTable()
 
     def createQTable(self):
         Qtable = dict()
@@ -88,7 +88,7 @@ class Agent(object):
         else:
             bestMoves = []
             bestValue = -float('Inf')
-            for move, value in self.__class__.qtable[fr][cps][fo].iteritems():
+            for move, value in self.__class__.q[fr][cps][fo].iteritems():
                 if value > bestValue:
                     bestMoves = []
                     bestMoves.append(move)
@@ -98,14 +98,14 @@ class Agent(object):
             r = math.floor(random.random() * len(bestMoves))
             return bestMoves[int(r)]
 
-    def stateMaxValue(self, friends, cps, foes):
-        fr = (friends[0],friends[1],friends[2])
-        fo = (foes[0],foes[1],foes[2])
+    def stateMaxValue(self):
+        fr = (self.friends[0],self.friends[1],self.friends[2])
+        fo = (self.foes[0],self.foes[1],self.foes[2])
+        cps = self.cps
         bestValue = -float('Inf')
-        if self.friends_good(friends):
-            for move, value in self.__class__.qtable[fr][cps][fo].iteritems():
-                if value > bestValue:
-                    bestValue = value
+        for move, value in self.__class__.q[fr][cps][fo].iteritems():
+            if value > bestValue:
+                bestValue = value
         return bestValue
 
     def shoot(self):
@@ -182,14 +182,33 @@ class Agent(object):
         self.speed = speed
         return (turn, speed)
 
+    def die_consequence(self, died):
+        if died:
+            self.goal_state = self.states[4]
+        return
+
+    def reward(self):
+        reward = 0.0
+        for item in self.cps:
+            reward += item * 10
+        return reward
+
     def updateValueTable(self):
-        pass
-        # if self.friends_good(friends):
-        #     self.__class__.qtable[fr][cps][fo] =
-        #     self.qtable[self.previousState][self.previousCPS][self.previousAction] 
-        #         + self.alpha 
-        #         * (reward + self.gamma * maxValue - self.qtable[self.previousState][self.previousCPS][self.previousAction])
-                    
+        # current state
+        fr = (self.friends[0],self.friends[1],self.friends[2])
+        fo = (self.foes[0],self.foes[1],self.foes[2])
+        cps = self.cps
+        # previous state
+        p_fr = (self.previous_friends[0],self.previous_friends[1],self.previous_friends[2])
+        p_fo = (self.previous_foes[0],self.previous_foes[1],self.previous_foes[2])
+        p_cps = self.previous_cps
+        p_a = self.previous_action
+        # other stuff
+        a = self.alpha
+        g = self.gamma
+        R = self.reward()
+        self.__class__.q[p_fr][p_cps][p_fo][p_a] = self.__class__.q[p_fr][p_cps][p_fo][p_a]+ a * (R + g * self.stateMaxValue() - self.__class__.q[p_fr][p_cps][p_fo][p_a])
+                 
     def action(self):
         """ This function is called every step and should
             return a tuple in the form: (turn, speed, shoot)
@@ -198,8 +217,7 @@ class Agent(object):
         obs = self.observation
         # check if i got hit and if i shoot another agent
         died = (obs.respawn_in == 10)
-        if died:
-            self.goal_state = self.states[4]
+        self.die_consequence(died)
         hit = obs.hit
         # check the control points
         self.cps = self.check_cps()
@@ -207,7 +225,6 @@ class Agent(object):
         self.foes = self.check_foes()
         # check the positions of agent's friends
         self.friends = self.check_friends_previous()
-        print self.friends
         # Check if agent reached goalState.
         if self.goal_state is not None and point_dist(self.goal_state, obs.loc) <= self.settings.tilesize:
             # goalstate is reached, value table will be updated
@@ -264,7 +281,7 @@ class Agent(object):
                 try:
                     print "writing the q table back..."
                     file = open(self.blobpath, "wb")
-                    pickle.dump(self.__class__.qtable, file)
+                    pickle.dump(self.__class__.q, file)
                     file.close()
                 except:
                     # We can't write to the blob, this is normal on AppEngine since
