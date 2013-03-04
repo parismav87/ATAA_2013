@@ -17,7 +17,6 @@ class Agent(object):
         self.settings = settings
         self.currentState = None
         self.goalState = None
-        self.previousFRIENDS = None
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
         self.blobpath = "agents/django_"+self.callsign
         self.speed = None
@@ -30,6 +29,8 @@ class Agent(object):
 
         # state space -- positions on the grid for x axis
         if team == TEAM_BLUE:
+            self.states = [(232,56),(264,216),(184,168),(312,104),(472,136)]
+        else:
             self.states = [(232,56),(264,216),(184,168),(312,104),(472,136)]
 
         self.previouState = self.states[4]
@@ -123,7 +124,6 @@ class Agent(object):
             obs.foes and 
             point_dist(obs.foes[0][0:2], obs.loc) < self.settings.max_range and
             not line_intersects_grid(obs.loc, obs.foes[0][0:2], self.grid, self.settings.tilesize)):
-            self.goalState = obs.foes[0][0:2]
             shoot = True
         return shoot
 
@@ -210,14 +210,12 @@ class Agent(object):
         foes = self.check_foes(self.all_agents)
         # check the positions of agent's friends
         friends = self.check_friends()
-
-        shoot = self.shoot(obs)
+        print friends
         # Check if agent reached goalState.
         if self.goalState is not None and point_dist(self.goalState, obs.loc) < self.settings.tilesize:
             # goalstate is reached, value table will be updated
             self.updateValueTable(friends, cps, foes)
             # previous state is now the previous goal state
-            print self.goalState
             self.previouState = self.goalState
             # next goal state is now none
             self.goalState = None
@@ -227,10 +225,11 @@ class Agent(object):
             if obs.step == 1:
                 self.goalState = self.states[self.id]
             else:
-                # self.goalState = self.states[random.randint(0,len(self.states)-1)]
                 self.goalState = self.eGreedy(friends, cps, foes, 0.1)
-                # value = self.stateMaxValue(friends, cps, foes)
+                value = self.stateMaxValue(friends, cps, foes)
 
+        # shoot opponents
+        shoot = self.shoot(obs)
         # driving function
         drive = self.drive_tank(obs)
 
