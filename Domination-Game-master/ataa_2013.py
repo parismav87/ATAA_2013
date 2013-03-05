@@ -81,14 +81,14 @@ class Tournament2(scenarios.Scenario):
 # preserved. Please refer to "Running a Game" in the documentation for how
 # to set up your own learning environment.
 
-# BLUE TEST
-# Tournament2.test(red="agents/wolf.py", blue="agents/Django.py")
+ #BLUE TEST
+ Tournament2.test(red="agents/Django.py", blue="agents/Django.py")
 
 # RED TEST
 # Tournament2.test(red="agents/Django.py", blue="domination/agent.py")
 
 
 # TOURNAMENT
-now = datetime.datetime.now()
-folder = os.path.join('tournaments', now.strftime("%Y%m%d-%H%M"))
-Tournament2.tournament(agents=sys.argv[1:], output_folder=folder, rendered=False)
+#now = datetime.datetime.now()
+#folder = os.path.join('tournaments', now.strftime("%Y%m%d-%H%M"))
+#Tournament2.tournament(agents=sys.argv[1:], output_folder=folder, rendered=False)
