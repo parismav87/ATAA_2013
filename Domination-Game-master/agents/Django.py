@@ -37,7 +37,7 @@ class Agent(object):
         if team == TEAM_BLUE:
             self.states = [(232,56),(264,216),(312,104),(184,168),(472,136)]
         else:
-            self.states = [(232,56),(264,216),(312,104),(184,168),(472,136)]
+            self.states = [(232,56),(264,216),(312,104),(184,168),(24,136)]
 
         self.previous_state = self.states[4]
 
@@ -175,7 +175,7 @@ class Agent(object):
                 shoot = False
             if abs(math.degrees(turn)) >= 45:
                 if self.speed is not None:
-                    speed = max(0.8 * self.speed, 1)  
+                    speed = max(0.7 * self.speed, 1)  
         else:
             turn = 0
             speed = 0

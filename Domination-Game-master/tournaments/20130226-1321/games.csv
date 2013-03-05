@@ -1,5 +1,0 @@
-red_file,blue_file,score_red,score_blue,score,weight,points_red,points_blue,steps,ammo_red,ammo_blue
-agents/Django.py,domination/agent.py,100,0,1.0,0.0,0.0,0,101,6,8
-agents/Django.py,domination/agent.py,100,0,1.0,2.0,4.0,0,129,5,11
-domination/agent.py,agents/Django.py,0,100,0.0,0.0,0,0.0,151,9,10
-domination/agent.py,agents/Django.py,0,100,0.0,2.0,0,4.0,76,6,6
