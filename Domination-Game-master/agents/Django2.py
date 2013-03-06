@@ -202,6 +202,7 @@ class Agent(object):
         """ This function is called every step and should
             return a tuple in the form: (turn, speed, shoot)
         """
+    
         # take the self observation
         obs = self.observation
         # check if i got hit and if i shoot another agent
@@ -241,7 +242,7 @@ class Agent(object):
         self.previous_foes = self.foes
         self.previous_friends = self.friends
         return (drive[0], drive[1], shoot)
-        
+      
     def debug(self, surface):
         """ Allows the agents to draw on the game UI,
             Refer to the pygame reference to see how you can
@@ -273,7 +274,7 @@ class Agent(object):
                 dist = (dx**2 + dy**2)**0.5
                 if self.team == TEAM_BLUE:
                     print "The agent angle is %f and the angle between agents is %f" % (math.degrees(obs.angle),math.degrees(angle))
-                if da<0.05 and dist<self.settings.max_range and not line_intersects_grid(obs.loc, foe[0:2], self.grid, self.settings.tilesize):   
+                if math.degrees(da)<5 and dist<self.settings.max_range and not line_intersects_grid(obs.loc, foe[0:2], self.grid, self.settings.tilesize):   
                     return True
         return False
 
