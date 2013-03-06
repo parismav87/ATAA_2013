@@ -243,7 +243,7 @@ class Agent(object):
             self.previous_action = self.goal_state
 
         # shoot opponents
-        shoot = shootOrNot(self)
+        shoot = self.shootOrNot()
         # driving function
         drive = self.drive_tank()
 
@@ -271,17 +271,22 @@ class Agent(object):
                 pygame.draw.line(surface,(0,0,0),self.observation.loc, self.goal_state)
 
     def shootOrNot(self):
-        #Returns boolean 1=shoot, 0=dont shoot
+        #Returns boolean 
         #check if agent has ammo
-        if self.ammo==0:
-            return 0
+        obs =self.observation
+        if obs.ammo==0:
+            return False
         else:
             for foe in obs.foes:
                 dx = foe[0] - obs.loc[0]
                 dy = foe[1] - obs.loc[1]
                 angle = angle_fix(math.atan2(dy, dx) - obs.angle)
                 print angle
-        return 0
+                if angle<0.1:   
+                    return True
+            return False
+
+        
 
                 
     

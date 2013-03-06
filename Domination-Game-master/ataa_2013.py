@@ -82,11 +82,10 @@ class Tournament2(scenarios.Scenario):
 # to set up your own learning environment.
 
  #BLUE TEST
- Tournament2.test(red="agents/Django.py", blue="agents/Django.py")
+Tournament2.test(red="agents/Django2.py", blue="agents/Django2.py")
 
 # RED TEST
 # Tournament2.test(red="agents/Django.py", blue="domination/agent.py")
-
 
 # TOURNAMENT
 #now = datetime.datetime.now()
