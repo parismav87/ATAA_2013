@@ -108,17 +108,6 @@ class Agent(object):
                 bestValue = value
         return bestValue
 
-    def shoot(self):
-        # Shoot enemies
-        obs = self.observation
-        shoot = False
-        if (obs.ammo > 0 and 
-            obs.foes and 
-            point_dist(obs.foes[0][0:2], obs.loc) < self.settings.max_range and
-            not line_intersects_grid(obs.loc, obs.foes[0][0:2], self.grid, self.settings.tilesize)):
-            shoot = True
-        return shoot
-
     def check_cps(self):
         """ Check the control points and return the state of these
             control points.
@@ -270,21 +259,23 @@ class Agent(object):
             if self.goal_state is not None:
                 pygame.draw.line(surface,(0,0,0),self.observation.loc, self.goal_state)
 
-    def shootOrNot(self):
-        #Returns boolean 
-        #check if agent has ammo
+    def shootOrNot(self): 
         obs =self.observation
         if obs.ammo==0:
             return False
         else:
+            #team blue starting angle is pi and red is 0. so that means, the angle is calculated facing to the right (normal stuff)
             for foe in obs.foes:
                 dx = foe[0] - obs.loc[0]
                 dy = foe[1] - obs.loc[1]
-                angle = angle_fix(math.atan2(dy, dx) - obs.angle)
-                print angle
-                if angle<0.1:   
+                angle = angle_fix(math.atan2(dy, dx))
+                da = abs(obs.angle-angle)
+                dist = (dx**2 + dy**2)**0.5
+                if self.team == TEAM_BLUE:
+                    print "The agent angle is %f and the angle between agents is %f" % (math.degrees(obs.angle),math.degrees(angle))
+                if da<0.05 and dist<self.settings.max_range and not line_intersects_grid(obs.loc, foe[0:2], self.grid, self.settings.tilesize):   
                     return True
-            return False
+        return False
 
         
 

@@ -65,7 +65,7 @@ class Tournament2(scenarios.Scenario):
     GENERATOR = None
     FIELD     = core.Field.from_string(FIELD2)
     SETTINGS  = core.Settings(max_steps=300,
-                              max_score=100,
+                              max_score=1000,
                               spawn_time=11,
                               ammo_amount=1,  
                               ammo_rate=9,
