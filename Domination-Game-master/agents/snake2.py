@@ -98,22 +98,25 @@ class Agent(object):
 
     def normAngle(self,angle):
         ang = (2*3.14 + angle)%(2*3.14);
+        #print "malakaaa %f" % ang 
         return ang;
 
     def canShoot(self):
-        obs = self.observation;
-        for foe in obs.foes:
-            dx = foe[0] - obs.loc[0]
-            dy = foe[1] - obs.loc[1]
-            angle = math.atan2(dy, dx);
-            print "malakaaa %f" % angle 
-            angle = self.normAngle(angle);
-            obsangle = self.normAngle(obs.angle);
-            da = (obsangle-angle)
-            print math.degrees(da);
-            dist = (dx**2 + dy**2)**0.5
-            if obs.ammo>0 and abs(math.degrees(da))<= 45 and dist<=self.settings.max_range and not line_intersects_grid(obs.loc, foe[0:2], self.grid, self.settings.tilesize):   
-                    return (da,0,True)
+        obs =self.observation
+        if obs.ammo==0:
+            return False
+        else:
+            #team blue starting angle is pi and red is 0. so that means, the angle is calculated facing to the right (normal stuff)
+            for foe in obs.foes:
+                dx = foe[0] - obs.loc[0]
+                dy = foe[1] - obs.loc[1]
+                angle = angle_fix(math.atan2(dy, dx))
+                da = (obs.angle-angle)
+                dist = (dx**2 + dy**2)**0.5
+                if self.team == TEAM_BLUE:
+                    print "The agent angle is %f and the angle between agents is %f" % (math.degrees(obs.angle),math.degrees(angle))
+                if math.degrees(abs(da))<= math.degrees(math.atan2(45,dist)) and dist<=self.settings.max_range and not line_intersects_grid(obs.loc, foe[0:2], self.grid, self.settings.tilesize):   
+                    return (-da*(obs.angle/abs(obs.angle)),0,True)
         return False
 
     def action(self):
@@ -135,7 +138,7 @@ class Agent(object):
         drive = self.drive_tank()
         shoot = self.shoot()
         if not self.canShoot():
-            return (drive[0],drive[1],shoot)
+            return (drive[0],drive[1],False)
         return self.canShoot();
 
     def debug(self, surface):
