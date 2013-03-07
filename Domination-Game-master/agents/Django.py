@@ -43,7 +43,7 @@ class Agent(object):
 
         if self.id == 0:
             if os.path.isfile(self.blobpath):
-                file = open(self.blobpath, "rb")
+                file = open(self.blobpath, "r")
                 self.__class__.q = pickle.load(file)
                 file.close()
             else:
@@ -280,7 +280,7 @@ class Agent(object):
             if self.id == 0:
                 try:
                     print "writing the q table back..."
-                    file = open(self.blobpath, "wb")
+                    file = open(self.blobpath, "w")
                     pickle.dump(self.__class__.q, file)
                     file.close()
                 except:
