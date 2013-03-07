@@ -274,7 +274,7 @@ class Agent(object):
                 dist = (dx**2 + dy**2)**0.5
                 if self.team == TEAM_BLUE:
                     print "The agent angle is %f and the angle between agents is %f" % (math.degrees(obs.angle),math.degrees(angle))
-                if math.degrees(da)<5 and dist<self.settings.max_range and not line_intersects_grid(obs.loc, foe[0:2], self.grid, self.settings.tilesize):   
+                if math.degrees(da)<= math.degrees(math.atan2(11.3,dist)) and dist<=self.settings.max_range and not line_intersects_grid(obs.loc, foe[0:2], self.grid, self.settings.tilesize):   
                     return True
         return False
 
