@@ -87,7 +87,7 @@ class Agent(object):
                 shoot = False
             if abs(math.degrees(turn)) >= 45:
                 if self.speed is not None:
-                    speed = max(0.7 * self.speed, 1)  
+                    speed = max(0.2 * self.speed, 1)  
         else:
             turn = 0
             speed = 0
