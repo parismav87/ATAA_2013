@@ -4,47 +4,70 @@ class Agent(object):
 
     NAME = "my_agent" # Replay filenames and console output will contain this name.
 
-    def __init__(self, id, team, settings=None, field_rects=None, field_grid=None, nav_mesh=None, **kwargs):
-        self.QTable = [0] * 5000;
+    def __init__(self, id, team, settings=None, field_rects=None, field_grid=None, nav_mesh=None,blob=None, **kwargs):
+        
+        self.blobpath = "agents/q/new2_"
+        if os.path.isfile(self.blobpath):
+            file = open(self.blobpath, "rb")
+            self.QTable = pickle.load(file)
+            file.close()
+        else:
+            self.QTable = [0] * 5000;
 
-        for x in range(0,5000):
-            self.QTable[x] =  [0] * 1000;
+            for x in range(0,5000):
+                self.QTable[x] =  [0.00694] * 288;
 
-        self.observation = 0;
+
+                
+
+        self.Actions = [(0,0,False)] * 144;
+        for a in range(-45,45,5):
+            for s in range(-40,40,5):
+                for c in range(0,1):
+                    i  = a/5*16 + s/5*2 + c;
+                    self.Actions[i] = (a,s,bool(c));
+
+        self.last_observation = None;
+        self.observation = None;
         self.old_action = (0,0,False);
         self.new_action = (0,0,False);
         self.old_index = 0;    
         self.new_index = 0;     
 
     def observe(self, observation):
-        #self.old_observation = self.observation;
+        self.last_observation = self.observation;
         self.observation = observation;
         pass
 
     def action(self):
+        self.Reward = 0;
+        if self.last_observation is not None:
+            if self.last_observation.loc[0] == self.last_observation.cps[0][0] and self.last_observation.loc[1] == self.last_observation.cps[0][1] :
+                print "hereeeeeeeeeeeeeeeeeeeeee"
+                self.Reward =  10;
 
         self.UpdateQTable();
+        self.Softmax();
         self.old_action = self.new_action;
         self.old_index = self.new_index;
         self.new_index = self.index();
-        
-        self.Reward = 0;
-        if(self.observation.loc[0] == 10 and self.observation.loc[1] == 10 )
-            self.Reward =  10;
-
-        self.new_action = self.choose_action();
+        self.new_action =  self.choose_action();
 
         self.PrintStuff();
         return self.new_action
 
     def choose_action(self):
+        r = random.randint(0,1000)
+        p = 0;
+        act = 0;
+        for x in range(144,288):
+            p += self.QTable[self.new_index][x]*1000
+            if(r<p): 
+                act = x - 144
+                break
 
-        a = random.randint(0,49);
-        a = a - a%5;
-        b = random.randint(0,44);
-        b = b - b%5;
-        c = bool(random.randint(0,1));
-        return (a,b,c)
+        return self.Actions[act]
+
 
     def action_index(self,A):
         x = A[0] / 5;
@@ -53,7 +76,7 @@ class Agent(object):
         if(A[2]):
             z = 1;
 
-        i = x*18 + y*2 + z;
+        i = x*16 + y*2 + z;
 
         return i;
 
@@ -69,20 +92,40 @@ class Agent(object):
       
 
     def PrintStuff(self):
-        print "Old State =: "
-        print self.old_index;
-        print "Old Action =: "
-        print self.old_action;
-        print "New State =: "
-        print self.new_index;
-        print "New Action =: "
-        print self.new_action;
+        #print "Old State =: "
+        #print self.old_index;
+        pass
+        
+    def Softmax(self):
+        t = 3;
+        sum = 0;
+        for x in range(0,143):
+            sum += math.pow(2.718,( self.QTable[self.old_index][x] / t ) );
+        for y in range(144,287):
+            self.QTable[self.old_index][y] = ( math.pow(2.718,( self.QTable[self.old_index][y-144] / t ) ) )  / sum ; 
+ 
+
+
         
 
 
     def UpdateQTable(self):
 
-        self.QTable[self.old_index][self.action_index(self.old_action)] = 10;
+        self.QTable[self.old_index][self.action_index(self.old_action)] += 0.5 * (self.Reward + 0.7*self.QTable[self.new_index][self.action_index(self.new_action)] - self.QTable[self.old_index][self.action_index(self.old_action)] );
 
     def finalize(self, interrupted=False):
-        pass
+        """ This function is called after the game ends, 
+            either due to time/score limits, or due to an
+            interrupt (CTRL+C) by the user. Use it to
+            store any learned variables and write logs/reports.
+        """
+        if self.blobpath is not None:
+            try:
+                print "writing the q table back..."
+                file = open(self.blobpath, "wb")
+                pickle.dump(self.QTable, file)
+                file.close()
+            except:
+                # We can't write to the blob, this is normal on AppEngine since
+                # we don't have filesystem access there.        
+                print "Agent %s can't write blob."
