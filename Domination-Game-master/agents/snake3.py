@@ -36,8 +36,6 @@ class Agent(object):
             is modified in place.
         """
         self.observation = observation
-        if self.team == TEAM_BLUE:
-            print observation.angle;
         self.selected = observation.selected
         if observation.selected:
             print observation
@@ -98,7 +96,6 @@ class Agent(object):
 
     def normAngle(self,angle):
         ang = (2*3.14 + angle)%(2*3.14);
-        #print "malakaaa %f" % ang 
         return ang;
 
     def canShoot(self):
@@ -113,19 +110,9 @@ class Agent(object):
                 angle = angle_fix(math.atan2(dy, dx))
                 da = (obs.angle-angle)
                 dist = (dx**2 + dy**2)**0.5
-                if self.team == TEAM_BLUE:
-                    print "The agent angle is %f and the angle between agents is %f" % (math.degrees(obs.angle),math.degrees(angle))
                 if math.degrees(abs(da))<= math.degrees(math.atan2(45,dist)) and dist<=self.settings.max_range and not line_intersects_grid(obs.loc, foe[0:2], self.grid, self.settings.tilesize):   
                     return (da*(obs.angle/abs(obs.angle)),0,True)
         return False
-
-    def camp(self):
-        obs=self.observation
-        da =obs.angle+math.pi/2
-        turn = da
-        if not self.canShoot():
-            return (turn,0,False)
-        return self.canShoot()
 
 
 
@@ -136,23 +123,30 @@ class Agent(object):
 
         # take the self observation
         obs = self.observation
+        if obs.respawn_in !=-1:
+            self.goal = None
         # check if goal is reached
         if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize and (self.id==0 or self.id==2):
             self.goal = None
-        elif self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize and self.id==1:
-            self.goal = self.states[3]
-        elif self.goal is self.states[3] and point_dist(self.goal, obs.loc) < self.settings.tilesize and self.id==1:
-            self.goal=self.states[1]
-        elif self.goal is self.states[1] and self.id==1 and ammo !=0 and point_dist(self.goal,obs.loc)<60:
-            return self.canShoot()
-        elif self.goal is self.states[1] and obs.ammo==0 and self.id==1:
+        elif self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize and self.id==1 and obs.ammo>0:
+            if self.team == TEAM_BLUE:
+                self.goal = self.states[0]
+            else:
+                self.goal = self.states[1]
+        elif self.goal is self.states[0] or self.goal is self.states[1] and point_dist(self.goal, obs.loc) >= self.settings.tilesize and self.id==1 and obs.ammo>0:
+            if self.canShoot():
+                return self.canShoot()
+        elif self.goal is self.states[0] or self.goal is self.states[1] and self.id==1 and ammo ==0:
             self.goal=self.states[2]
 
         # Walk to random CP
         if self.goal is None and self.id==0:
             self.goal = self.states[0]
         elif self.goal is None and self.id==1:
-            self.goal = self.states[2]
+            if self.team == TEAM_BLUE:
+                self.goal = self.states[2]
+            else:
+                self.goal = self.states[3]
         elif self.goal is None and self.id==2:
             self.goal = self.states[1]
 
