@@ -130,14 +130,17 @@ class Agent(object):
             self.goal = None
         elif self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize and self.id==1 and obs.ammo>0:
             if self.team == TEAM_BLUE:
-                self.goal = self.states[0]
-            else:
                 self.goal = self.states[1]
+            else:
+                self.goal = self.states[0]
         elif self.goal is self.states[0] or self.goal is self.states[1] and point_dist(self.goal, obs.loc) >= self.settings.tilesize and self.id==1 and obs.ammo>0:
             if self.canShoot():
                 return self.canShoot()
-        elif self.goal is self.states[0] or self.goal is self.states[1] and self.id==1 and ammo ==0:
-            self.goal=self.states[2]
+        elif self.goal is self.states[0] or self.goal is self.states[1] and self.id==1 and obs.ammo ==0:
+            if self.team == TEAM_BLUE:
+                self.goal=self.states[2]
+            else:
+                self.goal=self.states[3]
 
         # Walk to random CP
         if self.goal is None and self.id==0:
