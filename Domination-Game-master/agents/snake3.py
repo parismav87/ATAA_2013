@@ -99,7 +99,7 @@ class Agent(object):
         return ang;
 
     def canShoot(self):
-        obs =self.observation
+        obs = self.observation
         if obs.ammo==0:
             return False
         else:
@@ -110,8 +110,19 @@ class Agent(object):
                 angle = angle_fix(math.atan2(dy, dx))
                 da = (obs.angle-angle)
                 dist = (dx**2 + dy**2)**0.5
-                if math.degrees(abs(da))<= math.degrees(math.atan2(45,dist)) and dist<=self.settings.max_range and not line_intersects_grid(obs.loc, foe[0:2], self.grid, self.settings.tilesize):   
-                    return (da*(obs.angle/abs(obs.angle)),0,True)
+                if math.degrees(abs(da))<= math.degrees(math.atan2(45,dist)) and dist<=self.settings.max_range and not line_intersects_grid(obs.loc, foe[0:2], self.grid, self.settings.tilesize):
+                    friendly_fire = False
+                    for agent in self.all_agents:
+                        if agent.id != self.id:
+                            friendly_dx = agent.observation.loc[0] - obs.loc[0]
+                            friendly_dy = agent.observation.loc[1] - obs.loc[1]
+                            friendly_angle = angle_fix(math.atan2(friendly_dy, friendly_dx))
+                            friendly_da = (obs.angle-friendly_angle)
+                            friendly_dist = (friendly_dx**2 + friendly_dy**2)**0.5
+                            if math.degrees(abs(friendly_da)) <= math.degrees(math.atan2(45,friendly_dist)) and friendly_dist < dist:
+                                friendly_fire = True
+                    if not friendly_fire:
+                        return (da*(obs.angle/abs(obs.angle)),0,True)
         return False
 
 
