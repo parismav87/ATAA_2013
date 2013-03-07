@@ -110,7 +110,7 @@ class Agent(object):
                 angle = angle_fix(math.atan2(dy, dx))
                 da = (obs.angle-angle)
                 dist = (dx**2 + dy**2)**0.5
-                if math.degrees(abs(da))<= math.degrees(math.atan2(45,dist)) and dist<=self.settings.max_range and not line_intersects_grid(obs.loc, foe[0:2], self.grid, self.settings.tilesize):
+                if math.degrees(abs(da))<= math.degrees(math.atan2(45,dist)) and dist<self.settings.max_range and not line_intersects_grid(obs.loc, foe[0:2], self.grid, self.settings.tilesize):
                     friendly_fire = False
                     for agent in self.all_agents:
                         if agent.id != self.id:
