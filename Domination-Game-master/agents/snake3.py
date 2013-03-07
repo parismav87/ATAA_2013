@@ -138,22 +138,17 @@ class Agent(object):
             self.goal = None
         # check if goal is reached
         if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize/2 and (self.id==0 or self.id==2):
-            if self.id == 0:
-                self.goal = self.states[0]
-                return (0,0,0)
-            else:
-                self.goal = self.states[1]
-                return (0,0,0)
-        elif self.goal is None and self.id==2:
-            self.goal = self.states[1]
+            self.goal = None
+            return (0,0,0)
         elif self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize and self.id==1 and obs.ammo>0:
-            self.goal = self.states[0]
-            if random.random() >= 0.5:
+            if self.team == TEAM_BLUE:
                 self.goal = self.states[1]
+            else:
+                self.goal = self.states[0]
         elif self.goal is self.states[0] or self.goal is self.states[1] and point_dist(self.goal, obs.loc) >= self.settings.tilesize and self.id==1 and obs.ammo>0:
             if self.canShoot():
                 return self.canShoot()
-        elif self.goal is self.states[0] or self.goal is self.states[1] and self.id==1 and obs.ammo == 0:
+        elif self.goal is self.states[0] or self.goal is self.states[1] and self.id==1 and obs.ammo ==0:
             if self.team == TEAM_BLUE:
                 self.goal=self.states[2]
             else:

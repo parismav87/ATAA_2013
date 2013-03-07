@@ -64,6 +64,7 @@ class Tournament2(scenarios.Scenario):
     REPEATS   = 1000
     GENERATOR = None
     FIELD     = core.Field.from_string(FIELD2)
+
     SETTINGS  = core.Settings(max_steps=300,
                               max_score=100,
                               spawn_time=11,
