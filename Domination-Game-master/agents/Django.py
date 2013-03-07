@@ -1,4 +1,5 @@
 import itertools as it
+import cPickle as pickle
 
 class Agent(object):
     
@@ -65,6 +66,21 @@ class Agent(object):
                     Qtable[p][c][f] = dict()
                     for action in self.states[0:4]:
                         Qtable[p][c][f][action] = 20.0
+        pos = it.combinations(self.states, self.states[0:4])
+        for p in pos:
+            print p
+        # for p in pos:
+        #     Qtable[p] = dict()
+        #     cps_con = [-1, 0, 1]
+        #     cps = it.product(cps_con,cps_con, repeat = 1)
+        #     for c in cps:  
+        #         Qtable[p][c] = dict()
+        #         foes_con = range(0,4)
+        #         foes = it.product(foes_con, repeat = 3)
+        #         for f in foes:
+        #             Qtable[p][c][f] = dict()
+        #             for action in self.states[0:4]:
+        #                 Qtable[p][c][f][action] = 20.0
         return Qtable
     
     def observe(self, observation):
@@ -189,8 +205,9 @@ class Agent(object):
 
     def reward(self):
         reward = 0.0
-        for item in self.cps:
-            reward += item * 10
+        for i in range(len(self.cps)):
+            reward += (self.cps[i] - self.previous_cps[i]) * 10.0
+        print reward
         return reward
 
     def updateValueTable(self):
@@ -216,42 +233,42 @@ class Agent(object):
         # take the self observation
         obs = self.observation
         # check if i got hit and if i shoot another agent
-        died = (obs.respawn_in == 10)
-        self.die_consequence(died)
-        hit = obs.hit
-        # check the control points
-        self.cps = self.check_cps()
-        # check the enemies
-        self.foes = self.check_foes()
-        # check the positions of agent's friends
-        self.friends = self.check_friends_previous()
-        # Check if agent reached goalState.
-        if self.goal_state is not None and point_dist(self.goal_state, obs.loc) <= self.settings.tilesize:
-            # goalstate is reached, value table will be updated
-            self.updateValueTable()
-            # previous state is now the previous goal state
-            self.previous_state = self.goal_state
-            # next goal state is now none
-            self.goal_state = None
+        # died = (obs.respawn_in == 10)
+        # self.die_consequence(died)
+        # hit = obs.hit
+        # # check the control points
+        # self.cps = self.check_cps()
+        # # check the enemies
+        # self.foes = self.check_foes()
+        # # check the positions of agent's friends
+        # self.friends = self.check_friends_previous()
+        # # Check if agent reached goalState.
+        # if self.goal_state is not None and point_dist(self.goal_state, obs.loc) <= self.settings.tilesize:
+        #     # goalstate is reached, value table will be updated
+        #     self.updateValueTable()
+        #     # previous state is now the previous goal state
+        #     self.previous_state = self.goal_state
+        #     # next goal state is now none
+        #     self.goal_state = None
 
-        # agent reach its goalState, should be assigned a new action
-        if self.goal_state is None:
-            if obs.step == 1:
-                self.goal_state = self.states[self.id]
-            else:
-                self.goal_state = self.eGreedy(0.1)
-            self.previous_action = self.goal_state
+        # # agent reach its goalState, should be assigned a new action
+        # if self.goal_state is None:
+        #     if obs.step == 1:
+        #         self.goal_state = self.states[self.id]
+        #     else:
+        #         self.goal_state = self.eGreedy(0.1)
+        #     self.previous_action = self.goal_state
 
-        # shoot opponents
-        shoot = self.shoot()
-        # driving function
-        drive = self.drive_tank()
+        # # shoot opponents
+        # shoot = self.shoot()
+        # # driving function
+        # drive = self.drive_tank()
 
-        # keep info about the previous state
-        self.previous_cps = self.cps
-        self.previous_foes = self.foes
-        self.previous_friends = self.friends
-        return (drive[0], drive[1], shoot)
+        # # keep info about the previous state
+        # self.previous_cps = self.cps
+        # self.previous_foes = self.foes
+        # self.previous_friends = self.friends
+        return (0,0,0)
         
     def debug(self, surface):
         """ Allows the agents to draw on the game UI,
