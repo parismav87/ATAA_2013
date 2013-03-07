@@ -4,27 +4,27 @@ class Agent(object):
 
     def __init__(self, id, team, settings=None, field_rects=None, field_grid=None, nav_mesh=None, **kwargs):
         QTable = list();
-        self.observation = NULL;
-        self.action = NULL;
+        #self.observation = 0;
+        #self.action = 0;
         pass
 
     def observe(self, observation):
-        self.old_observation = self.observation;
+        #self.old_observation = self.observation;
         self.observation = observation;
         pass
 
     def action(self):
 
-        self.old_action = action;
+        #self.old_action = self.action;
 
         a = random.randint(0,45);
         b = random.randint(0,40);
         c = random.randint(0,1);
 
-        action = (a,b,c)
+        #self.action = (a,b,c)
 
         print self.index()
-        return (a,b,c)
+        return (a,b,True) #self.action
 
     def index(self):
         x = self.observation.loc[0]/16;
