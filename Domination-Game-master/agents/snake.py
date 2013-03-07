@@ -1,6 +1,24 @@
 import itertools as it
 import cPickle as pickle
 
+FIELD = """w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w
+w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
+w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
+w _ _ _ _ _ _ _ _ _ _ _ _ _ C _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
+w _ _ _ _ _ _ # _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ # _ _ _ _ _ _ w
+w _ _ # _ # _ _ W w w w w w w w w w w w w w W _ _ # _ # _ _ w
+w _ _ _ W _ _ _ w _ _ _ _ _ _ _ _ _ _ a _ _ _ # _ _ W _ _ _ w
+w R _ _ w _ _ _ w _ _ _ _ _ _ _ _ _ _ _ _ # _ # _ _ w _ _ B w
+w R _ _ w _ _ _ W _ _ _ _ w w w w w _ _ _ _ W _ _ _ w _ _ B w
+w R _ _ w _ _ # _ # _ _ _ _ _ _ _ _ _ _ _ _ w _ _ _ w _ _ B w
+w _ _ _ W _ _ # _ # _ a _ _ _ _ _ _ _ _ _ _ w _ _ _ W _ _ _ w
+w _ _ # _ # _ _ W w w w w w w w w w w w w w W _ _ # _ # _ _ w
+w _ _ _ _ _ _ # _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ # _ _ _ _ _ _ w
+w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ C _ _ _ _ _ _ _ _ _ _ _ _ _ w
+w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
+w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
+w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w"""
+
 class Agent(object):
     
     NAME = "Django"
@@ -27,7 +45,72 @@ class Agent(object):
 
         # state space -- positions on the grid for x axis
         self.states = [(232,56),(264,216),(312,104),(184,168)]
-    
+        self.map_width = 0
+        self.map_height = 0
+        self.map = self.create_map()
+        self.path_points = self.find_path_points()
+        self.walls = self.find_walls()
+
+    def create_map(self):
+        x = 0
+        y = 0
+        mapp = {}
+        for char in FIELD:
+            if char == "\n":
+                y += 1
+                x = 0
+            elif char == " ":
+                pass
+            else:
+                mapp[x,y] = char
+                x += 1
+        self.map_width = x
+        self.map_height = y + 1
+        return mapp
+
+    def find_path_points(self):
+        points = []
+        for x in xrange(self.map_width):
+            for y in xrange(self.map_height):
+                if self.map[x,y] == "#":
+                    points.append((x,y))
+        return points
+
+    def wall_end(self, x, y, dx, dy):
+        if self.map[x+dx,y+dy] != "w":
+            return None
+        else:
+            x += dx
+            y += dy
+            while self.map[x,y] != "W":
+                x += dx
+                y += dy
+            return (x,y)
+
+
+    def find_walls(self):
+        walls = []
+        for x in xrange(self.map_width):
+            for y in xrange(self.map_height):
+                if self.map[x,y] == "W":
+                    start = (x,y)
+                    end = []
+                    end.append(self.wall_end(x,y,1,0))
+                    end.append(self.wall_end(x,y,-1,0))
+                    end.append(self.wall_end(x,y,0,1))
+                    end.append(self.wall_end(x,y,0,-1))
+                    for ending in end:
+                        if ending is not None:
+                            exist = False
+                            if len(walls) > 0:
+                                for wall in walls:
+                                    if (start[0] == wall[0] and start[1] == wall[1] and ending[0] == wall[2] and ending[1] == wall[3]) or (ending[0] == wall[0] and ending[1] == wall[1] and start[0] == wall[2] and start[1] == wall[3]):
+                                        exist = True
+                            if not exist:
+                                walls.append((start[0],start[1],ending[0],ending[1]))
+        return walls
+
+
     def observe(self, observation):
         """ Each agent is passed an observation using this function,
             before being asked ffoes_conor an action. You can store either

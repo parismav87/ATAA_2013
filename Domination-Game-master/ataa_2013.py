@@ -83,7 +83,7 @@ class Tournament2(scenarios.Scenario):
 # to set up your own learning environment.
 
 # BLUE TEST
-Tournament2.test(red="agents/wolf.py", blue="agents/snake3.py")
+Tournament2.test(red="agents/wolf.py", blue="agents/snake.py")
 
 # RED TEST
 # Tournament2.test(red="agents/Django.py", blue="domination/agent.py")

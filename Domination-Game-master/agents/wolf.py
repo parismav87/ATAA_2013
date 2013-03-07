@@ -286,7 +286,7 @@ class Brigadier():
                 orders[1] = (get_ammo, {'ammo_info': ammo_info})
                 
 
-        print 'gamestate {0}, strategy {1}'.format(gamestate, self.strategy)
+        #print 'gamestate {0}, strategy {1}'.format(gamestate, self.strategy)
 
         # Go for controlpoints with the closest agent preferably
         cps_to_get = [cp for cp in cps if cp[2] != team]
@@ -474,7 +474,7 @@ class Brigadier():
         return best_id
 
     def __str__(self):
-        """ Tostring method prints all items of the brigadier object.
+        """ Tostring method #prints all items of the brigadier object.
         """
         items = sorted(self.__dict__.items())
         maxlen = max(len(k) for k, v in items)
@@ -512,7 +512,7 @@ class Agent(object):
 
         # Read the binary blob, we're not using it though
         #if blob is not None:
-        #    print "Agent %s received binary blob of %s" % (
+        #    #print "Agent %s received binary blob of %s" % (
         #       self.callsign, type(pickle.loads(blob.read())))
         #    # Reset the file so other agents can read it.
         #    blob.seek(0)
@@ -556,7 +556,7 @@ class Agent(object):
         self.foes = foes
 
         #if observation.selected:
-        #    print observation
+        #    #print observation
 
         # All agent observations are present
         if self.id == len(self.all_agents) - 1:
@@ -586,7 +586,7 @@ class Agent(object):
 
             # And shoot the selected target
             shoot = True
-            print 'Owned {0}.'.format(foe)
+            #print 'Owned {0}.'.format(foe)
             return turn, speed, shoot
 
         if path:
