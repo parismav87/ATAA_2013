@@ -66,7 +66,6 @@ class SharedKnowledge():
     spawn_info = []        # Spawntime indexed by agent_id
     cps = []               # Controlpoint (x,y,state)
     foes = []              # Foes by location (x,y,r)
-    foe_respawns = []      # Respawn times of foes
 
     # Agent variables
     ammos = []             # Ammo by agentid
@@ -90,8 +89,6 @@ class SharedKnowledge():
         self.spawn_info = [0] * self.NUM_AGENTS
         self.ammos = [0] * self.NUM_AGENTS
         self.visible_targets = [None] * self.NUM_AGENTS
-
-        self.foe_respawns = [0] * self.NUM_AGENTS
 
         # Initial orders are empty
         self.orders = {0: None, 1: None, 2: None}
@@ -128,12 +125,13 @@ class SharedKnowledge():
 
             # Present foes (location only)
             foes |= set(obs.foes)
-
+            
             # Ammo per agent
             ammos.append(obs.ammo)
 
             # Spawn_time per agent
             spawn_info.append(obs.respawn_in)
+
 
         self.visible_targets = visible_targets
         self.spawn_info = spawn_info
@@ -172,19 +170,8 @@ class SharedKnowledge():
 
                 # TODO predict if opponent took it
 
-        # Update enemy spawn times
-        for i,time in enumerate(self.foe_respawns):
-            if time > 0:
-                self.foe_respawns[i] -= 1
-
     def reward(self):
         return self.state
-
-    def foe_killed(self):
-        for i,time in enumerate(self.foe_respawns):
-            if time == 0:
-                self.foe_respawns[i] = self.settings.spawn_time
-                break
 
     def init_mesh(self, mesh):
         """ Mesh is a dict of dicts mesh[(x1,y1)][(x2,y2)] = nr_of_turns
@@ -248,7 +235,7 @@ class Brigadier():
 
     def __init__(self, shared_knowledge):
         self.shared_knowledge = shared_knowledge
-
+                      
     def __del__(self):
         pass
 
@@ -275,8 +262,20 @@ class Brigadier():
         get_ammo = self.get_ammo
         kill_foe = self.kill_foe
         wait = self.wait
+        
 
-        if gamestate == self.shared_knowledge.INIT:
+
+
+        # STRATEGY! FINALLY!
+        if gamestate == self.shared_knowledge.LOSING:
+            self.strategy = self.HOGGING
+        elif gamestate == self.shared_knowledge.EVEN:
+            self.strategy = self.HOGGING
+        elif gamestate == self.shared_knowledge.WINNING:
+            self.strategy = self.HOGGING
+            
+        elif gamestate == self.shared_knowledge.INIT:
+            self.strategy = self.HOGGING
             if team == TEAM_BLUE:
                 orders[0] = (cp_attack, {'cp': cps[0]})
                 orders[2] = (cp_attack, {'cp': cps[1]})
@@ -285,43 +284,25 @@ class Brigadier():
                 orders[0] = (cp_attack, {'cp': cps[0]})
                 orders[2] = (cp_attack, {'cp': cps[1]})
                 orders[1] = (get_ammo, {'ammo_info': ammo_info})
+                
+
+        print 'gamestate {0}, strategy {1}'.format(gamestate, self.strategy)
 
         # Go for controlpoints with the closest agent preferably
         cps_to_get = [cp for cp in cps if cp[2] != team]
         cps_to_defend = [cp for cp in cps if cp[2] == team]
         ammos = self.shared_knowledge.ammos
-        agent_ids = [a.id for a in all_agents]
-        dead_foes = len([f for f in self.shared_knowledge.foe_respawns if f > 0])
+        agent_ids = [a.id for a in all_agents] 
 
         # Update goals
         for id, (order, goal) in orders.iteritems():
             if order == get_ammo:
                 orders[id] = (get_ammo, {'ammo_info': ammo_info})
-                
-                best_ammo = self.get_best_ammo_loc(all_agents[id], self.shared_knowledge.ammo_info)
-                switched = False
-                if dead_foes > 0 and all_agents[id].ammo > 0:
-                    least_ammo_guy = id
-                    least_ammo = all_agents[id].ammo
-                    for other_agent in all_agents:
-                        other_id = other_agent.id
-                        if other_agent.ammo < least_ammo and spawn_info[other_id] == -1:
-                            least_ammo_guy = other_id
-                            least_ammo = other_agent.ammo
-
-                    if least_ammo_guy != id:
-                        self.switch_roles(id, least_ammo_guy)
-                        switched = True
-
 
                 # special case: Even and we hogged enough ammo
-                if not switched and (all_agents[id].ammo > 2 or spawn_info[id] > -1):
-                    #self.switch_roles(id, choice([a.id for a in all_agents
-                    #                              if a.id != id]))
-                    closest = self.closest_to_point(best_ammo)
-                    if id == closest:
-                        closest = choice([a.id for a in all_agents if a.id != id]) 
-                    self.switch_roles(id, closest)
+                if all_agents[id].ammo > 4:
+                    self.switch_roles(id, choice([a.id for a in all_agents 
+                                                  if a.id != id]))
 
             # And be sure to always attack targets
             if visible_targets[id]:
@@ -329,25 +310,32 @@ class Brigadier():
                 turn, speed = visible_targets[id].values()[0]
                 visible_targets[id] = (foe, turn, speed)
 
+        # For now, do nothing special when even
+        if gamestate == -2:
+            return
 
-            agent = all_agents[id]
-            # Defending agents must camp at all times
-            if order == self.cp_defend:
-                # If we were defending a cp and that cp has been recaptured, attack again!
-                if goal['cp'][:2] in cps_to_get:
-                    orders[id] = (self.cp_attack, {'cp': goal['cp']})
-                if not agent.ammo:
-                    # Attack original cp if out of ammo
-                    orders[id] = (self.cp_attack, {'cp': goal['cp']})
+        # Determine new goals
+        for agent in all_agents:
+            id = agent.id
+            other_agents = [a for a in all_agents if a.id != id]
 
-            elif agent.ammo and agent.goal_reached():
-                if order == self.cp_attack:
-                    # If we were attacking a cp and succeeded, go defend
-                    spot = self.closest_object(agent.loc, agent.campspots)
-                    if point_dist(spot[:2], agent.loc[:2]) < \
-                            agent.settings.max_range:
-                        orders[id] = (self.cp_defend, {'spot': spot, 
-                                                            'cp': goal['cp']})
+            # WHO CARES IF GOAL REACHED? GET AMMO
+            # if agent.goal_reached() or agent.goal == None:
+
+            # If we have sufficient ammo or are dead, switch with others
+            if (orders[id][0] == get_ammo and (ammos[id] > 3 or
+                                               spawn_info[id] > -1)):
+                if cps_to_get:
+                    cp = choice(cps_to_get)
+
+                    # switch roles with the assigned agent
+                    for other in other_agents:
+                        if orders[other.id][1]['cp'] == cp:
+                            self.switch_roles(other.id, id)
+                # if we have no cps to get
+                # TODO go to difficult spot
+                else:
+                    self.switch_roles(id, choice(other_agents).id)
 
     def switch_roles(self, id1, id2):
         """ Function that switches two agents' orders given their id.
@@ -363,6 +351,7 @@ class Brigadier():
         for agent in self.shared_knowledge.all_agents:
             # Execute the found command
             (command, kwargs) = self.shared_knowledge.orders[agent.id]
+            kwargs['strategy'] = self.strategy
             command(agent, **kwargs)
 
     ### META-ACTION FUNCTIONS ###
@@ -385,21 +374,32 @@ class Brigadier():
         """
         cp = kwargs['cp'] if 'cp' in kwargs else self.closest_cp(agent.loc)
         agent.goal = cp[:2]
- 
-    def cp_defend(self, agent, **kwargs):
-        spot = kwargs['spot'] if 'spot' in kwargs else None
-        if spot:
-            agent.goal = spot
 
     def get_ammo(self, agent, **kwargs):
+            
         """ Get given ammo, if no ammo found, goto best ammopoint
         """
         ammo_info = kwargs['ammo_info']
+        strategy = kwargs['strategy'] if 'strategy' in kwargs else self.HOGGING
 
         # walk to the best ammospot
         best_ammo = self.get_best_ammo_loc(agent, ammo_info)
         if best_ammo:
             agent.goal = best_ammo
+            if agent.ammo:
+                foes = self.shared_knowledge.foes
+
+                if strategy == self.AGGRESSIVE:
+                    # kill the foe closest to the goal
+                    # TODO ASTAR ....
+                    foe = self.closest_object(best_ammo, foes)
+                    agent.goal = foe if foe else best_ammo
+                elif strategy == self.DEFENSIVE:
+                    cps = self.shared_knowledge.cps
+                    foe = self.closest_object(self.closest_cp(agent.loc), foes)
+                    agent.goal = foe if foe else best_ammo
+                elif strategy == self.HOGGING:
+                    pass # HOGGG
         else:
             self.cp_attack(agent)
 
@@ -416,16 +416,12 @@ class Brigadier():
         best_dist = 1e5
         # TODO Use astar pathplanning instead
         for ammo, spawn_time in ammo_info.iteritems():
-            _, d = agent.find_optimal_path(ammo)
-            turns_needed = int(d / self.shared_knowledge.settings.max_speed)
-
-            time_to_get_ammo = max(spawn_time, turns_needed)
-
-            if time_to_get_ammo < best_time:
+            if spawn_time < best_time:
                 best_ammo = ammo
-                best_time = time_to_get_ammo
-                best_dist = d
+                best_time = spawn_time
+                best_dist = point_dist(loc, ammo)
             elif spawn_time == best_time:
+                d = point_dist(loc, ammo)
                 if d < best_dist:
                     best_ammo = ammo
                     best_dist = d
@@ -440,7 +436,7 @@ class Brigadier():
         for o in objectlist:
             dist = real_dist(loc, o[:2])
             if dist < best_dist:
-                best_dist = dist
+                dist = best_dist
                 best_object = o
         return best_object
 
@@ -450,13 +446,13 @@ class Brigadier():
         foelist = foelist if foelist else self.shared_knowledge.foes
         return self.closest_object(loc, foelist)
 
-    def closest_ammopack(self, loc, ammopacklist=None):
+    def closest_ammopack(self, loc, ammopacklist=None): 
         """ Get the closest ammo from a given list or all ammo.
         """
         ammopacklist = ammopacklist if ammopacklist else \
-            self.shared_knowledge.ammopacks
+                self.shared_knowledge.ammopacks
         return self.closest_object(loc, ammopacklist)
-
+    
     def closest_cp(self, loc, cplist=None):
         """ Get the closest cp from a given list or all cp.
         """
@@ -496,7 +492,7 @@ def real_dist(a, b):
 
 
 class Agent(object):
-    NAME = "SillyBot"
+    NAME = "WoLF"
 
     def __init__(self, id, team, settings=None, field_rects=None,
                  field_grid=None, nav_mesh=None, blob=None, **kwargs):
@@ -509,7 +505,6 @@ class Agent(object):
         self.team = team
         self.grid = field_grid
         self.corners = get_corners(field_grid)
-        self.campspots = [(24.0, 24.0, 0.7853981633974483), (440.0, 24.0, 2.356194490192345), (200.0, 72.0, -0.7853981633974483), (264.0, 200.0, 2.356194490192345), (24.0, 248.0, -0.7853981633974483), (440.0, 248.0, -2.356194490192345)]
         self.settings = settings
         self.goal = None
         self.callsign = '%s-%d' % (('BLU' if team == TEAM_BLUE else 'RED'), id)
@@ -573,7 +568,7 @@ class Agent(object):
             return a tuple in the form: (turn, speed, shoot)
         """
         # Find the optimal path through the mesh
-        path, _ = self.find_optimal_path()
+        path = self.find_optimal_path()
 
         # Always go for targets!
         visible_targets = self.shared_knowledge.visible_targets[self.id]
@@ -592,7 +587,6 @@ class Agent(object):
             # And shoot the selected target
             shoot = True
             print 'Owned {0}.'.format(foe)
-            self.shared_knowledge.foe_killed()
             return turn, speed, shoot
 
         if path:
@@ -605,20 +599,6 @@ class Agent(object):
             if abs(turn) > self.settings.max_turn + 0.15:
                 speed = 0
                 self.shoot = False
-
-            if self.goal_reached():
-                if len(self.goal) > 2:
-                    turn = angle_fix(self.goal[2] - self.loc[2])
-                elif self.foes:
-                    foe = self.brigadier.closest_foe(self.loc)
-                    #if not line_intersects_grid(self.loc[:2], foe[:2], self.grid,
-                    #    self.settings.tilesize):
-                    turn = angle_fix(get_rel_angle(self.loc, foe))
-                elif self.team == TEAM_RED:
-                    turn = angle_fix(-self.loc[2])
-                else:
-                    turn = angle_fix(math.pi - self.loc[2])
-                speed = 0
         else:
             turn = 0
             speed = 0
@@ -672,7 +652,7 @@ class Agent(object):
 
         # If there is a straight line, just return the end point
         if not line_intersects_grid(start, end, grid, tilesize):
-            return [goal], 40
+            return [goal]
 
         # Copy mesh so we can add temp nodes
         mesh = copy.deepcopy(self.shared_knowledge.mesh)
@@ -701,7 +681,7 @@ class Agent(object):
         heuristic = lambda n: (((n[0]-end[0])**2 + (n[1]-end[1])**2) ** 0.5 +
                                abs(int(get_rel_angle(n, end) / max_turn)))
         nodes, length = astar(loc, neighbours, goal, 0, cost, heuristic)
-        return nodes, length
+        return nodes
 
     def visible_targets(self):
         """ Determine foes that can be hit in this turn.
@@ -840,13 +820,11 @@ class Agent(object):
         # Shoot enemies at all times
         return foe in self.visible_targets()
 
-    def goal_reached(self, max_dist_from_goal=2):
-        ''' Return if goal has been reached for this agent.
-
-            An agent has reached its goal if it is sufficiently close.
-        '''
+    def goal_reached(self):
+        """ Return if goal has been reached for this agent.
+        """
         return self.goal is not None and (point_dist(self.goal, self.loc) <
-                                          max_dist_from_goal)
+                                          self.settings.tilesize)
 
     def alter_mesh(self, mesh):
         """ Mesh is a dict of dicts mesh[node1][node2] = cost.

@@ -65,7 +65,7 @@ class Tournament2(scenarios.Scenario):
     GENERATOR = None
     FIELD     = core.Field.from_string(FIELD2)
     SETTINGS  = core.Settings(max_steps=300,
-                              max_score=1000,
+                              max_score=100,
                               spawn_time=11,
                               ammo_amount=1,  
                               ammo_rate=9,
@@ -81,13 +81,14 @@ class Tournament2(scenarios.Scenario):
 # preserved. Please refer to "Running a Game" in the documentation for how
 # to set up your own learning environment.
 
- #BLUE TEST
-Tournament2.test(red="agents/Django2.py", blue="agents/Django2.py")
+# BLUE TEST
+Tournament2.test(red="agents/wolf.py", blue="agents/Django.py")
 
 # RED TEST
 # Tournament2.test(red="agents/Django.py", blue="domination/agent.py")
 
+
 # TOURNAMENT
-#now = datetime.datetime.now()
-#folder = os.path.join('tournaments', now.strftime("%Y%m%d-%H%M"))
-#Tournament2.tournament(agents=sys.argv[1:], output_folder=folder, rendered=False)
+# now = datetime.datetime.now()
+# folder = os.path.join('tournaments', now.strftime("%Y%m%d-%H%M"))
+# Tournament2.tournament(agents=sys.argv[1:], output_folder=folder, rendered=False)
