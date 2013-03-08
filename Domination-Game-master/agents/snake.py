@@ -25,8 +25,15 @@ class Node(object):
         self.childs = None
         self.sumDistance = 0.0
         self.sumTurn = 0.0
+        self.orientation = 0.0
         self.terminal = False
         self.parent = None
+
+class Path(object):
+    def __init__(self):
+        self.path = None
+        self.turn = None
+        self.distance = None
 
 class Agent(object):
     
@@ -53,7 +60,7 @@ class Agent(object):
         self.all_agents.append(self)
 
         # state space -- positions on the grid for x axis
-        self.states = [(232,56),(264,216),(312,104),(184,168)]
+        self.states = [(232.0,56.0),(264.0,216.0),(312.0,104.0),(184.0,168.0)]
         self.map_width = 0
         self.map_height = 0
         self.map = self.create_map()
@@ -173,58 +180,86 @@ class Agent(object):
     def find_awesome_path(self):
         obs = self.observation
         temp_points = self.path_points
-        if self.id == 0 and obs.step == 1:
-            # create the root element of the tree
-            root = Node()
-            root.data = obs.loc
-            if root.childs is None:
-                root.childs = list()
-            for point in temp_points:
-                if not line_intersects_grid(root.data, point, self.grid, self.settings.tilesize):
-                    tmp = Node()
-                    tmp.data = point
-                    tmp.parent = root
-                    root.childs.append(tmp)
-            for state in self.states:
-                if not line_intersects_grid(root.data, state, self.grid, self.settings.tilesize):
-                    tmp = Node()
-                    tmp.data = state
-                    tmp.parent = root
-                    if self.equal(state,self.goal):
-                        tmp.terminal = True
-                    root.childs.append(tmp)
-            
-            temp = root
-            counter = 0
-            final = False
-            while not final:
-                for child in temp.childs:
-                    if not child.terminal:
-                        if child.childs is None:
-                            child.childs = list()
+        # create the root element of the tree
+        root = Node()
+        root.data = obs.loc
+        root.terminal = False
+        root.parent = None
+        root.orientation = obs.angle
+        temp = root
+        level = list()
+        level_nodes = list()
+        level_nodes.append(root)
+        level.append(level_nodes)
+        generated_paths = list()
+
+        while len(level) < 5:
+            new_lvl_nodes = list()
+            for node in level[len(level)-1]:
+                if not node.terminal:
+                    if node.childs is None:
+                        node.childs = list()
                         for point in temp_points:
-                            if not self.equal(point, child.parent.data):
-                                if not line_intersects_grid(child.data, point, self.grid, self.settings.tilesize):
-                                    tmp = Node()
-                                    tmp.data = point
-                                    tmp.parent = child
-                                    print child.data, point
-                                    child.childs.append(tmp)
-                                    counter += 1
+                            grandfather_issue = False
+                            if node.parent is not None:
+                                if self.equal(point, node.parent.data):
+                                    grandfather_issue = True
+
+                            if not grandfather_issue:
+                                if not self.equal(point, node.data):
+                                    if not line_intersects_grid(node.data, point, self.grid, self.settings.tilesize):
+                                        tmp = Node()
+                                        tmp.data = point
+                                        tmp.parent = node
+                                        tmp.sumDistance = node.sumDistance + point_dist(point, node.data)
+
+                                        dx = point[0] - node.data[0]
+                                        dy = point[1] - node.data[1]
+                                        tmp.sumTurn += abs(angle_fix(math.atan2(dy, dx) - node.orientation))
+                                        tmp.orientation = angle_fix(math.atan2(dy, dx))
+
+                                        node.childs.append(tmp)
+                                        new_lvl_nodes.append(tmp)
+
                         for state in self.states:
-                            if not self.equal(state, child.parent.data):
-                                if not line_intersects_grid(child.data, state, self.grid, self.settings.tilesize):
-                                    counter += 1
-                                    tmp = Node()
-                                    tmp.data = state
-                                    tmp.parent = child
-                                    if self.equal(state,self.goal):
-                                        tmp.terminal = True
-                                        final = True
-                                    child.childs.append(tmp)
-            print counter
+                            if node.parent is not None:
+                                grandfather_issue = False
+                                if node.parent is not None:
+                                    if self.equal(state, node.parent.data):
+                                        grandfather_issue = True
+                                if not grandfather_issue:
+                                    if not self.equal(state, node.data):
+                                        if not line_intersects_grid(node.data, state, self.grid, self.settings.tilesize):
+                                            tmp = Node()
+                                            tmp.data = state
+                                            tmp.parent = node
+                                            tmp.sumDistance = node.sumDistance + point_dist(point, node.data)
+                                            
+                                            dx = state[0] - node.data[0]
+                                            dy = state[1] - node.data[1]
+                                            tmp.sumTurn += abs(angle_fix(math.atan2(dy, dx) - node.orientation))
+                                            tmp.orientation = angle_fix(math.atan2(dy, dx))
 
+                                            node.childs.append(tmp)
+                                            new_lvl_nodes.append(tmp)
+                                            # we have a path to the goal
+                                            if self.equal(state,self.goal):
+                                                generated_paths.append(self.rollback_path(tmp))
+                                                tmp.terminal = True
+            level.append(new_lvl_nodes)
 
+    def rollback_path(self, node):
+        p = Path()
+        path = []
+        temp = node
+        p.distance = node.sumDistance
+        p.turn = node.sumTurn
+        while temp.parent is not None:
+            path.append(temp.data)
+            temp = temp.parent
+        path.append(temp.data)
+        p.path = path
+        return p
 
     def drive_tank(self):
         obs = self.observation
@@ -260,7 +295,7 @@ class Agent(object):
             self.goal = None
         # Walk to random CP
         if self.goal is None:
-            self.goal = obs.cps[random.randint(0,len(obs.cps)-1)][0:2]
+            self.goal = obs.cps[0][0:2]
         if self.id == 0:
             drive = self.drive_tank()
         else:
