@@ -51,6 +51,7 @@ class Agent(object):
         self.grid = field_grid
         self.settings = settings
         self.goal = None
+        self.previousGoal = None
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
         self.blobpath = "agents/django_"+self.callsign
         self.speed = None
@@ -178,75 +179,87 @@ class Agent(object):
         return (controlPoint1,controlPoint2)
 
     def find_awesome_path(self):
+
         obs = self.observation
-        temp_points = self.path_points
-        # create the root element of the tree
-        root = Node()
-        root.data = obs.loc
-        root.terminal = False
-        root.parent = None
-        root.orientation = obs.angle
-        temp = root
-        level = list()
-        level_nodes = list()
-        level_nodes.append(root)
-        level.append(level_nodes)
-        generated_paths = list()
 
-        while len(level) < 5:
-            new_lvl_nodes = list()
-            for node in level[len(level)-1]:
-                if not node.terminal:
-                    if node.childs is None:
-                        node.childs = list()
-                        for point in temp_points:
-                            grandfather_issue = False
-                            if node.parent is not None:
-                                if self.equal(point, node.parent.data):
-                                    grandfather_issue = True
+        if not line_intersects_grid(obs.loc, self.goal, self.grid, self.settings.tilesize):
+            return self.goal
+        else:
+            temp_points = self.path_points
+            # create the root element of the tree
+            root = Node()
+            root.data = obs.loc
+            root.terminal = False
+            root.parent = None
+            root.orientation = obs.angle
+            temp = root
+            level = list()
+            level_nodes = list()
+            level_nodes.append(root)
+            level.append(level_nodes)
+            generated_paths = list()
 
-                            if not grandfather_issue:
-                                if not self.equal(point, node.data):
-                                    if not line_intersects_grid(node.data, point, self.grid, self.settings.tilesize):
-                                        tmp = Node()
-                                        tmp.data = point
-                                        tmp.parent = node
-                                        tmp.sumDistance = node.sumDistance + point_dist(point, node.data)
-
-                                        dx = point[0] - node.data[0]
-                                        dy = point[1] - node.data[1]
-                                        tmp.sumTurn += abs(angle_fix(math.atan2(dy, dx) - node.orientation))
-                                        tmp.orientation = angle_fix(math.atan2(dy, dx))
-
-                                        node.childs.append(tmp)
-                                        new_lvl_nodes.append(tmp)
-
-                        for state in self.states:
-                            if node.parent is not None:
+            while len(generated_paths) < 1:
+                new_lvl_nodes = list()
+                for node in level[len(level)-1]:
+                    if not node.terminal:
+                        if node.childs is None:
+                            node.childs = list()
+                            for point in temp_points:
                                 grandfather_issue = False
                                 if node.parent is not None:
-                                    if self.equal(state, node.parent.data):
+                                    if self.equal(point, node.parent.data):
                                         grandfather_issue = True
                                 if not grandfather_issue:
-                                    if not self.equal(state, node.data):
-                                        if not line_intersects_grid(node.data, state, self.grid, self.settings.tilesize):
+                                    if not self.equal(point, node.data):
+                                        if not line_intersects_grid(node.data, point, self.grid, self.settings.tilesize):
                                             tmp = Node()
-                                            tmp.data = state
+                                            tmp.data = point
                                             tmp.parent = node
                                             tmp.sumDistance = node.sumDistance + point_dist(point, node.data)
-                                            
-                                            dx = state[0] - node.data[0]
-                                            dy = state[1] - node.data[1]
+                                            dx = point[0] - node.data[0]
+                                            dy = point[1] - node.data[1]
                                             tmp.sumTurn += abs(angle_fix(math.atan2(dy, dx) - node.orientation))
                                             tmp.orientation = angle_fix(math.atan2(dy, dx))
-
                                             node.childs.append(tmp)
                                             new_lvl_nodes.append(tmp)
-                                            # we have a path to the goal
-                                            if self.equal(state,self.goal):
-                                                generated_paths.append(self.rollback_path(tmp))
-                                                tmp.terminal = True
-            level.append(new_lvl_nodes)
+
+                            for state in self.states:
+                                if node.parent is not None:
+                                    grandfather_issue = False
+                                    if node.parent is not None:
+                                        if self.equal(state, node.parent.data):
+                                            grandfather_issue = True
+                                    if not grandfather_issue:
+                                        if not self.equal(state, node.data):
+                                            if not line_intersects_grid(node.data, state, self.grid, self.settings.tilesize):
+                                                tmp = Node()
+                                                tmp.data = state
+                                                tmp.parent = node
+                                                tmp.sumDistance = node.sumDistance + point_dist(point, node.data)
+                                                dx = state[0] - node.data[0]
+                                                dy = state[1] - node.data[1]
+                                                tmp.sumTurn += abs(angle_fix(math.atan2(dy, dx) - node.orientation))
+                                                tmp.orientation = angle_fix(math.atan2(dy, dx))
+                                                node.childs.append(tmp)
+                                                new_lvl_nodes.append(tmp)
+                                                # we have a path to the goal
+                                                if self.equal(state,self.goal):
+                                                    generated_paths.append(self.rollback_path(tmp))
+                                                    tmp.terminal = True
+                level.append(new_lvl_nodes)
+            optimalPath = self.chooseOptPath(generated_paths)
+            return optimalPath[len(optimalPath)-2]
+
+    def chooseOptPath(self, candidatePaths):
+        optimalPath = None
+        optimalCost = float('inf')
+        for path in candidatePaths:
+            cost = path.distance
+            if cost < optimalCost:
+                optimalCost = cost
+                optimalPath = path
+        return optimalPath.path
 
     def rollback_path(self, node):
         p = Path()
@@ -264,20 +277,18 @@ class Agent(object):
     def drive_tank(self):
         obs = self.observation
         # Compute path, angle and drive
-        if self.id == 0 and obs.step == 1:
-            path = self.find_awesome_path()
-
-        path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
+        path = self.find_awesome_path()
+        print path
         if path:
-            dx = path[0][0] - obs.loc[0]
-            dy = path[0][1] - obs.loc[1]
+            dx = path[0] - obs.loc[0]
+            dy = path[1] - obs.loc[1]
             turn = angle_fix(math.atan2(dy, dx) - obs.angle)
             speed = (dx**2 + dy**2)**0.5
             if turn > self.settings.max_turn or turn < -self.settings.max_turn:
                 shoot = False
             if abs(math.degrees(turn)) >= 45:
                 if self.speed is not None:
-                    speed = max(0.7 * self.speed, 1)  
+                    speed = max(0.2 * self.speed, 1) 
         else:
             turn = 0
             speed = 0
@@ -295,12 +306,13 @@ class Agent(object):
             self.goal = None
         # Walk to random CP
         if self.goal is None:
-            self.goal = obs.cps[0][0:2]
+            self.goal = self.states[1]
         if self.id == 0:
             drive = self.drive_tank()
         else:
             return (0,0,0)
 
+        self.previousGoal = self.goal
         return (drive[0],drive[1],0)
         
     def debug(self, surface):
