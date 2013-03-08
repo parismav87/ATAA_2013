@@ -9,7 +9,7 @@ w _ _ _ _ _ _ # _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ # _ _ _ _ _ _ w
 w _ _ # _ # _ _ W w w w w w w w w w w w w w W _ _ # _ # _ _ w
 w _ _ _ W _ _ _ w _ _ _ _ _ _ _ _ _ _ a _ _ _ # _ _ W _ _ _ w
 w R _ _ w _ _ _ w _ _ _ _ _ _ _ _ _ _ _ _ # _ # _ _ w _ _ B w
-w R _ _ w _ _ _ W _ _ _ _ w w w w w _ _ _ _ W _ _ _ w _ _ B w
+w R _ _ w _ _ _ W _ _ _ _ W w w w W _ _ _ _ W _ _ _ w _ _ B w
 w R _ _ w _ _ # _ # _ _ _ _ _ _ _ _ _ _ _ _ w _ _ _ w _ _ B w
 w _ _ _ W _ _ # _ # _ a _ _ _ _ _ _ _ _ _ _ w _ _ _ W _ _ _ w
 w _ _ # _ # _ _ W w w w w w w w w w w w w w W _ _ # _ # _ _ w
@@ -18,6 +18,15 @@ w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ C _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w"""
+
+class Node(object):
+    def __init__(self):
+        self.data = None
+        self.childs = None
+        self.sumDistance = 0.0
+        self.sumTurn = 0.0
+        self.terminal = False
+        self.parent = None
 
 class Agent(object):
     
@@ -73,7 +82,7 @@ class Agent(object):
         for x in xrange(self.map_width):
             for y in xrange(self.map_height):
                 if self.map[x,y] == "#":
-                    points.append((x,y))
+                    points.append((x*16.0 + 8.0, y*16.0 + 8.0))
         return points
 
     def wall_end(self, x, y, dx, dy):
@@ -82,7 +91,7 @@ class Agent(object):
         else:
             x += dx
             y += dy
-            while self.map[x,y] != "W":
+            while self.map[x,y] != "W" and self.map[x,y] == "w":
                 x += dx
                 y += dy
             return (x,y)
@@ -137,6 +146,11 @@ class Agent(object):
             shoot = True
         return shoot
 
+    def equal(self, point1, point2):
+        if point1[0] == point2[0] and point1[1] == point2[1]:
+            return True
+        return False
+
     def check_cps(self):
         """ Check the control points and return the state of these
             control points.
@@ -156,10 +170,68 @@ class Agent(object):
             controlPoint2 -= 1
         return (controlPoint1,controlPoint2)
 
+    def find_awesome_path(self):
+        obs = self.observation
+        temp_points = self.path_points
+        if self.id == 0 and obs.step == 1:
+            # create the root element of the tree
+            root = Node()
+            root.data = obs.loc
+            if root.childs is None:
+                root.childs = list()
+            for point in temp_points:
+                if not line_intersects_grid(root.data, point, self.grid, self.settings.tilesize):
+                    tmp = Node()
+                    tmp.data = point
+                    tmp.parent = root
+                    root.childs.append(tmp)
+            for state in self.states:
+                if not line_intersects_grid(root.data, state, self.grid, self.settings.tilesize):
+                    tmp = Node()
+                    tmp.data = state
+                    tmp.parent = root
+                    if self.equal(state,self.goal):
+                        tmp.terminal = True
+                    root.childs.append(tmp)
+            
+            temp = root
+            counter = 0
+            final = False
+            while not final:
+                for child in temp.childs:
+                    if not child.terminal:
+                        if child.childs is None:
+                            child.childs = list()
+                        for point in temp_points:
+                            if not self.equal(point, child.parent.data):
+                                if not line_intersects_grid(child.data, point, self.grid, self.settings.tilesize):
+                                    tmp = Node()
+                                    tmp.data = point
+                                    tmp.parent = child
+                                    print child.data, point
+                                    child.childs.append(tmp)
+                                    counter += 1
+                        for state in self.states:
+                            if not self.equal(state, child.parent.data):
+                                if not line_intersects_grid(child.data, state, self.grid, self.settings.tilesize):
+                                    counter += 1
+                                    tmp = Node()
+                                    tmp.data = state
+                                    tmp.parent = child
+                                    if self.equal(state,self.goal):
+                                        tmp.terminal = True
+                                        final = True
+                                    child.childs.append(tmp)
+            print counter
+
+
 
     def drive_tank(self):
         obs = self.observation
         # Compute path, angle and drive
+        if self.id == 0 and obs.step == 1:
+            path = self.find_awesome_path()
+
         path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
         if path:
             dx = path[0][0] - obs.loc[0]
@@ -186,14 +258,15 @@ class Agent(object):
         # check if goal is reached
         if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
             self.goal = None
-        
         # Walk to random CP
         if self.goal is None:
-            self.goal = self.states[random.randint(0,len(self.states)-1)]
+            self.goal = obs.cps[random.randint(0,len(obs.cps)-1)][0:2]
+        if self.id == 0:
+            drive = self.drive_tank()
+        else:
+            return (0,0,0)
 
-        drive = self.drive_tank()
-        shoot = self.shoot()
-        return (drive[0],drive[1],shoot)
+        return (drive[0],drive[1],0)
         
     def debug(self, surface):
         """ Allows the agents to draw on the game UI,
