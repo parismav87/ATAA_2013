@@ -5,7 +5,7 @@ class Agent(object):
     
     NAME = "Django"
     
-    def __init__(self, id, team, settings=None, field_rects=None, field_grid=None, nav_mesh=None, blob=None, **kwargs):
+    def __init__(self, id, team, settings=None, field_rects=None, field_grid=None, nav_mesh=None, blob=None, matchinfo=None):
         """ Each agent is initialized at the beginning of each game.
             The first agent (id==0) can use this to set up global variables.
             Note that the properties pertaining to the game field might not be
@@ -122,7 +122,7 @@ class Agent(object):
                             if math.degrees(abs(friendly_da)) <= math.degrees(math.atan2(45,friendly_dist)) and friendly_dist < dist:
                                 friendly_fire = True
                     if not friendly_fire:
-                        return (da*(obs.angle/abs(obs.angle)),0,True)
+                        return (da*(obs.angle/abs((obs.angle)+0.001)),0,True)
         return False
 
 
