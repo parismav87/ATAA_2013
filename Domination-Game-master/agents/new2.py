@@ -14,13 +14,13 @@ class Agent(object):
         else:
             self.QTable = [0] * 5000;
 
-            for x in range(0,5000):
-                self.QTable[x] =  [0.00694] * 288;
+            for x in range(0,3479):
+                self.QTable[x] =  [0.0015] * 646 * 2;
 
 
                 
 
-        self.Actions = [(0,0,False)] * 144;
+        self.Actions = [(0,0,False)] * 646;
         for a in range(-45,45,5):
             for s in range(-40,40,5):
                 for c in range(0,1):
@@ -44,7 +44,7 @@ class Agent(object):
         if self.last_observation is not None:
             if self.last_observation.loc[0] == self.last_observation.cps[0][0] and self.last_observation.loc[1] == self.last_observation.cps[0][1] :
                 print "hereeeeeeeeeeeeeeeeeeeeee"
-                self.Reward =  10;
+                self.Reward =  50;
 
         self.UpdateQTable();
         self.Softmax();
@@ -59,11 +59,11 @@ class Agent(object):
     def choose_action(self):
         r = random.randint(0,1000)
         p = 0;
-        act = 0;
-        for x in range(144,288):
+        act = random.randint(0,645);
+        for x in range(646,2*646-1):
             p += self.QTable[self.new_index][x]*1000
             if(r<p): 
-                act = x - 144
+                act = x - 646
                 break
 
         return self.Actions[act]
@@ -76,15 +76,17 @@ class Agent(object):
         if(A[2]):
             z = 1;
 
-        i = x*16 + y*2 + z;
-
+        i = x*2*17 + y*2 + z;
+        if i > 646 : print "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         return i;
 
     def index(self):
-        x = self.observation.loc[0]/16;
-        y = self.observation.loc[1]/16;
-        angle = int(math.degrees(self.observation.angle)/12);
+        x =  -1 + self.observation.loc[0]/16;
+        y =  -1 + self.observation.loc[1]/16;
+        angle = -1 + int(math.degrees(self.observation.angle)/12);
+       
         i = x*15*8 + y*8 + angle;
+        if i>3480 : print "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
         return i  
 
     def debug(self, surface):
@@ -93,16 +95,16 @@ class Agent(object):
 
     def PrintStuff(self):
         #print "Old State =: "
-        #print self.old_index;
+        print self.old_index;
         pass
         
     def Softmax(self):
         t = 3;
         sum = 0;
-        for x in range(0,143):
+        for x in range(0,645):
             sum += math.pow(2.718,( self.QTable[self.old_index][x] / t ) );
-        for y in range(144,287):
-            self.QTable[self.old_index][y] = ( math.pow(2.718,( self.QTable[self.old_index][y-144] / t ) ) )  / sum ; 
+        for y in range(646,2*646-1):
+            self.QTable[self.old_index][y] = ( math.pow(2.718,( self.QTable[self.old_index][y-646] / t ) ) )  / sum ; 
  
 
 
