@@ -4,17 +4,17 @@ import cPickle as pickle
 FIELD = """w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w
 w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
-w _ _ _ _ _ _ _ _ _ _ _ _ _ C _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
+w _ _ _ _ _ _ _ _ _ _ _ _ _ S _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w _ _ _ _ _ _ # _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ # _ _ _ _ _ _ w
 w _ _ # _ # _ _ W w w w w w w w w w w w w w W _ _ # _ # _ _ w
-w _ _ _ W _ _ _ w _ _ _ _ _ _ _ _ _ _ a _ _ _ # _ _ W _ _ _ w
-w R _ _ w _ _ _ w _ _ _ _ _ _ _ _ _ _ _ _ # _ # _ _ w _ _ B w
-w R _ _ w _ _ _ W _ _ _ _ W w w w W _ _ _ _ W _ _ _ w _ _ B w
-w R _ _ w _ _ # _ # _ _ _ _ _ _ _ _ _ _ _ _ w _ _ _ w _ _ B w
-w _ _ _ W _ _ # _ # _ a _ _ _ _ _ _ _ _ _ _ w _ _ _ W _ _ _ w
+w _ _ _ W _ _ _ w _ _ _ _ _ _ _ _ _ _ S _ _ _ # _ _ W _ _ _ w
+w _ _ _ w _ _ _ w _ _ _ _ _ _ _ _ _ _ _ _ # _ # _ _ w _ _ _ w
+w _ _ _ w _ _ _ W _ _ _ _ W w w w W _ _ _ _ W _ _ _ w _ _ S w
+w _ _ _ w _ _ # _ # _ _ _ _ _ _ _ _ _ _ _ _ w _ _ _ w _ _ _ w
+w _ _ _ W _ _ # _ # _ S _ _ _ _ _ _ _ _ _ _ w _ _ _ W _ _ _ w
 w _ _ # _ # _ _ W w w w w w w w w w w w w w W _ _ # _ # _ _ w
 w _ _ _ _ _ _ # _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ # _ _ _ _ _ _ w
-w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ C _ _ _ _ _ _ _ _ _ _ _ _ _ w
+w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ S _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w"""
@@ -58,14 +58,36 @@ class Agent(object):
         if id == 0:
             self.all_agents = self.__class__.all_agents = []
         self.all_agents.append(self)
-
-        # state space -- positions on the grid for x axis
-        self.states = [(232.0,56.0),(264.0,216.0),(312.0,104.0),(184.0,168.0)]
         self.map_width = 0
         self.map_height = 0
         self.map = self.create_map()
-        self.path_points = self.find_path_points()
+        self.path_points = None
+        self.states = None
+        self.find_path_state_points()
         self.walls = self.find_walls()
+        if self.id == 0:
+            self.createQTable()
+
+
+    def createQTable(self):
+        Qtable = dict()
+        n_of_agents = 3 
+        transitions = it.combinations(self.states, 2)
+        state_space = it.chain(self.states, transitions)
+        pos = it.product(state_space, repeat = n_of_agents)
+        counter = 0
+        for p in pos:
+            Qtable[p] = dict()
+            cps_con = [-1, 0, 1]
+            cps = it.product(cps_con,cps_con, repeat = 1)
+            for c in cps:  
+                Qtable[p][c] = dict()
+                for a in self.states:
+                    Qtable[p][c][a] = 20.0
+                    counter += 1
+        print counter
+
+
 
     def create_map(self):
         x = 0
@@ -84,13 +106,17 @@ class Agent(object):
         self.map_height = y + 1
         return mapp
 
-    def find_path_points(self):
+    def find_path_state_points(self):
         points = []
+        states = []
         for x in xrange(self.map_width):
             for y in xrange(self.map_height):
                 if self.map[x,y] == "#":
                     points.append((x*16.0 + 8.0, y*16.0 + 8.0))
-        return points
+                if self.map[x,y] == "S":
+                    states.append((x*16.0 + 8.0, y*16.0 + 8.0))
+        self.states = states
+        self.path_points = points
 
     def wall_end(self, x, y, dx, dy):
         if self.map[x+dx,y+dy] != "w":
