@@ -51,7 +51,6 @@ class Agent(object):
         self.grid = field_grid
         self.settings = settings
         self.goal = None
-        self.previousGoal = None
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
         self.blobpath = "agents/django_"+self.callsign
         self.speed = None
@@ -307,12 +306,11 @@ class Agent(object):
         # Walk to random CP
         if self.goal is None:
             self.goal = self.states[1]
-        if self.id == 0:
+        if self.id == 2:
             drive = self.drive_tank()
         else:
             return (0,0,0)
 
-        self.previousGoal = self.goal
         return (drive[0],drive[1],0)
         
     def debug(self, surface):
