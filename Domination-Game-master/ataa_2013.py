@@ -34,9 +34,9 @@ w _ _ _ _ _ _ _ _ _ _ _ _ _ C _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w _ _ _ _ _ _ _ w w w w w w w w w w w w w w w _ _ _ _ _ _ _ w
 w _ _ _ w _ _ _ w _ _ _ _ _ _ _ _ _ _ a _ _ _ _ _ _ w _ _ _ w
-w R _ _ w _ _ _ w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w _ _ B w
-w R _ _ w _ _ _ w _ _ _ _ w w w w w _ _ _ _ w _ _ _ w _ _ B w
-w R _ _ w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w _ _ _ w _ _ B w
+w _ _ _ w _ _ _ w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w _ _ B w
+w _ _ _ w _ _ _ w _ _ _ _ w w w w w _ _ _ _ w _ _ _ w _ _ B w
+w _ _ _ w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w _ _ _ w _ _ B w
 w _ _ _ w _ _ _ _ _ _ a _ _ _ _ _ _ _ _ _ _ w _ _ _ w _ _ _ w
 w _ _ _ _ _ _ _ w w w w w w w w w w w w w w w _ _ _ _ _ _ _ w
 w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
@@ -50,8 +50,8 @@ class Tournament1(scenarios.Scenario):
     REPEATS   = 1000
     GENERATOR = None
     FIELD     = core.Field.from_string(FIELD1)
-    SETTINGS  = core.Settings(max_steps=300,
-                              max_score=100,
+    SETTINGS  = core.Settings(max_steps=1000,
+                              max_score=1000,
                               spawn_time=10,
                               ammo_amount=1,  
                               ammo_rate=9,
@@ -66,7 +66,7 @@ class Tournament2(scenarios.Scenario):
     FIELD     = core.Field.from_string(FIELD2)
 
     SETTINGS  = core.Settings(max_steps=300,
-                              max_score=100,
+                              max_score=1000,
                               spawn_time=11,
                               ammo_amount=1,  
                               ammo_rate=9,
@@ -83,7 +83,7 @@ class Tournament2(scenarios.Scenario):
 # to set up your own learning environment.
 
 # BLUE TEST
-Tournament2.test(red="agents/wolf.py", blue="agents/snake.py")
+Tournament2.test(red="domination/agent.py", blue="agents/snake.py")
 
 
 # RED TEST
