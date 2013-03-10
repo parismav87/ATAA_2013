@@ -340,18 +340,15 @@ class Agent(object):
             dy = path[len(path)-2][1] - obs.loc[1]
             turn = angle_fix(math.atan2(dy, dx) - obs.angle)
             reverse_turn = angle_fix(math.atan2(-dy, -dx) - obs.angle)
-            speed = -(dx**2 + dy**2)**0.5
-
-            # if abs(reverse_turn) < abs(turn):
-            turn = reverse_turn
-
+            speed = (dx**2 + dy**2)**0.5
+            if abs(reverse_turn) < abs(turn):
+                turn = reverse_turn
+                speed *= -1.0
             if abs(turn) >= self.settings.max_turn:
                 if self.speed is not None:
                     speed = self.speed * 0.1
                 else:
-                    speed = 0
-
-            
+                    speed = 0            
         else:
             turn = 0
             speed = 0
@@ -391,9 +388,9 @@ class Agent(object):
         if self.id == 0:
             surface.fill((0,0,0,0))
         # Selected agents draw their info
-        if self.selected:
-            if self.goal is not None:
-                pygame.draw.line(surface,(0,0,0),self.observation.loc, self.goal)
+
+        if self.goal is not None:
+            pygame.draw.line(surface,(255,0,0),self.observation.loc, self.goal)
         
     def finalize(self, interrupted=False):
         """ This function is called after the game ends, 
