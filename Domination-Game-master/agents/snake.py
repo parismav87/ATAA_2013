@@ -331,20 +331,27 @@ class Agent(object):
         if self.previous_goal != self.goal:
             self.path = self.find_awesome_path()
         else:
-            if point_dist(self.path[len(self.path)-2],obs.loc) <= self.settings.tilesize/2:
-                self.path.pop(len(self.path)-2)
+            if len(self.path) > 2:
+                if point_dist(self.path[len(self.path)-2],obs.loc) <= self.settings.tilesize/2:
+                    self.path.pop(len(self.path)-2)
         path = self.path
-
         if path:
             dx = path[len(path)-2][0] - obs.loc[0]
             dy = path[len(path)-2][1] - obs.loc[1]
             turn = angle_fix(math.atan2(dy, dx) - obs.angle)
-            speed = (dx**2 + dy**2)**0.5
-            if turn > self.settings.max_turn or turn < -self.settings.max_turn:
-                shoot = False
-            if abs(math.degrees(turn)) >= 40:
+            reverse_turn = angle_fix(math.atan2(-dy, -dx) - obs.angle)
+            speed = -(dx**2 + dy**2)**0.5
+
+            # if abs(reverse_turn) < abs(turn):
+            turn = reverse_turn
+
+            if abs(turn) >= self.settings.max_turn:
                 if self.speed is not None:
                     speed = self.speed * 0.1
+                else:
+                    speed = 0
+
+            
         else:
             turn = 0
             speed = 0
@@ -362,9 +369,9 @@ class Agent(object):
         if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
             self.goal = None
         # Walk to random CP
-        if self.goal is None and self.id == 2:
+        if self.goal is None and self.id == 0:
             self.goal = self.states[random.randint(0,len(self.states)-1)]
-        if self.id == 2:
+        if self.id == 0:
             drive = self.drive_tank()
         else:
             return (0,0,0)
