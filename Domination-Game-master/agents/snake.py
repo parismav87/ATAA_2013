@@ -29,6 +29,14 @@ class Node(object):
         self.terminal = False
         self.parent = None
 
+class Opponent(object):
+    def __init__(self):
+        self.loc = None
+        self.angle = None
+        self.id = None
+        self.vel = None
+
+
 class Path(object):
     def __init__(self):
         self.path = None
@@ -75,8 +83,9 @@ class Agent(object):
         self.walls = self.find_walls()
         if self.id == 0:
             self.createQTable()
-        self.ff = 0
-        self.counter = 0
+        self.reverseMode = True
+        self.warMode = False
+        self.foes = None
 
 
     def createQTable(self):
@@ -325,15 +334,24 @@ class Agent(object):
         p.path = path
         return p
 
+    def check_if_dead(self):
+        if self.observation.respawn_in == 10:
+            self.goal = None
+
     def drive_tank(self):
         obs = self.observation
+        self.check_if_dead()
         # Compute path, angle and drive
-        if self.previous_goal != self.goal:
+        if self.previous_goal != self.goal and self.goal is not None:
             self.path = self.find_awesome_path()
         else:
             if len(self.path) > 2:
                 if point_dist(self.path[len(self.path)-2],obs.loc) <= self.settings.tilesize/2:
                     self.path.pop(len(self.path)-2)
+            if self.goal is not None:
+                if line_intersects_grid(obs.loc, self.path[len(self.path)-2], self.grid, self.settings.tilesize):
+                    self.path = self.find_awesome_path()
+
         path = self.path
         if path:
             dx = path[len(path)-2][0] - obs.loc[0]
@@ -341,9 +359,10 @@ class Agent(object):
             turn = angle_fix(math.atan2(dy, dx) - obs.angle)
             reverse_turn = angle_fix(math.atan2(-dy, -dx) - obs.angle)
             speed = (dx**2 + dy**2)**0.5
-            if abs(reverse_turn) < abs(turn):
-                turn = reverse_turn
-                speed *= -1.0
+            if self.reverseMode:
+                if abs(reverse_turn) < abs(turn):
+                    turn = reverse_turn
+                    speed *= -1.0
             if abs(turn) >= self.settings.max_turn:
                 if self.speed is not None:
                     speed = self.speed * 0.1
@@ -355,25 +374,98 @@ class Agent(object):
         self.speed = speed
         return (turn, speed)
 
+    def checkOpponents(self):
+        oppDict = dict()
+        oppList = list()
+        for agent in self.all_agents:
+            for opponent in agent.observation.foes:
+                if opponent[0:2] not in oppDict:
+                    temp = Opponent()
+                    temp.loc = opponent[0:2]
+                    temp.id = len(oppList)
+                    temp.angle = opponent[2]
+                    oppDict[temp.loc] = temp
+                    oppList.append(temp)
+
+        if self.foes is None:
+            self.foes = oppList
+        else:
+            # here we connect each previous opponent with a current visible one
+            if len(oppList) > 0 and len(self.foes) > 0:
+                newOppList = []
+                for newOpp in oppList:
+                    for oldOpp in self.foes:
+                        dx = newOpp.loc[0] - oldOpp.loc[0]
+                        dy = newOpp.loc[1] - oldOpp.loc[1]
+                        turn = angle_fix(math.atan2(dy, dx) - oldOpp.angle)
+                        velocity = (dx**2 + dy**2)**0.5
+                        if abs(turn) < self.settings.max_turn and velocity < 40.0:
+                            oldOpp.loc = newOpp.loc
+                            oldOpp.angle = newOpp.angle
+                            oldOpp.vel = velocity
+                            newOppList.append(oldOpp)
+                self.foes = newOppList
+            else:
+                self.foes = oppList
+
+    def checkWarMode(self):
+        war = False
+        if len(self.foes) > 0:
+            for foe in self.foes:
+                if point_dist(foe.loc, self.observation.loc) < 1.5 * self.settings.max_range:
+                    war = True
+        self.warMode = war
+
+    def canShoot(self):
+        obs = self.observation
+        if obs.ammo==0:
+            return False
+        else:
+            #team blue starting angle is pi and red is 0. so that means, the angle is calculated facing to the right (normal stuff)
+            for foe in obs.foes:
+                dx = foe[0] - obs.loc[0]
+                dy = foe[1] - obs.loc[1]
+                angle = angle_fix(math.atan2(dy, dx))
+                da = (obs.angle-angle)
+                dist = (dx**2 + dy**2)**0.5
+                if math.degrees(abs(da))<= math.degrees(math.atan2(45,dist)) and dist<self.settings.max_range and not line_intersects_grid(obs.loc, foe[0:2], self.grid, self.settings.tilesize):
+                    friendly_fire = False
+                    for agent in self.all_agents:
+                        if agent.id != self.id:
+                            friendly_dx = agent.observation.loc[0] - obs.loc[0]
+                            friendly_dy = agent.observation.loc[1] - obs.loc[1]
+                            friendly_angle = angle_fix(math.atan2(friendly_dy, friendly_dx))
+                            friendly_da = (obs.angle-friendly_angle)
+                            friendly_dist = (friendly_dx**2 + friendly_dy**2)**0.5
+                            if math.degrees(abs(friendly_da)) <= math.degrees(math.atan2(45,friendly_dist)) and friendly_dist < dist:
+                                friendly_fire = True
+                    if not friendly_fire:
+                        return (da*(obs.angle/abs((obs.angle)+0.001)),0,True)
+        return False
+
+
     def action(self):
         """ This function is called every step and should
             return a tuple in the form: (turn, speed, shoot)
         """
         # take the self observation
         obs = self.observation
+        self.checkOpponents()
+        self.checkWarMode()
+        print self.warMode
         self.previous_goal = self.goal
         # check if goal is reached
         if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
             self.goal = None
         # Walk to random CP
-        if self.goal is None and self.id == 0:
+        if self.goal is None:
             self.goal = self.states[random.randint(0,len(self.states)-1)]
-        if self.id == 0:
-            drive = self.drive_tank()
+        drive = self.drive_tank()
+        shoot = self.canShoot()
+        if shoot:
+            return shoot
         else:
-            return (0,0,0)
-
-        return (drive[0],drive[1],0)
+            return (drive[0],drive[1],0)
         
     def debug(self, surface):
         """ Allows the agents to draw on the game UI,
@@ -390,7 +482,17 @@ class Agent(object):
         # Selected agents draw their info
 
         if self.goal is not None:
-            pygame.draw.line(surface,(255,0,0),self.observation.loc, self.goal)
+            pygame.draw.line(surface,(0,0,0),self.observation.loc, self.goal)
+
+        if self.id == 0:
+            if self.foes is not None:
+                for opponent in self.foes:
+                    if opponent.id == 0:
+                        pygame.draw.circle(surface, (255,0,0), opponent.loc, 15, 2)
+                    if opponent.id == 1:
+                        pygame.draw.circle(surface, (0,255,0), opponent.loc, 15, 2)
+                    if opponent.id == 2:
+                        pygame.draw.circle(surface, (0,0,255), opponent.loc, 15, 2)
         
     def finalize(self, interrupted=False):
         """ This function is called after the game ends, 
