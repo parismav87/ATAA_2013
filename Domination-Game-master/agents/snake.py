@@ -236,41 +236,54 @@ class Agent(object):
             while len(generated_paths) <= 1:
                 # if a path is found and the tree depth is growing a lot
                 # we keep the only path and stop exploring
-                if len(generated_paths) == 1 and len(level) == 3:
-                    break
                 new_lvl_nodes = list()
                 for node in level[len(level)-1]:
-                    if not node.terminal:
-                        if node.childs is None:
-                            node.childs = list()
-                            for point in temp_points:
-                                family_issues = self.family_issues(node, point)
-                                if not family_issues:
-                                    if not line_intersects_grid(node.data, point, self.grid, self.settings.tilesize):
-                                        tmp = Node()
-                                        tmp.data = point
-                                        tmp.parent = node
-                                        tmp.sumDistance = node.sumDistance + point_dist(point, node.data)
-                                        dx = point[0] - node.data[0]
-                                        dy = point[1] - node.data[1]
-                                        tmp.sumTurn += abs(angle_fix(math.atan2(dy, dx) - node.orientation))
-                                        tmp.orientation = angle_fix(math.atan2(dy, dx))
-                                        node.childs.append(tmp)
-                                        new_lvl_nodes.append(tmp)
+                    explore = True
+                    # cost so far for the current node
+                    cost = node.sumDistance + 75.0 * node.sumTurn
+                    # if there are paths already, nodes in the tree have to have
+                    # less cost than the path in order to be explored
+                    if len(generated_paths) > 0:
+                        for path in generated_paths:
+                            path_cost = path.distance + 75.0 * path.turn
+                            if cost >= path_cost:
+                                explore = False
+                    else:
+                        if cost > 400:
+                            explore = False
 
-                            if not line_intersects_grid(node.data, self.goal, self.grid, self.settings.tilesize):
-                                tmp = Node()
-                                tmp.data = self.goal
-                                tmp.parent = node
-                                tmp.sumDistance = node.sumDistance + point_dist(self.goal, node.data)
-                                dx = self.goal[0] - node.data[0]
-                                dy = self.goal[1] - node.data[1]
-                                tmp.sumTurn += abs(angle_fix(math.atan2(dy, dx) - node.orientation))
-                                tmp.orientation = angle_fix(math.atan2(dy, dx))
-                                node.childs.append(tmp)
-                                new_lvl_nodes.append(tmp)
-                                generated_paths.append(self.rollback_path(tmp))
-                                tmp.terminal = True
+                    if explore:
+                        if not node.terminal:
+                            if node.childs is None:
+                                node.childs = list()
+                                for point in temp_points:
+                                    family_issues = self.family_issues(node, point)
+                                    if not family_issues:
+                                        if not line_intersects_grid(node.data, point, self.grid, self.settings.tilesize):
+                                            tmp = Node()
+                                            tmp.data = point
+                                            tmp.parent = node
+                                            tmp.sumDistance = node.sumDistance + point_dist(point, node.data)
+                                            dx = point[0] - node.data[0]
+                                            dy = point[1] - node.data[1]
+                                            tmp.sumTurn += abs(angle_fix(math.atan2(dy, dx) - node.orientation))
+                                            tmp.orientation = angle_fix(math.atan2(dy, dx))
+                                            node.childs.append(tmp)
+                                            new_lvl_nodes.append(tmp)
+
+                                if not line_intersects_grid(node.data, self.goal, self.grid, self.settings.tilesize):
+                                    tmp = Node()
+                                    tmp.data = self.goal
+                                    tmp.parent = node
+                                    tmp.sumDistance = node.sumDistance + point_dist(self.goal, node.data)
+                                    dx = self.goal[0] - node.data[0]
+                                    dy = self.goal[1] - node.data[1]
+                                    tmp.sumTurn += abs(angle_fix(math.atan2(dy, dx) - node.orientation))
+                                    tmp.orientation = angle_fix(math.atan2(dy, dx))
+                                    node.childs.append(tmp)
+                                    new_lvl_nodes.append(tmp)
+                                    generated_paths.append(self.rollback_path(tmp))
+                                    tmp.terminal = True
 
                 level.append(new_lvl_nodes)
             optimalPath = self.chooseOptPath(generated_paths)

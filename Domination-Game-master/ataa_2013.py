@@ -61,7 +61,7 @@ class Tournament1(scenarios.Scenario):
                               think_time=0.06,)
 
 class Tournament2(scenarios.Scenario):
-    REPEATS   = 1000
+    REPEATS   = 10
     GENERATOR = None
     FIELD     = core.Field.from_string(FIELD2)
 
@@ -83,7 +83,7 @@ class Tournament2(scenarios.Scenario):
 # to set up your own learning environment.
 
 # BLUE TEST
-Tournament2.test(red="domination/agent.py", blue="agents/snake.py")
+Tournament2.test(red="agents/snake3.py", blue="agents/snake.py")
 
 
 # RED TEST
