@@ -386,27 +386,30 @@ class Agent(object):
                     temp.angle = opponent[2]
                     oppDict[temp.loc] = temp
                     oppList.append(temp)
-
-        if self.foes is None:
+        if self.foes is None and len(oppList) > 0:
             self.foes = oppList
-        else:
-            # here we connect each previous opponent with a current visible one
-            if len(oppList) > 0 and len(self.foes) > 0:
-                newOppList = []
-                for newOpp in oppList:
-                    for oldOpp in self.foes:
-                        dx = newOpp.loc[0] - oldOpp.loc[0]
-                        dy = newOpp.loc[1] - oldOpp.loc[1]
-                        turn = angle_fix(math.atan2(dy, dx) - oldOpp.angle)
+        elif self.foes is not None and len(oppList) > 0:
+            newOppList = []
+            for prev_foe in self.foes:
+                if len(oppList) > 0:
+                    for i in range(len(oppList)-1):
+                        new_foe = oppList[i]
+                        dx = new_foe.loc[0] - prev_foe.loc[0]
+                        dy = new_foe.loc[1] - prev_foe.loc[1]
+                        turn = abs(angle_fix(math.atan2(dy, dx) - prev_foe.angle))
                         velocity = (dx**2 + dy**2)**0.5
                         if abs(turn) < self.settings.max_turn and velocity < 40.0:
-                            oldOpp.loc = newOpp.loc
-                            oldOpp.angle = newOpp.angle
-                            oldOpp.vel = velocity
-                            newOppList.append(oldOpp)
-                self.foes = newOppList
-            else:
-                self.foes = oppList
+                            oppList.pop(i)
+                            prev_foe.loc = new_foe.loc
+                            prev_foe.angle = new_foe.angle
+                            prev_foe.vel = velocity
+                            newOppList.append(prev_foe)
+            if len(oppList) > 0:
+                for opp in oppList:
+                    newOppList.append(opp)
+            self.foes = newOppList                        
+        else:
+            self.foes = oppList
 
     def checkWarMode(self):
         war = False
@@ -452,7 +455,6 @@ class Agent(object):
         obs = self.observation
         self.checkOpponents()
         self.checkWarMode()
-        print self.warMode
         self.previous_goal = self.goal
         # check if goal is reached
         if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
@@ -481,8 +483,8 @@ class Agent(object):
             surface.fill((0,0,0,0))
         # Selected agents draw their info
 
-        if self.goal is not None:
-            pygame.draw.line(surface,(0,0,0),self.observation.loc, self.goal)
+        # if self.goal is not None:
+        #     pygame.draw.line(surface,(0,0,0),self.observation.loc, self.goal)
 
         if self.id == 0:
             if self.foes is not None:

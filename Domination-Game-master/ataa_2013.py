@@ -83,14 +83,14 @@ class Tournament2(scenarios.Scenario):
 # to set up your own learning environment.
 
 # BLUE TEST
-# Tournament2.test(red="domination/agent.py", blue="agents/snake.py")
+Tournament2.test(red="domination/agent.py", blue="agents/snake.py")
 
 
 # RED TEST
 # Tournament2.test(red="agents/Django.py", blue="domination/agent.py")
 
 
-# TOURNAMENT
-now = datetime.datetime.now()
-folder = os.path.join('tournaments', now.strftime("%Y%m%d-%H%M"))
-Tournament2.tournament(agents=sys.argv[1:], output_folder=folder, rendered=False)
+# # TOURNAMENT
+# now = datetime.datetime.now()
+# folder = os.path.join('tournaments', now.strftime("%Y%m%d-%H%M"))
+# Tournament2.tournament(agents=sys.argv[1:], output_folder=folder, rendered=False)
