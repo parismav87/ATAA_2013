@@ -1,6 +1,7 @@
 *.pyc
 docs/Makefile
 docs/_*
+docs
 _tmp/*
 replays/*
 t/*
