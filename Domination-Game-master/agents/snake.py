@@ -430,7 +430,7 @@ class Agent(object):
                     war = True
         self.warMode = war
 
-    def canShoot(self):
+    def shoot(self):
         if self.obs.ammo > 0:
             #team blue starting angle is pi and red is 0. so that means, the angle is calculated facing to the right (normal stuff)
             for foe in self.obs.foes:
@@ -443,8 +443,8 @@ class Agent(object):
                     friendly_fire = False
                     for agent in self.all_agents:
                         if agent.id != self.id:
-                            friendly_dx = agent.observation.loc[0] - self.obs.loc[0]
-                            friendly_dy = agent.observation.loc[1] - self.obs.loc[1]
+                            friendly_dx = agent.obs.loc[0] - self.obs.loc[0]
+                            friendly_dy = agent.obs.loc[1] - self.obs.loc[1]
                             friendly_angle = angle_fix(math.atan2(friendly_dy, friendly_dx))
                             friendly_da = (self.obs.angle-friendly_angle)
                             friendly_dist = (friendly_dx**2 + friendly_dy**2)**0.5
@@ -459,7 +459,7 @@ class Agent(object):
         for agent in self.all_agents:
             if agent.id != self.id:
                 team += (agent.goal,)
-        return team
+        self.currentTeam =  team
 
     def eGreedy(self, epsilon):
         if random.random() < epsilon :
@@ -483,6 +483,7 @@ class Agent(object):
         else:
             if point_dist(self.goal, self.obs.loc) <= self.settings.tilesize:
                 self.currentState = self.goal
+                self.goal = None
             else:
                 if type(self.currentState[0]) is type(tuple()):
                     if self.equal(self.goal, self.currentState[0]):
@@ -519,29 +520,29 @@ class Agent(object):
         pass
         self.currentAMMO = (self.obs.ammo > 0)
 
-    def action(self):
-        """ This function is called every step and should
-            return a tuple in the form: (turn, speed, shoot)
-        """
-        # take the self observation
-        self.checkOpponents()
-        self.checkWarMode()
-        self.check_if_dead()
-        self.check_cps()
-        self.checkAMMO()
-        self.currentAMMO = (self.obs.ammo > 0)
-        self.check_state()
-        self.currentTeam = self.state_of_team()
-        # if you put random, 0.0~1.0 probability of choosing actions in every step
-        # regardless if he reaches the goal state
-        # self.choose_action("egreedy", 0.2, None)
-        self.choose_action("random", 0.2, None)
-        self.learning("qlearning", 0.5, 0.7)
+    def updatePreviousState(self):
         self.previousAMMO = self.currentAMMO
         self.previousCPS = self.currentCPS
         self.previousTeam = self.currentTeam
         self.previousState = self.currentState
         self.previousAction = self.goal
+        return 
+
+    def action(self):
+        """ This function is called every step and should
+            return a tuple in the form: (turn, speed, shoot)
+        """
+        self.checkOpponents()
+        self.checkWarMode()
+        self.check_if_dead()
+        self.check_cps()
+        self.checkAMMO()
+        self.check_state()
+        self.state_of_team()
+        self.choose_action("random", 0.0, None)
+        # self.choose_action("egreedy", 0.0, None)
+        self.learning("qlearning", 0.5, 0.7)
+        self.updatePreviousState()
         self.drive_tank()
         self.shoot()
         return self.driveShoot
