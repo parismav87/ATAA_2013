@@ -59,33 +59,56 @@ class Agent(object):
             Note that the properties pertaining to the game field might not be
             given for each game.
         """
+        # attributes original
         self.id = id
         self.team = team
         self.mesh = nav_mesh
         self.grid = field_grid
         self.settings = settings
-        self.goal = None
-        self.previous = None
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
         self.blobpath = "agents/snake_"+self.callsign
+
+        # Monte Carlo attributes
+        self.saveTrajectory = True
+        self.Trajectory = list()
+
+        # attributes for the map parsing
+        self.map_width = 0
+        self.map_height = 0
+        self.states = None
+        self.map = self.create_map()
+        self.path_points = None
+        self.find_path_state_points()
+        self.walls = self.find_walls()
+
+        # attributes for the states
+        self.goal = self.states[4]
+        self.currentState = None
+        self.currentTeam = None
+        self.previousState = None
+        self.dead = False
+        self.previousTeam = None
+        self.previousAction = None
+        self.currentCPS = None
+        self.previousCPS = (0,0)
+        self.currentAMMO = False
+        self.previousAMMO = False
+
+        # attributes for the shooting
+        self.warMode = False
+        self.foes = None
+
+        # attributes for the driving
         self.speed = None
+        self.path = None
+        self.reverseMode = True
+        
         # Recommended way to share variables between agents.
         if id == 0:
             self.all_agents = self.__class__.all_agents = []
         self.all_agents.append(self)
-        self.map_width = 0
-        self.map_height = 0
-        self.map = self.create_map()
-        self.path_points = None
-        self.states = None
-        self.dead = False
-        self.path = None
-        self.previous_goal = None
-        self.find_path_state_points()
-        self.walls = self.find_walls()
-        self.reverseMode = True
-        self.warMode = False
-        self.foes = None
+          
+        # value table
         if self.id == 0:
             if os.path.isfile(self.blobpath):
                 file = open(self.blobpath, "r")
@@ -185,20 +208,19 @@ class Agent(object):
             to determine your action. Note that the observation object
             is modified in place.
         """
-        self.observation = observation
+        self.obs = observation
         self.selected = observation.selected
         if observation.selected:
             print observation
 
     def shoot(self):
         # Shoot enemies
-        obs = self.observation
         shoot = False
-        if (obs.ammo > 0 and 
-            obs.foes and 
-            point_dist(obs.foes[0][0:2], obs.loc) < self.settings.max_range and
-            not line_intersects_grid(obs.loc, obs.foes[0][0:2], self.grid, self.settings.tilesize)):
-            self.goal = obs.foes[0][0:2]
+        if (self.obs.ammo > 0 and 
+            self.obs.foes and 
+            point_dist(self.obs.foes[0][0:2], self.obs.loc) < self.settings.max_range and
+            not line_intersects_grid(self.obs.loc, self.obs.foes[0][0:2], self.grid, self.settings.tilesize)):
+            self.goal = self.obs.foes[0][0:2]
             shoot = True
         return shoot
 
@@ -216,30 +238,27 @@ class Agent(object):
         """
         controlPoint1 = 0
         controlPoint2 = 0
-        if self.observation.cps[0][2] == 1:
+        if self.obs.cps[0][2] == 1:
             controlPoint1 += 1
-        if self.observation.cps[0][2] == 0:
+        if self.obs.cps[0][2] == 0:
             controlPoint1 -= 1
-        if self.observation.cps[1][2] == 1:
+        if self.obs.cps[1][2] == 1:
             controlPoint2 += 1
-        if self.observation.cps[1][2] == 0:
+        if self.obs.cps[1][2] == 0:
             controlPoint2 -= 1
-        return (controlPoint1,controlPoint2)
+        self.currentCPS = (controlPoint1,controlPoint2)
 
     def find_awesome_path(self):
-
-        obs = self.observation
-
-        if not line_intersects_grid(obs.loc, self.goal, self.grid, self.settings.tilesize):
-            return [self.goal, obs.loc]
+        if not line_intersects_grid(self.obs.loc, self.goal, self.grid, self.settings.tilesize):
+            return [self.goal, self.obs.loc]
         else:
             temp_points = self.path_points
             # create the root element of the tree
             root = Node()
-            root.data = obs.loc
+            root.data = self.obs.loc
             root.terminal = False
             root.parent = None
-            root.orientation = obs.angle
+            root.orientation = self.obs.angle
             temp = root
             level = list()
             level_nodes = list()
@@ -339,18 +358,17 @@ class Agent(object):
         return p
 
     def check_if_dead(self):
-        if self.observation.respawn_in == 10:
+        if self.obs.respawn_in == 10:
             self.dead = True
 
     def drive_tank(self):
-        obs = self.observation
-        path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
-        self.reverseMode = (obs.ammo == 0)
+        path = find_path(self.obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
+        self.reverseMode = (self.obs.ammo == 0)
         if path:
-            dx = path[0][0] - obs.loc[0]
-            dy = path[0][1] - obs.loc[1]
-            turn = angle_fix(math.atan2(dy, dx) - obs.angle)
-            reverse_turn = angle_fix(math.atan2(-dy, -dx) - obs.angle)
+            dx = path[0][0] - self.obs.loc[0]
+            dy = path[0][1] - self.obs.loc[1]
+            turn = angle_fix(math.atan2(dy, dx) - self.obs.angle)
+            reverse_turn = angle_fix(math.atan2(-dy, -dx) - self.obs.angle)
             speed = (dx**2 + dy**2)**0.5
             if self.reverseMode:
                 if abs(reverse_turn) < abs(turn):
@@ -365,13 +383,13 @@ class Agent(object):
             turn = 0
             speed = 0
         self.speed = speed
-        return (turn, speed)
+        self.driveShoot = (turn, speed, False)
 
     def checkOpponents(self):
         oppDict = dict()
         oppList = list()
         for agent in self.all_agents:
-            for opponent in agent.observation.foes:
+            for opponent in agent.obs.foes:
                 if opponent[0:2] not in oppDict:
                     temp = Opponent()
                     temp.loc = opponent[0:2]
@@ -408,88 +426,125 @@ class Agent(object):
         war = False
         if len(self.foes) > 0:
             for foe in self.foes:
-                if point_dist(foe.loc, self.observation.loc) < 1.5 * self.settings.max_range:
+                if point_dist(foe.loc, self.obs.loc) < 1.5 * self.settings.max_range:
                     war = True
         self.warMode = war
 
     def canShoot(self):
-        obs = self.observation
-        if obs.ammo==0:
-            return False
-        else:
+        if self.obs.ammo > 0:
             #team blue starting angle is pi and red is 0. so that means, the angle is calculated facing to the right (normal stuff)
-            for foe in obs.foes:
-                dx = foe[0] - obs.loc[0]
-                dy = foe[1] - obs.loc[1]
+            for foe in self.obs.foes:
+                dx = foe[0] - self.obs.loc[0]
+                dy = foe[1] - self.obs.loc[1]
                 angle = angle_fix(math.atan2(dy, dx))
-                da = (obs.angle-angle)
+                da = (self.obs.angle-angle)
                 dist = (dx**2 + dy**2)**0.5
-                if math.degrees(abs(da))<= math.degrees(math.atan2(45,dist)) and dist<self.settings.max_range and not line_intersects_grid(obs.loc, foe[0:2], self.grid, self.settings.tilesize):
+                if math.degrees(abs(da))<= math.degrees(math.atan2(45,dist)) and dist<self.settings.max_range and not line_intersects_grid(self.obs.loc, foe[0:2], self.grid, self.settings.tilesize):
                     friendly_fire = False
                     for agent in self.all_agents:
                         if agent.id != self.id:
-                            friendly_dx = agent.observation.loc[0] - obs.loc[0]
-                            friendly_dy = agent.observation.loc[1] - obs.loc[1]
+                            friendly_dx = agent.observation.loc[0] - self.obs.loc[0]
+                            friendly_dy = agent.observation.loc[1] - self.obs.loc[1]
                             friendly_angle = angle_fix(math.atan2(friendly_dy, friendly_dx))
-                            friendly_da = (obs.angle-friendly_angle)
+                            friendly_da = (self.obs.angle-friendly_angle)
                             friendly_dist = (friendly_dx**2 + friendly_dy**2)**0.5
                             if math.degrees(abs(friendly_da)) <= math.degrees(math.atan2(45,friendly_dist)) and friendly_dist < dist:
                                 friendly_fire = True
                     if not friendly_fire:
-                        return (da*(obs.angle/abs((obs.angle)+0.001)),0,True)
-        return False
+                        self.driveShoot = (da*(self.obs.angle/abs((self.obs.angle)+0.001)),0,True)
 
     def state_of_team(self):
-        friends = []
-        friends.append(self.current)
-        for team_obs in self.all_agents:
-            if team_obs.id != self.id:
-                friends.append(team_obs.goal)
-        return friends
+        team = ()
+        team += (self.currentState,)
+        for agent in self.all_agents:
+            if agent.id != self.id:
+                team += (agent.goal,)
+        return team
+
+    def eGreedy(self, epsilon):
+        if random.random() < epsilon :
+            return self.states[random.randint(0,len(self.states)-1)]
+        else:
+            bestMoves = []
+            bestValue = -float('Inf')
+            for move, value in self.__class__.q[self.currentTeam][self.currentAMMO][self.currentCPS].iteritems():
+                if value > bestValue:
+                    bestMoves = []
+                    bestMoves.append(move)
+                    bestValue = value
+                if value == bestValue:
+                    bestMoves.append(move)
+            r = math.floor(random.random() * len(bestMoves))
+            return bestMoves[int(r)]
+
+    def check_state(self):
+        if self.obs.step == 1:
+            self.currentState = self.states[5]
+        else:
+            if point_dist(self.goal, self.obs.loc) <= self.settings.tilesize:
+                self.currentState = self.goal
+            else:
+                if type(self.currentState[0]) is type(tuple()):
+                    if self.equal(self.goal, self.currentState[0]):
+                        self.currentState = (self.currentState[1], self.goal)
+                    else:
+                        self.currentState = (self.currentState[0], self.goal)
+                else:
+                    self.currentState = (self.currentState, self.goal)
+        return
+
+    def choose_action(self, type, e, t):
+        if type == "egreedy":
+            self.goal = self.states[random.randint(0,len(self.states)-1)]
+            if self.obs.step > 1:
+                self.goal = self.eGreedy(0.1)
+        elif type == "random":
+            if self.goal is None:
+                self.goal = self.states[random.randint(0,len(self.states)-1)]
+            else:
+                if random.random() < e:
+                    self.goal = self.states[random.randint(0,len(self.states)-1)]
+        else:
+            pass
+
+    def learning(self, algorithm, alpha, gamma):
+        if algorithm == "qlearning":
+            pass
+        elif algorithm == "sarsa":
+            pass
+        elif algorithm == "wolf":
+            pass
+
+    def checkAMMO(self):
+        pass
+        self.currentAMMO = (self.obs.ammo > 0)
 
     def action(self):
         """ This function is called every step and should
             return a tuple in the form: (turn, speed, shoot)
         """
         # take the self observation
-        obs = self.observation
         self.checkOpponents()
         self.checkWarMode()
         self.check_if_dead()
-
-        if obs.step == 1:
-            self.current = self.states[5]
-            self.goal = self.states[random.randint(0,len(self.states)-1)]
-
-        else:
-
-            if point_dist(self.goal, obs.loc) <= self.settings.tilesize:
-                self.current = self.goal
-            else:
-                if type(self.current[0]) is type(tuple()):
-                    if self.equal(self.goal, self.current[0]):
-                        self.current = (self.current[1], self.goal)
-                    else:
-                        self.current = (self.current[0], self.goal)
-                else:
-                    self.current = (self.current, self.goal)
-            
-            if type(self.current[0]) is type(tuple()):
-                if random.random() > 0.9:
-                    self.goal = self.states[random.randint(0,len(self.states)-1)]
-            else:
-                self.goal = self.states[random.randint(0,len(self.states)-1)]
-
-        team = self.state_of_team()
-        print team
-
-        self.previous = self.current
-        drive = self.drive_tank()
-        shoot = self.canShoot()
-        if shoot:
-            return shoot
-        else:
-            return (drive[0],drive[1],0)
+        self.check_cps()
+        self.checkAMMO()
+        self.currentAMMO = (self.obs.ammo > 0)
+        self.check_state()
+        self.currentTeam = self.state_of_team()
+        # if you put random, 0.0~1.0 probability of choosing actions in every step
+        # regardless if he reaches the goal state
+        # self.choose_action("egreedy", 0.2, None)
+        self.choose_action("random", 0.2, None)
+        self.learning("qlearning", 0.5, 0.7)
+        self.previousAMMO = self.currentAMMO
+        self.previousCPS = self.currentCPS
+        self.previousTeam = self.currentTeam
+        self.previousState = self.currentState
+        self.previousAction = self.goal
+        self.drive_tank()
+        self.shoot()
+        return self.driveShoot
         
     def debug(self, surface):
         """ Allows the agents to draw on the game UI,
