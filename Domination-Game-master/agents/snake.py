@@ -5,15 +5,15 @@ FIELD = """w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w
 w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w _ _ _ _ _ _ _ _ _ _ _ _ _ S _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
-w _ _ _ _ _ _ # _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ # _ _ _ _ _ _ w
-w _ _ _ _ _ _ _ W w w w w w w w w w w w w w W _ _ # _ # _ _ w
-w _ _ _ W _ _ _ w _ _ _ _ _ _ _ _ _ _ S _ _ _ # _ _ W _ _ _ w
-w _ _ _ w _ _ _ w _ _ _ # _ _ _ _ _ # _ _ # _ # _ _ w _ _ _ w
-w _ _ _ w _ _ _ W _ _ _ _ W w w w W _ _ _ _ W _ _ _ w _ _ S w
-w _ _ _ w _ _ # _ # _ _ # _ _ _ _ _ # _ _ _ w _ _ _ w _ _ _ w
-w _ _ _ W _ _ # _ # _ S _ _ _ _ _ _ _ _ _ _ w _ _ _ W _ _ _ w
-w _ _ _ _ _ _ _ W w w w w w w w w w w w w w W _ _ # _ # _ _ w
-w _ _ _ _ _ _ # _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ # _ _ _ _ _ _ w
+w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
+w _ _ _ _ _ _ _ W w w w w w w w w w w w w w W _ _ _ _ _ _ _ w
+w _ _ _ W _ _ _ w _ _ _ _ _ _ _ _ _ _ S _ _ _ _ _ _ W _ _ _ w
+w _ _ _ w _ _ _ w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w _ _ _ w
+w S _ _ w _ _ _ W _ _ _ _ W w w w W _ _ _ _ W _ _ _ w _ _ S w
+w _ _ _ w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w _ _ _ w _ _ _ w
+w _ _ _ W _ _ _ _ _ _ S _ _ _ _ _ _ _ _ _ _ w _ _ _ W _ _ _ w
+w _ _ _ _ _ _ _ W w w w w w w w w w w w w w W _ _ _ _ _ _ _ w
+w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ S _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
@@ -65,8 +65,9 @@ class Agent(object):
         self.grid = field_grid
         self.settings = settings
         self.goal = None
+        self.previous = None
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
-        self.blobpath = "agents/django_"+self.callsign
+        self.blobpath = "agents/snake_"+self.callsign
         self.speed = None
         # Recommended way to share variables between agents.
         if id == 0:
@@ -77,6 +78,7 @@ class Agent(object):
         self.map = self.create_map()
         self.path_points = None
         self.states = None
+        self.dead = False
         self.path = None
         self.previous_goal = None
         self.find_path_state_points()
@@ -84,25 +86,35 @@ class Agent(object):
         self.reverseMode = True
         self.warMode = False
         self.foes = None
-
+        if self.id == 0:
+            if os.path.isfile(self.blobpath):
+                file = open(self.blobpath, "r")
+                self.__class__.q = pickle.load(file)
+                file.close()
+            else:
+                self.__class__.q = self.createQTable()
 
     def createQTable(self):
         Qtable = dict()
         n_of_agents = 3 
-        transitions = it.combinations(self.states, 2)
+        transitions = it.permutations(self.states, 2)
         state_space = it.chain(self.states, transitions)
-        pos = it.product(state_space, repeat = n_of_agents)
-        counter = 0
+        pos = it.product(state_space,self.states,self.states)
+        counter =0
         for p in pos:
             Qtable[p] = dict()
-            cps_con = [-1, 0, 1]
-            cps = it.product(cps_con,cps_con, repeat = 1)
-            for c in cps:  
-                Qtable[p][c] = dict()
-                for a in self.states:
-                    Qtable[p][c][a] = 20.0
-                    counter += 1
+            ammo = [True, False]
+            for am in ammo:
+                Qtable[p][am] = dict()
+                cps_con = [-1, 0, 1]
+                cps = it.product(cps_con,cps_con, repeat = 1)
+                for c in cps:
+                    Qtable[p][am][c] = dict()
+                    for a in self.states:
+                        counter += 1
+                        Qtable[p][am][c][a] = 10000.0
         print counter
+        return Qtable
 
     def create_map(self):
         x = 0
@@ -144,7 +156,6 @@ class Agent(object):
                 y += dy
             return (x,y)
 
-
     def find_walls(self):
         walls = []
         for x in xrange(self.map_width):
@@ -167,7 +178,6 @@ class Agent(object):
                                 walls.append((start[0],start[1],ending[0],ending[1]))
         return walls
 
-
     def observe(self, observation):
         """ Each agent is passed an observation using this function,
             before being asked ffoes_conor an action. You can store either
@@ -179,8 +189,6 @@ class Agent(object):
         self.selected = observation.selected
         if observation.selected:
             print observation
-
-
 
     def shoot(self):
         # Shoot enemies
@@ -332,11 +340,12 @@ class Agent(object):
 
     def check_if_dead(self):
         if self.observation.respawn_in == 10:
-            self.goal = None
+            self.dead = True
 
     def drive_tank(self):
         obs = self.observation
         path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
+        self.reverseMode = (obs.ammo == 0)
         if path:
             dx = path[0][0] - obs.loc[0]
             dy = path[0][1] - obs.loc[1]
@@ -430,6 +439,13 @@ class Agent(object):
                         return (da*(obs.angle/abs((obs.angle)+0.001)),0,True)
         return False
 
+    def state_of_team(self):
+        friends = []
+        friends.append(self.current)
+        for team_obs in self.all_agents:
+            if team_obs.id != self.id:
+                friends.append(team_obs.goal)
+        return friends
 
     def action(self):
         """ This function is called every step and should
@@ -439,13 +455,35 @@ class Agent(object):
         obs = self.observation
         self.checkOpponents()
         self.checkWarMode()
-        self.previous_goal = self.goal
-        # check if goal is reached
-        if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize:
-            self.goal = None
-        # Walk to random CP
-        if self.goal is None:
+        self.check_if_dead()
+
+        if obs.step == 1:
+            self.current = self.states[5]
             self.goal = self.states[random.randint(0,len(self.states)-1)]
+
+        else:
+
+            if point_dist(self.goal, obs.loc) <= self.settings.tilesize:
+                self.current = self.goal
+            else:
+                if type(self.current[0]) is type(tuple()):
+                    if self.equal(self.goal, self.current[0]):
+                        self.current = (self.current[1], self.goal)
+                    else:
+                        self.current = (self.current[0], self.goal)
+                else:
+                    self.current = (self.current, self.goal)
+            
+            if type(self.current[0]) is type(tuple()):
+                if random.random() > 0.9:
+                    self.goal = self.states[random.randint(0,len(self.states)-1)]
+            else:
+                self.goal = self.states[random.randint(0,len(self.states)-1)]
+
+        team = self.state_of_team()
+        print team
+
+        self.previous = self.current
         drive = self.drive_tank()
         shoot = self.canShoot()
         if shoot:
@@ -467,9 +505,6 @@ class Agent(object):
             surface.fill((0,0,0,0))
         # Selected agents draw their info
 
-        # if self.goal is not None:
-        #     pygame.draw.line(surface,(0,0,0),self.observation.loc, self.goal)
-
         if self.id == 0:
             if self.foes is not None:
                 for opponent in self.foes:
@@ -486,4 +521,14 @@ class Agent(object):
             interrupt (CTRL+C) by the user. Use it to
             store any learned variables and write logs/reports.
         """
-        print "The end..."
+        if self.blobpath is not None:
+            if self.id == 0:
+                try:
+                    print "writing the q table back..."
+                    file = open(self.blobpath, "w")
+                    pickle.dump(self.__class__.q, file)
+                    file.close()
+                except:
+                    # We can't write to the blob, this is normal on AppEngine since
+                    # we don't have filesystem access there.        
+                    print "Agent %s can't write blob." % self.callsign
