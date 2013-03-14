@@ -81,8 +81,6 @@ class Agent(object):
         self.previous_goal = None
         self.find_path_state_points()
         self.walls = self.find_walls()
-        if self.id == 0:
-            self.createQTable()
         self.reverseMode = True
         self.warMode = False
         self.foes = None
@@ -105,8 +103,6 @@ class Agent(object):
                     Qtable[p][c][a] = 20.0
                     counter += 1
         print counter
-
-
 
     def create_map(self):
         x = 0
@@ -340,22 +336,10 @@ class Agent(object):
 
     def drive_tank(self):
         obs = self.observation
-        self.check_if_dead()
-        # Compute path, angle and drive
-        if self.previous_goal != self.goal and self.goal is not None:
-            self.path = self.find_awesome_path()
-        else:
-            if len(self.path) > 2:
-                if point_dist(self.path[len(self.path)-2],obs.loc) <= self.settings.tilesize/2:
-                    self.path.pop(len(self.path)-2)
-            if self.goal is not None:
-                if line_intersects_grid(obs.loc, self.path[len(self.path)-2], self.grid, self.settings.tilesize):
-                    self.path = self.find_awesome_path()
-
-        path = self.path
+        path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
         if path:
-            dx = path[len(path)-2][0] - obs.loc[0]
-            dy = path[len(path)-2][1] - obs.loc[1]
+            dx = path[0][0] - obs.loc[0]
+            dy = path[0][1] - obs.loc[1]
             turn = angle_fix(math.atan2(dy, dx) - obs.angle)
             reverse_turn = angle_fix(math.atan2(-dy, -dx) - obs.angle)
             speed = (dx**2 + dy**2)**0.5
