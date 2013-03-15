@@ -131,6 +131,7 @@ class GameStats(object):
     def __init__(self):
         self.score_red       = 0  #:The number of points scored by red
         self.score_blue      = 0 #: The number of points scored by blue
+        self.score_last      = None
         self.score           = 0.0 #: The final score as a float (red/total)
         self.steps           = 0 #: Number of steps the game lasted
         self.ammo_red        = 0 #: Number of ammo packs that red picked up
@@ -404,7 +405,7 @@ class Game(object):
             self._add_object(o)
         self.controlpoints = cps
         # Initialize tanks
-        print "Initializing agents."
+        # print "Initializing agents."
         if self.record or self.replay is None:
             # Initialize new tanks with brains
             brain_kwargs = {'settings': self.settings}
@@ -456,8 +457,25 @@ class Game(object):
         try:
             for s in xrange(settings.max_steps):
                 self.step = s+1
-                if self.step % 10 == 0:
-                    print "Step %d: %d - %d"%(self.step, self.score_red, self.score_blue)
+
+                # ==============================>>>>>>
+
+                # if self.step % 50 == 0:
+                #     if self.score_last is not None:
+                #         if (self.score_blue - self.score_last) > 0:
+                #             print "Step %d: %d - %d +"%(self.step, self.score_red, self.score_blue)
+                #         elif (self.score_blue - self.score_last) == 0:
+                #             print "Step %d: %d - %d ="%(self.step, self.score_red, self.score_blue)
+                #         else:
+                #             print "Step %d: %d - %d -"%(self.step, self.score_red, self.score_blue)
+                #     else:
+                #         print "Step %d: %d - %d ="%(self.step, self.score_red, self.score_blue)                
+                # self.score_last = self.score_blue
+
+                # ==============================>>>>
+
+
+
                 if self.step_callback is not None:
                     self.step_callback(self)
                 ## UPDATE & CHECK VICTORY
@@ -571,7 +589,7 @@ class Game(object):
         self.stats.score_blue = self.score_blue
         self.stats.score = self.score_red / float(self.score_red + self.score_blue)
         self.stats.steps = self.step
-        print self.stats
+        # print self.stats
         if self.record:
             self.replay.settings = copy.copy(self.settings)
             self.replay.field = self.field

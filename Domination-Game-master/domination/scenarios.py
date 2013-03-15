@@ -72,7 +72,7 @@ class Scenario(object):
     GENERATOR         = core.FieldGenerator() #: Will generate FIELD before each game if defined
     FIELD             = None   #: Will play on this field if GENERATOR is None
     REPEATS           = 4      #: How many times to repeat each game
-    SWAP_TEAMS        = True   #: Repeat each run with blue/red swapped
+    SWAP_TEAMS        = False   #: Repeat each run with blue/red swapped
     DRAW_MARGIN       = 0.05
     SCORING           = SCORING_LINEAR
 

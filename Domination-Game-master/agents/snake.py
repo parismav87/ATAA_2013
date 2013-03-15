@@ -19,6 +19,59 @@ w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ w
 w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w"""
 
+
+BLACK_MAMBA = """
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@:@@@:@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@++@:;;;@'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@,@@@,#@@@@@#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#'@@,'@:#@@@#,@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'@+#:@@@@@@@@++@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'@:#,@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@,@+,#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@;@,;:#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'@#+':+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#'@,@;@+:@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#@@:+@;;;@:@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@;#@;@,,@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@;@'@#,@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@:;:@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@:@#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@.';'@@@@@@@;@'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@+@@@@'@@@@@@'@+;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'@;;'@@#@@@@,@+@'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@;++@,,@@'###@@:@:@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#:+@:'@@;@@+;@,@#''#':@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@++,::##@+'@;#@@:@@@@@#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@,@#,'#:@;#@@@@+:+,@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@;@@@#@@@.+:@@@':,@,'#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@:+@@@@#'+#:@@@@@;@@;+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@+'',+@@##':';,,@@@'@:+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@::,,;#@@@@@@#::::',@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@':::+@@@@@@@@@@@@@@@@@@@@@@@@@@@#@@@@@@@@@@+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@;:::::,@@@@@@@@@@@@@@@@@@@@@@@+::@@@@@@@@#:,#@@@@@@@@@@@@@@@@@@@@@@@@@@#+,:@@@@@@@@@@
+@@@@@@@@@@+,,,::,:#@@@,:,@@@@@@@@@@@@@@@,:#@@@@@@@@:::+@@@,:,+@@@@@@@@@@@@@@@@@@@@,,#@@@@@@@@@@
+@@@@@@@@@@@::@@@:::#@@,:,@@@@@@@@@@@@@@@::@@,@@@@@@:::+@@#:::'@@@@@@@@@@@@@@@@@@@#::@@@@@@@@@@@
+@@@@@@@@@@@:#@@::::@@':,;@@@#@@@@@#@@@@':,@;#@@@@@@::::@@,:::#@@@##@@@@@@@@@@@@@@,:,@@@@@#@#@@@
+@@@@@@@@@@#:@#::::,@@,:,@@@,,,@@@@:'@@@,,#+,@@@@@@#,:,:@:::::@@@,::#@@@:'@@@@@@@@::#@@@@,,:@@@@
+@@@@@@@@@@::,:::,:@#@::,@#;,:::@#,:,,@@::@:#@@@@@@',::,,:@:,:@@+::::@@,:#::#,,;@::,@@@@:::,.@@@
+@@@@@@@@@@,:::::'#@@@,:+@@,#:,:@;,::,@#::,,@@@@@@@:,,:::;#:::@@,@::,@@::'::::,,#,::#:@@:#:::@@@
+@@@@@@@@@@:::,:::::@'::@@,@:::'@,,:#'@::,:@@@@@@@@:;+:::@:::,@;#,:::@@,,:,,,::,@::#,,@,@:::'@@@
+@@@@@@@@@@:'@#@@@:,'+:,@@,,,,:+@::#@@@:::::#@#@@@@,+@:;#@,::;@::::,;@#,,#:,+:,:@::@,;@:,:,:+@@@
+@@@@@@@@@@,##,;,::'@#::@@::+#,'@:,@',#,:,::,@@@@@@,#@@@@@::,@@::'@::@+:,@:'#,,#@,:',@@::+#:'@@@
+@@@@@@@@@@;@:,,:#@@@@:,@@,@#@::@',:,@@:'#,::#@@@@@,#@@@@#::@@@,@@@,,@+:@@@@@,@@@@::;@@,@@@,:@@@
+@@@@@@@@@@@@@@@@@@@@@+,+:@@@@@#@@##@@@,@@@@@@#@@@@,@@@@@::@@@@@@@@@@@#;@@@@@@@@@@+,@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@;@@@@@@@@#@@@@@@@@@@@@@@@@@#@@@@@'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+"""
+
 class Node(object):
     def __init__(self):
         self.data = None
@@ -52,7 +105,6 @@ class Agent(object):
     4.32 to 5.4 metres per second. It has a reputation for being aggressive and highly venomous and is 
     among the world's most venomous land snakes.
     """
-    
     def __init__(self, id, team, settings=None, field_rects=None, field_grid=None, nav_mesh=None, blob=None, **kwargs):
         """ Each agent is initialized at the beginning of each game.
             The first agent (id==0) can use this to set up global variables.
@@ -89,10 +141,14 @@ class Agent(object):
         self.dead = False
         self.previousTeam = None
         self.previousAction = None
-        self.currentCPS = None
+        self.currentCPS = (0,0)
         self.previousCPS = (0,0)
         self.currentAMMO = False
         self.previousAMMO = False
+        self.reward = None
+
+        # attributes for q learning
+        self.qValid = False 
 
         # attributes for the shooting
         self.warMode = False
@@ -122,9 +178,7 @@ class Agent(object):
         n_of_agents = 3 
         transitions = it.permutations(self.states, 2)
         state_space = it.chain(self.states, transitions)
-        pos = it.product(state_space,self.states,self.states)
-        counter =0
-        for p in pos:
+        for p in state_space:
             Qtable[p] = dict()
             ammo = [True, False]
             for am in ammo:
@@ -134,9 +188,7 @@ class Agent(object):
                 for c in cps:
                     Qtable[p][am][c] = dict()
                     for a in self.states:
-                        counter += 1
-                        Qtable[p][am][c][a] = 10000.0
-        print counter
+                        Qtable[p][am][c][a] = 20.0
         return Qtable
 
     def create_map(self):
@@ -454,12 +506,13 @@ class Agent(object):
                         self.driveShoot = (da*(self.obs.angle/abs((self.obs.angle)+0.001)),0,True)
 
     def state_of_team(self):
-        team = ()
-        team += (self.currentState,)
-        for agent in self.all_agents:
-            if agent.id != self.id:
-                team += (agent.goal,)
-        self.currentTeam =  team
+        # team = ()
+        # team += (self.currentState,)
+        # for agent in self.all_agents:
+        #     if agent.id != self.id:
+        #         team += (agent.goal,)
+        # self.currentTeam =  team
+        self.currentTeam = self.currentState
 
     def eGreedy(self, epsilon):
         if random.random() < epsilon :
@@ -492,7 +545,23 @@ class Agent(object):
                         self.currentState = (self.currentState[0], self.goal)
                 else:
                     self.currentState = (self.currentState, self.goal)
+        if type(self.currentState[0]) is type(tuple()):
+            if self.equal(self.currentState[0], self.currentState[1]):
+                self.currentState = self.currentState[0]
         return
+
+    def stateMaxValue(self):
+        bestValue = -float('Inf')
+        for move, value in self.__class__.q[self.currentTeam][self.currentAMMO][self.currentCPS].iteritems():
+            if value > bestValue:
+                bestValue = value
+        return bestValue
+
+    def check_reward(self):
+        reward = 0.0
+        for i in range(len(self.currentCPS)):
+            reward += (self.currentCPS[i] - self.previousCPS[i]) * 10.0
+        self.reward = reward
 
     def choose_action(self, type, e, t):
         if type == "egreedy":
@@ -510,11 +579,30 @@ class Agent(object):
 
     def learning(self, algorithm, alpha, gamma):
         if algorithm == "qlearning":
-            pass
+            self.check_validity_q()
+            if self.qValid:
+                self.qLearning(alpha, gamma)
         elif algorithm == "sarsa":
             pass
         elif algorithm == "wolf":
             pass
+
+    def check_validity_q(self):
+        valid = True
+        if type(self.previousTeam) == type(tuple()):
+            for a in self.previousTeam:
+                if a is None:
+                    valid = False
+        if self.previousAction is None:
+            valid = False
+        self.qValid = valid
+
+
+    def qLearning(self, alpha, gamma):
+        pass
+        self.__class__.q[self.previousTeam][self.previousAMMO][self.previousCPS][self.previousAction] = \
+        self.__class__.q[self.previousTeam][self.previousAMMO][self.previousCPS][self.previousAction] \
+        + alpha * ( self.reward + gamma * self.stateMaxValue() - self.__class__.q[self.previousTeam][self.previousAMMO][self.previousCPS][self.previousAction])
 
     def checkAMMO(self):
         pass
@@ -537,11 +625,11 @@ class Agent(object):
         self.check_if_dead()
         self.check_cps()
         self.checkAMMO()
+        self.check_reward()
         self.check_state()
         self.state_of_team()
-        self.choose_action("random", 0.0, None)
-        # self.choose_action("egreedy", 0.0, None)
-        self.learning("qlearning", 0.5, 0.7)
+        self.choose_action("egreedy", 0.1, None)
+        self.learning("qlearning", 0.7, 0.7)
         self.updatePreviousState()
         self.drive_tank()
         self.shoot()

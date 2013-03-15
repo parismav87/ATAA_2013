@@ -207,8 +207,7 @@ class Agent(object):
         reward = 0.0
         for i in range(len(self.cps)):
             reward += (self.cps[i] - self.previous_cps[i]) * 10.0
-        print reward
-        return reward
+        self.reward = reward
 
     def updateValueTable(self):
         # current state
