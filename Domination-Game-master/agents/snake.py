@@ -21,11 +21,6 @@ w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w"""
 
 
 BLACK_MAMBA = """
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@:@@@:@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@++@:;;;@'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -145,7 +140,7 @@ class Agent(object):
         self.previousCPS = (0,0)
         self.currentAMMO = False
         self.previousAMMO = False
-        self.reward = None
+        self.reward = 0.0
 
         # attributes for q learning
         self.qValid = False 
@@ -180,16 +175,30 @@ class Agent(object):
         state_space = it.chain(self.states, transitions)
         for p in state_space:
             Qtable[p] = dict()
-            ammo = [True, False]
-            for am in ammo:
-                Qtable[p][am] = dict()
-                cps_con = [-1, 0, 1]
-                cps = it.product(cps_con,cps_con, repeat = 1)
-                for c in cps:
-                    Qtable[p][am][c] = dict()
-                    for a in self.states:
-                        Qtable[p][am][c][a] = 20.0
+            for a in self.states:
+                Qtable[p][a] = 100.0
+
         return Qtable
+
+    # def createQTable(self):
+    #     Qtable = dict()
+    #     n_of_agents = 3 
+    #     transitions = it.permutations(self.states, 2)
+    #     state_space = it.chain(self.states, transitions)
+    #     pos = it.product(state_space,self.states,self.states)
+    #     counter =0
+    #     for p in pos:
+    #         Qtable[p] = dict()
+    #         ammo = [True, False]
+    #         for am in ammo:
+    #             Qtable[p][am] = dict()
+    #             cps_con = [-1, 0, 1]
+    #             cps = it.product(cps_con,cps_con, repeat = 1)
+    #             for c in cps:
+    #                 Qtable[p][am][c] = dict()
+    #                 for a in self.states:
+    #                     counter += 1
+    #                     Qtable[p][am][c][a] = 10000.0
 
     def create_map(self):
         x = 0
@@ -505,14 +514,32 @@ class Agent(object):
                     if not friendly_fire:
                         self.driveShoot = (da*(self.obs.angle/abs((self.obs.angle)+0.001)),0,True)
 
+    # def state_of_team(self):
+    #     team = ()
+    #     team += (self.currentState,)
+    #     for agent in self.all_agents:
+    #         if agent.id != self.id:
+    #             team += (agent.goal,)
+    #     self.currentTeam =  team
+
     def state_of_team(self):
-        # team = ()
-        # team += (self.currentState,)
-        # for agent in self.all_agents:
-        #     if agent.id != self.id:
-        #         team += (agent.goal,)
-        # self.currentTeam =  team
         self.currentTeam = self.currentState
+
+    # def eGreedy(self, epsilon):
+    #     if random.random() < epsilon :
+    #         return self.states[random.randint(0,len(self.states)-1)]
+    #     else:
+    #         bestMoves = []
+    #         bestValue = -float('Inf')
+    #         for move, value in self.__class__.q[self.currentTeam][self.currentAMMO][self.currentCPS].iteritems():
+    #             if value > bestValue:
+    #                 bestMoves = []
+    #                 bestMoves.append(move)
+    #                 bestValue = value
+    #             if value == bestValue:
+    #                 bestMoves.append(move)
+    #         r = math.floor(random.random() * len(bestMoves))
+    #         return bestMoves[int(r)]
 
     def eGreedy(self, epsilon):
         if random.random() < epsilon :
@@ -520,7 +547,7 @@ class Agent(object):
         else:
             bestMoves = []
             bestValue = -float('Inf')
-            for move, value in self.__class__.q[self.currentTeam][self.currentAMMO][self.currentCPS].iteritems():
+            for move, value in self.__class__.q[self.currentTeam].iteritems():
                 if value > bestValue:
                     bestMoves = []
                     bestMoves.append(move)
@@ -550,18 +577,28 @@ class Agent(object):
                 self.currentState = self.currentState[0]
         return
 
+    # def stateMaxValue(self):
+    #     bestValue = -float('Inf')
+    #     for move, value in self.__class__.q[self.currentTeam][self.currentAMMO][self.currentCPS].iteritems():
+    #         if value > bestValue:
+    #             bestValue = value
+    #     return bestValue
+
     def stateMaxValue(self):
         bestValue = -float('Inf')
-        for move, value in self.__class__.q[self.currentTeam][self.currentAMMO][self.currentCPS].iteritems():
+        for move, value in self.__class__.q[self.currentTeam].iteritems():
             if value > bestValue:
                 bestValue = value
         return bestValue
 
-    def check_reward(self):
-        reward = 0.0
-        for i in range(len(self.currentCPS)):
-            reward += (self.currentCPS[i] - self.previousCPS[i]) * 10.0
-        self.reward = reward
+    # def check_reward(self):
+    #     reward = 0.0
+    #     for i in range(len(self.currentCPS)):
+    #         reward += (self.currentCPS[i] - self.previousCPS[i]) * 10.0
+    #     self.reward = reward
+
+    # def check_reward(self):
+    #     if self.pre
 
     def choose_action(self, type, e, t):
         if type == "egreedy":
@@ -598,11 +635,17 @@ class Agent(object):
         self.qValid = valid
 
 
+    # def qLearning(self, alpha, gamma):
+    #     pass
+    #     self.__class__.q[self.previousTeam][self.previousAMMO][self.previousCPS][self.previousAction] = \
+    #     self.__class__.q[self.previousTeam][self.previousAMMO][self.previousCPS][self.previousAction] \
+    #     + alpha * ( self.reward + gamma * self.stateMaxValue() - self.__class__.q[self.previousTeam][self.previousAMMO][self.previousCPS][self.previousAction])
+
     def qLearning(self, alpha, gamma):
         pass
-        self.__class__.q[self.previousTeam][self.previousAMMO][self.previousCPS][self.previousAction] = \
-        self.__class__.q[self.previousTeam][self.previousAMMO][self.previousCPS][self.previousAction] \
-        + alpha * ( self.reward + gamma * self.stateMaxValue() - self.__class__.q[self.previousTeam][self.previousAMMO][self.previousCPS][self.previousAction])
+        self.__class__.q[self.previousTeam][self.previousAction] = \
+        self.__class__.q[self.previousTeam][self.previousAction] \
+        + alpha * ( self.reward + gamma * self.stateMaxValue() - self.__class__.q[self.previousTeam][self.previousAction])
 
     def checkAMMO(self):
         pass
@@ -625,9 +668,20 @@ class Agent(object):
         self.check_if_dead()
         self.check_cps()
         self.checkAMMO()
-        self.check_reward()
         self.check_state()
         self.state_of_team()
+        # self.check_reward()
+        self.reward = 0.0
+        if self.previousState is not None and self.goal is not None:
+            if type(self.previousState[1]) is type(tuple()):
+                if not self.equal(self.previousState[1], self.previousAction):
+                    self.reward = -10.0
+                    print "==========="
+                else:
+                    print "+"
+
+
+
         self.choose_action("egreedy", 0.1, None)
         self.learning("qlearning", 0.7, 0.7)
         self.updatePreviousState()
