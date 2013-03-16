@@ -148,6 +148,9 @@ class Agent(object):
         # attributes for the shooting
         self.warMode = False
         self.foes = None
+        self.angle = None
+        self.opponentAngle = None
+        self.distance = None
 
         # attributes for the driving
         self.speed = None
@@ -179,26 +182,6 @@ class Agent(object):
                 Qtable[p][a] = 100.0
 
         return Qtable
-
-    # def createQTable(self):
-    #     Qtable = dict()
-    #     n_of_agents = 3 
-    #     transitions = it.permutations(self.states, 2)
-    #     state_space = it.chain(self.states, transitions)
-    #     pos = it.product(state_space,self.states,self.states)
-    #     counter =0
-    #     for p in pos:
-    #         Qtable[p] = dict()
-    #         ammo = [True, False]
-    #         for am in ammo:
-    #             Qtable[p][am] = dict()
-    #             cps_con = [-1, 0, 1]
-    #             cps = it.product(cps_con,cps_con, repeat = 1)
-    #             for c in cps:
-    #                 Qtable[p][am][c] = dict()
-    #                 for a in self.states:
-    #                     counter += 1
-    #                     Qtable[p][am][c][a] = 10000.0
 
     def create_map(self):
         x = 0
@@ -273,17 +256,6 @@ class Agent(object):
         self.selected = observation.selected
         if observation.selected:
             print observation
-
-    def shoot(self):
-        # Shoot enemies
-        shoot = False
-        if (self.obs.ammo > 0 and 
-            self.obs.foes and 
-            point_dist(self.obs.foes[0][0:2], self.obs.loc) < self.settings.max_range and
-            not line_intersects_grid(self.obs.loc, self.obs.foes[0][0:2], self.grid, self.settings.tilesize)):
-            self.goal = self.obs.foes[0][0:2]
-            shoot = True
-        return shoot
 
     def equal(self, point1, point2):
         if point1[0] == point2[0] and point1[1] == point2[1]:
@@ -421,6 +393,9 @@ class Agent(object):
     def check_if_dead(self):
         if self.obs.respawn_in == 10:
             self.dead = True
+            self.angle = None
+            self.opponentAngle = None
+            self.distance = None
 
     def drive_tank(self):
         path = find_path(self.obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
@@ -487,7 +462,7 @@ class Agent(object):
         war = False
         if len(self.foes) > 0:
             for foe in self.foes:
-                if point_dist(foe.loc, self.obs.loc) < 1.5 * self.settings.max_range:
+                if point_dist(foe.loc, self.obs.loc) < self.settings.max_see:
                     war = True
         self.warMode = war
 
@@ -497,22 +472,13 @@ class Agent(object):
             for foe in self.obs.foes:
                 dx = foe[0] - self.obs.loc[0]
                 dy = foe[1] - self.obs.loc[1]
-                angle = angle_fix(math.atan2(dy, dx))
-                da = (self.obs.angle-angle)
-                dist = (dx**2 + dy**2)**0.5
-                if math.degrees(abs(da))<= math.degrees(math.atan2(45,dist)) and dist<self.settings.max_range and not line_intersects_grid(self.obs.loc, foe[0:2], self.grid, self.settings.tilesize):
-                    friendly_fire = False
-                    for agent in self.all_agents:
-                        if agent.id != self.id:
-                            friendly_dx = agent.obs.loc[0] - self.obs.loc[0]
-                            friendly_dy = agent.obs.loc[1] - self.obs.loc[1]
-                            friendly_angle = angle_fix(math.atan2(friendly_dy, friendly_dx))
-                            friendly_da = (self.obs.angle-friendly_angle)
-                            friendly_dist = (friendly_dx**2 + friendly_dy**2)**0.5
-                            if math.degrees(abs(friendly_da)) <= math.degrees(math.atan2(45,friendly_dist)) and friendly_dist < dist:
-                                friendly_fire = True
-                    if not friendly_fire:
-                        self.driveShoot = (da*(self.obs.angle/abs((self.obs.angle)+0.001)),0,True)
+                self.angle = angle_fix(math.atan2(dy, dx))
+                self.FindAngleDifference()
+                self.distance = (dx**2 + dy**2)**0.5
+                if line_intersects_grid(self.obs.loc, foe[0:2], self.grid, self.settings.tilesize):
+                    self.opponentAngle = 180.0
+                
+
 
     # def state_of_team(self):
     #     team = ()
@@ -665,31 +631,19 @@ class Agent(object):
         """
         self.checkOpponents()
         self.checkWarMode()
+        print self.obs.angle, self.angle
         self.check_if_dead()
         self.check_cps()
         self.checkAMMO()
         self.check_state()
         self.state_of_team()
-        # self.check_reward()
-        self.reward = 0.0
-        if self.previousState is not None and self.goal is not None:
-            if type(self.previousState[1]) is type(tuple()):
-                if not self.equal(self.previousState[1], self.previousAction):
-                    self.reward = -10.0
-                    print "==========="
-                else:
-                    print "+"
-
-
-
-        self.choose_action("egreedy", 0.1, None)
-        #self.learning("qlearning", 0.7, 0.7)
+        self.choose_action("random", 0.0, None)
         self.updatePreviousState()
         self.drive_tank()
         self.shoot()
         return self.driveShoot
         
-    def debug(self, surface):
+    def debug(self, surface): 
         """ Allows the agents to draw on the game UI,
             Refer to the pygame reference to see how you can
             draw on a pygame.surface. The given surface is
@@ -703,30 +657,50 @@ class Agent(object):
             surface.fill((0,0,0,0))
         # Selected agents draw their info
 
-        if self.id == 0:
-            if self.foes is not None:
-                for opponent in self.foes:
-                    if opponent.id == 0:
-                        pygame.draw.circle(surface, (255,0,0), opponent.loc, 15, 2)
-                    if opponent.id == 1:
-                        pygame.draw.circle(surface, (0,255,0), opponent.loc, 15, 2)
-                    if opponent.id == 2:
-                        pygame.draw.circle(surface, (0,0,255), opponent.loc, 15, 2)
+        if self.foes is not None:
+            for opponent in self.foes:
+                if self.angle is not None:
+                    pygame.draw.circle(surface, (255,0,0), opponent.loc, 15, 2)
+                    point_end = [0.0,0.0]
+                    point_end[0] = self.obs.loc[0] + self.distance * math.cos((self.angle))
+                    point_end[1] = self.obs.loc[1] + self.distance * math.sin((self.angle))
+                    if abs(self.opponentAngle) < 45.0:
+                        pygame.draw.line(surface, (0,255,0), self.obs.loc, point_end, 2)
+                    else:
+                        pygame.draw.line(surface, (255,0,0), self.obs.loc, point_end, 2)
+
+
+        point_end = [0.0,0.0]
+        point_end[0] = self.obs.loc[0] + 20.0 * math.cos((self.obs.angle))
+        point_end[1] = self.obs.loc[1] + 20.0 * math.sin((self.obs.angle))
+        pygame.draw.line(surface, (0,0,255), self.obs.loc, point_end, 2)
+
+    def FindAngleDifference(self):
+        BodyAngle = math.degrees(self.obs.angle)
+        DesirableAngle = math.degrees(self.angle)
+        AngleDifference = DesirableAngle - BodyAngle
+        if (AngleDifference > 180.0):
+            AngleDifference = AngleDifference - 360.0
+        elif (AngleDifference < -180.0):
+            AngleDifference = AngleDifference + 360.0
+        self.opponentAngle = AngleDifference
+        return
         
     def finalize(self, interrupted=False):
+        pass
         """ This function is called after the game ends, 
             either due to time/score limits, or due to an
             interrupt (CTRL+C) by the user. Use it to
             store any learned variables and write logs/reports.
         """
-        if self.blobpath is not None:
-            if self.id == 0:
-                try:
-                    print "writing the q table back..."
-                    file = open(self.blobpath, "w")
-                    pickle.dump(self.__class__.q, file)
-                    file.close()
-                except:
-                    # We can't write to the blob, this is normal on AppEngine since
-                    # we don't have filesystem access there.        
-                    print "Agent %s can't write blob." % self.callsign
+        # if self.blobpath is not None:
+        #     if self.id == 0:
+        #         try:
+        #             print "writing the q table back..."
+        #             file = open(self.blobpath, "w")
+        #             pickle.dump(self.__class__.q, file)
+        #             file.close()
+        #         except:
+        #             # We can't write to the blob, this is normal on AppEngine since
+        #             # we don't have filesystem access there.        
+        #             print "Agent %s can't write blob." % self.callsign

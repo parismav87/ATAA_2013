@@ -47,7 +47,7 @@ w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w
 """
 
 class Tournament2(scenarios.Scenario):
-    REPEATS   = 1000
+    REPEATS   = 100
     GENERATOR = None
     FIELD     = core.Field.from_string(FIELD2)
     SETTINGS  = core.Settings(max_steps=300,
@@ -74,8 +74,12 @@ SETTINGS  = core.Settings(max_steps=3000000,
                               capture_mode=core.CAPTURE_MODE_MAJORITY)
 
 
-game = core.Game('domination/agent.py','agents/snake.py', record=False, rendered=False, settings=SETTINGS , field = FIELD)
+game = core.Game('domination/agent.py','agents/snake_marios.py', record=False, rendered=True, settings=SETTINGS , field = FIELD)
 game.run()
+
+# now = datetime.datetime.now()
+# folder = os.path.join('tournaments', now.strftime("%Y%m%d-%H%M"))
+# Tournament2.tournament(agents=('domination/agent.py','agents/snake_marios.py'), output_folder=folder, rendered=False, verbose=False)
 
 # game = core.Game('domination/agent.py','agents/snake.py', record=False, rendered=False, settings=SETTINGS , field = FIELD)
 # for i in range(100):
