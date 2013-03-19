@@ -37,24 +37,77 @@ class Agent(object):
     def observe(self, observation):
         self.last_observation = self.observation;
         self.observation = observation;
-        pass
+               
 
     def action(self):
-        self.Reward = 0;
-        if self.last_observation is not None:
-            if self.last_observation.loc[0] == self.last_observation.cps[0][0] and self.last_observation.loc[1] == self.last_observation.cps[0][1] :
-                print "hereeeeeeeeeeeeeeeeeeeeee"
-                self.Reward =  50;
+        
+        """ This function is called every step and should
+            return a tuple in the form: (turn, speed, shoot)
+        """
+        time_action = time.time()
 
-        self.UpdateQTable();
-        self.Softmax();
-        self.old_action = self.new_action;
-        self.old_index = self.new_index;
-        self.new_index = self.index();
-        self.new_action =  self.choose_action();
+        # Initialize shoot
+        shoot = False
 
-        self.PrintStuff();
-        return self.new_action
+        # Drive to where the user clicked
+        # Clicked is a list of tuples of (x, y, shift_down, is_selected)
+        if self.observation.clicked:
+            self.goal = self.observation.clicked[0][0:2]
+
+        # Find the optimal path through the mesh
+        if self.goal[:2] in self.paths:
+            path, dist = self.paths[self.goal[:2]][:2]
+        else:
+            path, dist = self.find_optimal_path()[:2]
+
+        # Convert path to useful movement info
+        if path:
+            node = path[0]
+            dx = node[0] - self.loc[0]
+            dy = node[1] - self.loc[1]
+
+            if len(path) > 1 and abs(dx) < 1 and abs(dy) < 1:
+                path.remove(node)
+                node = path[0]
+                dx = node[0] - self.loc[0]
+                dy = node[1] - self.loc[1]
+
+            angle = get_rel_angle(self.loc, node)
+
+            if self.goal_reached():
+                speed = 0
+                turn = 0
+
+                if len(self.goal) > 2:
+                    turn = angle_fix(self.goal[2] - self.loc[2])
+
+                elif self.ammo:
+                    if self.foes:
+                        closest_foe, dist = self.closest_foe()
+
+                        if self.selected:
+                            print closest_foe, dist
+                        if dist / 40 < 5:
+                            turn = get_rel_angle(self.loc, closest_foe)
+                        else:
+                            turn = angle_fix((self.team == TEAM_BLUE) * math.pi
+                                    - self.loc[2])
+                    else:
+                        turn = angle_fix((self.team == TEAM_BLUE) * math.pi
+                                - self.loc[2])
+
+            elif abs(angle_fix(angle - math.pi)) < self.settings.max_turn:
+                speed = -(dx**2 + dy**2)**0.5
+                turn = angle_fix(angle - math.pi)
+            else:
+                speed = (dx**2 + dy**2)**0.5
+                turn = angle_fix(angle)
+        else:
+            print 'ERROR: No path found to goal {0}'.format(self.goal)
+            turn = 0
+            speed = 0
+
+        return (turn, speed, shoot)
 
     def choose_action(self):
         r = random.randint(0,1000)

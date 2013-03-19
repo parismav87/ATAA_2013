@@ -62,7 +62,7 @@ SETTINGS  = core.Settings(max_steps=1000000,
 # tournament in parallel, agents are temporarily copied, and blob data is not
 # preserved. Please refer to "Running a Game" in the documentation for how
 # to set up your own learning environment.
-game = core.Game('agents/new2.py','agents/new2.py',
+game = core.Game('agents/new3.py','agents/new3.py',
     record=True, rendered=False, settings=SETTINGS , field = FIELD)
 
 # Will run the entire game.
