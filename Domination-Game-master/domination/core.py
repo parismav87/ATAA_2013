@@ -516,6 +516,7 @@ class Game(object):
                 # Score ending condition
                 if ((self.settings.end_condition & ENDGAME_SCORE) and 
                     (self.score_red == 0 or self.score_blue == 0)):
+                    print "Step %d: %d - %d"%(self.step, self.score_red, self.score_blue)
                     break
                 # No crumbs left ending condition
                 if ((self.settings.end_condition & ENDGAME_CRUMBS) and
@@ -1456,7 +1457,7 @@ class Tank(GameObject):
             # Ignore action (NO-OP) if agent thought too long.
             if self.time_thought > self.game.settings.think_time:
                 (turn, speed, shoot) = (0,0,False)
-                print '[Game]: Agent %s-%d timed out (%.3fs).'%('RED'if self.team==0 else 'BLU',self.id,self.time_thought)
+                # print '[Game]: Agent %s-%d timed out (%.3fs).'%('RED'if self.team==0 else 'BLU',self.id,self.time_thought)
             if self.record:
                 self.actions.append((turn,speed,shoot))
             if self.game.renderer is not None and self.game.renderer.active_team == self.team:

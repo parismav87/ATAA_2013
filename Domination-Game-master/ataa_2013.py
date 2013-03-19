@@ -62,8 +62,8 @@ class Tournament2(scenarios.Scenario):
                               capture_mode=core.CAPTURE_MODE_MAJORITY)
 
 FIELD     = core.Field.from_string(FIELD2)
-SETTINGS  = core.Settings(max_steps=30000000,
-                              max_score=10000000,
+SETTINGS  = core.Settings(max_steps=300000,
+                              max_score=100000,
                               spawn_time=11,
                               ammo_amount=1,  
                               ammo_rate=9,
@@ -73,12 +73,12 @@ SETTINGS  = core.Settings(max_steps=30000000,
                               think_time=0.06,
                               capture_mode=core.CAPTURE_MODE_MAJORITY)
 
-game = core.Game('domination/agent.py','agents/snake.py', record=False, rendered=False, settings=SETTINGS , field = FIELD)
-game.run()
-
+game = core.Game('agents/django_pre.py','agents/snake.py', record=False, rendered=False, settings=SETTINGS , field = FIELD)
+for i in range(10):
+  game.run()
 # now = datetime.datetime.now()
 # folder = os.path.join('tournaments', now.strftime("%Y%m%d-%H%M"))
-# Tournament2.tournament(agents=('domination/agent.py','agents/snake.py'), output_folder=folder, rendered=False, verbose=False)
+# Tournament2.tournament(agents=('agents/django_pre.py','agents/snake.py'), output_folder=folder, rendered=False, verbose=False)
 
 # game = core.Game('domination/agent.py','agents/snake.py', record=False, rendered=False, settings=SETTINGS , field = FIELD)
 # for i in range(100):

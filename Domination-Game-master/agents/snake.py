@@ -130,16 +130,16 @@ class Agent(object):
 
         # attributes for the states
         self.goal = self.states[4]
-        self.currentState = None
+        self.currentState = self.states[4]
         self.currentTeam = None
         self.previousState = None
         self.dead = False
         self.previousTeam = None
         self.previousAction = None
-        self.currentCPS = (0,0)
+        self.currentCPS = None
         self.previousCPS = (0,0)
-        self.currentAMMO = False
-        self.previousAMMO = False
+        self.currentAMMO = None
+        self.previousAMMO = 0
         self.reward = 0.0
 
         # attributes for q learning
@@ -184,7 +184,7 @@ class Agent(object):
                 Qtable[p][c] = dict()
                 for a in self.states:
                     counter += 1
-                    Qtable[p][c][a] = 1000.0
+                    Qtable[p][c][a] = 100.0
         return Qtable
 
     def create_map(self):
@@ -261,39 +261,33 @@ class Agent(object):
         if observation.selected:
             print observation
 
-    def shoot(self):
-        # Shoot enemies
-        shoot = False
-        shootDrive = None
-        if (self.obs.ammo > 0 and 
-            self.obs.foes and 
-            point_dist(self.obs.foes[0][0:2], self.obs.loc) < self.settings.max_range and
-            not line_intersects_grid(self.obs.loc, self.obs.foes[0][0:2], self.grid, self.settings.tilesize)):
-            shootDrive = self.obs.foes[0][0:2]
-            shoot = True
-        if shoot:
-            path = find_path(self.obs.loc, shootDrive, self.mesh, self.grid, self.settings.tilesize)
-            if path:
-                dx = path[0][0] - self.obs.loc[0]
-                dy = path[0][1] - self.obs.loc[1]
-                turn = angle_fix(math.atan2(dy, dx) - self.obs.angle)
-                reverse_turn = angle_fix(math.atan2(-dy, -dx) - self.obs.angle)
-                speed = (dx**2 + dy**2)**0.5
-                if self.reverseMode:
-                    if abs(reverse_turn) < abs(turn):
-                        turn = reverse_turn
-                        speed *= -1.0
-                if abs(turn) >= self.settings.max_turn:
-                    if self.speed is not None:
-                        speed = self.speed * 0.1
-                    else:
-                        speed = 0            
-            else:
-                turn = 0
-                speed = 0
-            self.driveShoot = (turn, speed, True)
 
-        return shoot
+    def shoot(self):
+        obs = self.obs
+        if obs.ammo==0:
+            return
+        else:
+            #team blue starting angle is pi and red is 0. so that means, the angle is calculated facing to the right (normal stuff)
+            for foe in obs.foes:
+                dx = foe[0] - obs.loc[0]
+                dy = foe[1] - obs.loc[1]
+                angle = angle_fix(math.atan2(dy, dx))
+                da = (obs.angle-angle)
+                dist = (dx**2 + dy**2)**0.5
+                if math.degrees(abs(da))<= math.degrees(math.atan2(45,dist)) and dist<self.settings.max_range and not line_intersects_grid(obs.loc, foe[0:2], self.grid, self.settings.tilesize):
+                    friendly_fire = False
+                    for agent in self.all_agents:
+                        if agent.id != self.id:
+                            friendly_dx = agent.obs.loc[0] - obs.loc[0]
+                            friendly_dy = agent.obs.loc[1] - obs.loc[1]
+                            friendly_angle = angle_fix(math.atan2(friendly_dy, friendly_dx))
+                            friendly_da = (obs.angle-friendly_angle)
+                            friendly_dist = (friendly_dx**2 + friendly_dy**2)**0.5
+                            if math.degrees(abs(friendly_da)) <= math.degrees(math.atan2(45,friendly_dist)) and friendly_dist < dist:
+                                friendly_fire = True
+                    if not friendly_fire:
+                        self.driveShoot = (da*(obs.angle/abs((obs.angle)+0.001)),0,True)
+        return
 
     def equal(self, point1, point2):
         if point1[0] == point2[0] and point1[1] == point2[1]:
@@ -568,7 +562,7 @@ class Agent(object):
 
     def check_state(self):
         if self.obs.step == 1:
-            self.currentState = self.states[5]
+            self.currentState = self.states[4]
         else:
             if point_dist(self.goal, self.obs.loc) <= self.settings.tilesize:
                 self.currentState = self.goal
@@ -597,11 +591,11 @@ class Agent(object):
     def check_reward(self):
         reward = 0.0
         for i in range(len(self.currentCPS)):
-            reward += (self.currentCPS[i] - self.previousCPS[i]) * 400.0
+            reward += (self.currentCPS[i] - self.previousCPS[i]) * 40.0
         self.reward = reward
 
         if self.previousAMMO is not None:
-            self.reward += max((self.currentAMMO - self.previousAMMO) * 100.0, 0.0 )
+            self.reward += max((self.currentAMMO - self.previousAMMO) * 20.0, 0.0 )
 
 
     def choose_action(self, type, e, t):
@@ -677,7 +671,7 @@ class Agent(object):
         if self.previousState is not None and self.goal is not None:
             if type(self.previousState[1]) is type(tuple()):
                 if not self.equal(self.previousState[1], self.previousAction):
-                    self.reward = -50.0
+                    self.reward -= 10.0
 
         self.choose_action("egreedy", 0.1, None)
         self.learning("qlearning", 0.7, 0.7)
@@ -719,7 +713,7 @@ class Agent(object):
         if self.blobpath is not None:
             if self.id == 0:
                 try:
-                    print "writing the q table back..."
+                    # print "writing the q table back..."
                     file = open(self.blobpath, "w")
                     pickle.dump(self.__class__.q, file)
                     file.close()
