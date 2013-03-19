@@ -168,41 +168,24 @@ class Agent(object):
             else:
                 self.__class__.q = self.createQTable()
 
+
     def createQTable(self):
         Qtable = dict()
         n_of_agents = 3 
         transitions = it.permutations(self.states, 2)
         state_space = it.chain(self.states, transitions)
-        for p in state_space:
+        pos = it.product(state_space,self.states,self.states)
+        counter =0
+        for p in pos:
             Qtable[p] = dict()
             cps_con = [-1, 0, 1]
             cps = it.product(cps_con,cps_con, repeat = 1)
             for c in cps:
                 Qtable[p][c] = dict()
                 for a in self.states:
-                    Qtable[p][c][a] = 100.0
-
+                    counter += 1
+                    Qtable[p][c][a] = 1000.0
         return Qtable
-
-    # def createQTable(self):
-    #     Qtable = dict()
-    #     n_of_agents = 3 
-    #     transitions = it.permutations(self.states, 2)
-    #     state_space = it.chain(self.states, transitions)
-    #     pos = it.product(state_space,self.states,self.states)
-    #     counter =0
-    #     for p in pos:
-    #         Qtable[p] = dict()pos
-    #         ammo = [True, False]
-    #         for am in ammo:
-    #             Qtable[p][am] = dict()
-    #             cps_con = [-1, 0, 1]
-    #             cps = it.product(cps_con,cps_con, repeat = 1)
-    #             for c in cps:
-    #                 Qtable[p][am][c] = dict()
-    #                 for a in self.states:
-    #                     counter += 1
-    #                     Qtable[p][am][c][a] = 10000.0
 
     def create_map(self):
         x = 0
@@ -558,32 +541,14 @@ class Agent(object):
             self.speed = speed
             self.driveShoot = (turn, speed, True)
 
-    # def state_of_team(self):
-    #     team = ()
-    #     team += (self.currentState,)
-    #     for agent in self.all_agents:
-    #         if agent.id != self.id:
-    #             team += (agent.goal,)
-    #     self.currentTeam =  team
-
     def state_of_team(self):
-        self.currentTeam = self.currentState
+        team = ()
+        team += (self.currentState,)
+        for agent in self.all_agents:
+            if agent.id != self.id:
+                team += (agent.goal,)
+        self.currentTeam =  team
 
-    # def eGreedy(self, epsilon):
-    #     if random.random() < epsilon :
-    #         return self.states[random.randint(0,len(self.states)-1)]
-    #     else:
-    #         bestMoves = []
-    #         bestValue = -float('Inf')
-    #         for move, value in self.__class__.q[self.currentTeam][self.currentAMMO][self.currentCPS].iteritems():
-    #             if value > bestValue:
-    #                 bestMoves = []
-    #                 bestMoves.append(move)
-    #                 bestValue = value
-    #             if value == bestValue:
-    #                 bestMoves.append(move)
-    #         r = math.floor(random.random() * len(bestMoves))
-    #         return bestMoves[int(r)]
 
     def eGreedy(self, epsilon):
         if random.random() < epsilon :
@@ -621,13 +586,6 @@ class Agent(object):
                 self.currentState = self.currentState[0]
         return
 
-    # def stateMaxValue(self):
-    #     bestValue = -float('Inf')
-    #     for move, value in self.__class__.q[self.currentTeam][self.currentAMMO][self.currentCPS].iteritems():
-    #         if value > bestValue:
-    #             bestValue = value
-    #     return bestValue
-
     def stateMaxValue(self):
         bestValue = -float('Inf')
         for move, value in self.__class__.q[self.currentTeam][self.currentCPS].iteritems():
@@ -635,11 +593,16 @@ class Agent(object):
                 bestValue = value
         return bestValue
 
+
     def check_reward(self):
         reward = 0.0
         for i in range(len(self.currentCPS)):
-            reward += (self.currentCPS[i] - self.previousCPS[i]) * 100.0
+            reward += (self.currentCPS[i] - self.previousCPS[i]) * 400.0
         self.reward = reward
+
+        if self.previousAMMO is not None:
+            self.reward += max((self.currentAMMO - self.previousAMMO) * 100.0, 0.0 )
+
 
     def choose_action(self, type, e, t):
         if type == "egreedy":
@@ -661,7 +624,8 @@ class Agent(object):
             if self.qValid:
                 self.qLearning(alpha, gamma)
         elif algorithm == "sarsa":
-            pass
+            if self.qValid:
+                self.sarsa(alpha, gamma)
         elif algorithm == "wolf":
             pass
 
@@ -676,21 +640,19 @@ class Agent(object):
         self.qValid = valid
 
 
-    # def qLearning(self, alpha, gamma):
-    #     pass
-    #     self.__class__.q[self.previousTeam][self.previousAMMO][self.previousCPS][self.previousAction] = \
-    #     self.__class__.q[self.previousTeam][self.previousAMMO][self.previousCPS][self.previousAction] \
-    #     + alpha * ( self.reward + gamma * self.stateMaxValue() - self.__class__.q[self.previousTeam][self.previousAMMO][self.previousCPS][self.previousAction])
+    def sarsa(self, alpha, gamma):
+        self.__class__.q[self.previousTeam][self.previousCPS][self.previousAction] = \
+        self.__class__.q[self.previousTeam][self.previousCPS][self.previousAction] \
+        + alpha * ( self.reward + gamma * self.__class__.q[self.currentTeam][self.currentCPS][self.goal] - self.__class__.q[self.previousTeam][self.previousCPS][self.previousAction])
 
     def qLearning(self, alpha, gamma):
-        pass
         self.__class__.q[self.previousTeam][self.previousCPS][self.previousAction] = \
         self.__class__.q[self.previousTeam][self.previousCPS][self.previousAction] \
         + alpha * ( self.reward + gamma * self.stateMaxValue() - self.__class__.q[self.previousTeam][self.previousCPS][self.previousAction])
 
+
     def checkAMMO(self):
-        pass
-        self.currentAMMO = (self.obs.ammo > 0)
+        self.currentAMMO = self.obs.ammo
 
     def updatePreviousState(self):
         self.previousAMMO = self.currentAMMO

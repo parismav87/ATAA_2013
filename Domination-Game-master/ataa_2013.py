@@ -72,6 +72,7 @@ SETTINGS  = core.Settings(max_steps=30000000,
                               max_turn=math.pi/4,
                               think_time=0.06,
                               capture_mode=core.CAPTURE_MODE_MAJORITY)
+
 game = core.Game('domination/agent.py','agents/snake.py', record=False, rendered=False, settings=SETTINGS , field = FIELD)
 game.run()
 

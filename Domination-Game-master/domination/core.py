@@ -460,7 +460,7 @@ class Game(object):
 
                 # ==============================>>>>>>
 
-                if self.step % 50 == 0:
+                if self.step % 10 == 0:
                     if self.score_last is not None:
                         if (self.score_blue - self.score_last) > 0:
                             print "Step %d: %d - %d +"%(self.step, self.score_red, self.score_blue)
