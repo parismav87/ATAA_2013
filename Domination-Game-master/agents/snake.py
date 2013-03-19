@@ -175,8 +175,12 @@ class Agent(object):
         state_space = it.chain(self.states, transitions)
         for p in state_space:
             Qtable[p] = dict()
-            for a in self.states:
-                Qtable[p][a] = 100.0
+            cps_con = [-1, 0, 1]
+            cps = it.product(cps_con,cps_con, repeat = 1)
+            for c in cps:
+                Qtable[p][c] = dict()
+                for a in self.states:
+                    Qtable[p][c][a] = 100.0
 
         return Qtable
 
@@ -188,7 +192,7 @@ class Agent(object):
     #     pos = it.product(state_space,self.states,self.states)
     #     counter =0
     #     for p in pos:
-    #         Qtable[p] = dict()
+    #         Qtable[p] = dict()pos
     #         ammo = [True, False]
     #         for am in ammo:
     #             Qtable[p][am] = dict()
@@ -277,12 +281,35 @@ class Agent(object):
     def shoot(self):
         # Shoot enemies
         shoot = False
+        shootDrive = None
         if (self.obs.ammo > 0 and 
             self.obs.foes and 
             point_dist(self.obs.foes[0][0:2], self.obs.loc) < self.settings.max_range and
             not line_intersects_grid(self.obs.loc, self.obs.foes[0][0:2], self.grid, self.settings.tilesize)):
-            self.goal = self.obs.foes[0][0:2]
+            shootDrive = self.obs.foes[0][0:2]
             shoot = True
+        if shoot:
+            path = find_path(self.obs.loc, shootDrive, self.mesh, self.grid, self.settings.tilesize)
+            if path:
+                dx = path[0][0] - self.obs.loc[0]
+                dy = path[0][1] - self.obs.loc[1]
+                turn = angle_fix(math.atan2(dy, dx) - self.obs.angle)
+                reverse_turn = angle_fix(math.atan2(-dy, -dx) - self.obs.angle)
+                speed = (dx**2 + dy**2)**0.5
+                if self.reverseMode:
+                    if abs(reverse_turn) < abs(turn):
+                        turn = reverse_turn
+                        speed *= -1.0
+                if abs(turn) >= self.settings.max_turn:
+                    if self.speed is not None:
+                        speed = self.speed * 0.1
+                    else:
+                        speed = 0            
+            else:
+                turn = 0
+                speed = 0
+            self.driveShoot = (turn, speed, True)
+
         return shoot
 
     def equal(self, point1, point2):
@@ -487,32 +514,49 @@ class Agent(object):
         war = False
         if len(self.foes) > 0:
             for foe in self.foes:
-                if point_dist(foe.loc, self.obs.loc) < 1.5 * self.settings.max_range:
+                if point_dist(foe.loc, self.obs.loc) < 1.2 * self.settings.max_range and \
+                not line_intersects_grid(self.obs.loc, foe.loc, self.grid, self.settings.tilesize):
                     war = True
         self.warMode = war
 
     def shoot(self):
-        if self.obs.ammo > 0:
-            #team blue starting angle is pi and red is 0. so that means, the angle is calculated facing to the right (normal stuff)
-            for foe in self.obs.foes:
-                dx = foe[0] - self.obs.loc[0]
-                dy = foe[1] - self.obs.loc[1]
-                angle = angle_fix(math.atan2(dy, dx))
-                da = (self.obs.angle-angle)
-                dist = (dx**2 + dy**2)**0.5
-                if math.degrees(abs(da))<= math.degrees(math.atan2(45,dist)) and dist<self.settings.max_range and not line_intersects_grid(self.obs.loc, foe[0:2], self.grid, self.settings.tilesize):
-                    friendly_fire = False
-                    for agent in self.all_agents:
-                        if agent.id != self.id:
-                            friendly_dx = agent.obs.loc[0] - self.obs.loc[0]
-                            friendly_dy = agent.obs.loc[1] - self.obs.loc[1]
-                            friendly_angle = angle_fix(math.atan2(friendly_dy, friendly_dx))
-                            friendly_da = (self.obs.angle-friendly_angle)
-                            friendly_dist = (friendly_dx**2 + friendly_dy**2)**0.5
-                            if math.degrees(abs(friendly_da)) <= math.degrees(math.atan2(45,friendly_dist)) and friendly_dist < dist:
-                                friendly_fire = True
-                    if not friendly_fire:
-                        self.driveShoot = (da*(self.obs.angle/abs((self.obs.angle)+0.001)),0,True)
+        shoot = False
+        target = None
+        if (self.obs.ammo > 0 and 
+            self.obs.foes and 
+            point_dist(self.obs.foes[0][0:2], self.obs.loc) < self.settings.max_range and
+            not line_intersects_grid(self.obs.loc, self.obs.foes[0][0:2], self.grid, self.settings.tilesize)):
+            dx = self.obs.foes[0][0] - self.obs.loc[0]
+            dy = self.obs.foes[0][1] - self.obs.loc[1]
+            angle = angle_fix(math.atan2(dy, dx))
+            da = (self.obs.angle-angle)
+            dist = (dx**2 + dy**2)**0.5
+            if math.degrees(abs(da))<= math.degrees(math.atan2(45,dist)):
+                target = self.obs.foes[0][0:2]
+                shoot = True
+        if shoot:
+            path = find_path(self.obs.loc, target, self.mesh, self.grid, self.settings.tilesize)
+            self.reverseMode = (self.obs.ammo == 0)
+            if path:
+                dx = path[0][0] - self.obs.loc[0]
+                dy = path[0][1] - self.obs.loc[1]
+                turn = angle_fix(math.atan2(dy, dx) - self.obs.angle)
+                reverse_turn = angle_fix(math.atan2(-dy, -dx) - self.obs.angle)
+                speed = (dx**2 + dy**2)**0.5
+                if self.reverseMode:
+                    if abs(reverse_turn) < abs(turn):
+                        turn = reverse_turn
+                        speed *= -1.0
+                if abs(turn) >= self.settings.max_turn:
+                    if self.speed is not None:
+                        speed = self.speed * 0.1
+                    else:
+                        speed = 0            
+            else:
+                turn = 0
+                speed = 0
+            self.speed = speed
+            self.driveShoot = (turn, speed, True)
 
     # def state_of_team(self):
     #     team = ()
@@ -547,7 +591,7 @@ class Agent(object):
         else:
             bestMoves = []
             bestValue = -float('Inf')
-            for move, value in self.__class__.q[self.currentTeam].iteritems():
+            for move, value in self.__class__.q[self.currentTeam][self.currentCPS].iteritems():
                 if value > bestValue:
                     bestMoves = []
                     bestMoves.append(move)
@@ -586,19 +630,16 @@ class Agent(object):
 
     def stateMaxValue(self):
         bestValue = -float('Inf')
-        for move, value in self.__class__.q[self.currentTeam].iteritems():
+        for move, value in self.__class__.q[self.currentTeam][self.currentCPS].iteritems():
             if value > bestValue:
                 bestValue = value
         return bestValue
 
-    # def check_reward(self):
-    #     reward = 0.0
-    #     for i in range(len(self.currentCPS)):
-    #         reward += (self.currentCPS[i] - self.previousCPS[i]) * 10.0
-    #     self.reward = reward
-
-    # def check_reward(self):
-    #     if self.pre
+    def check_reward(self):
+        reward = 0.0
+        for i in range(len(self.currentCPS)):
+            reward += (self.currentCPS[i] - self.previousCPS[i]) * 100.0
+        self.reward = reward
 
     def choose_action(self, type, e, t):
         if type == "egreedy":
@@ -643,9 +684,9 @@ class Agent(object):
 
     def qLearning(self, alpha, gamma):
         pass
-        self.__class__.q[self.previousTeam][self.previousAction] = \
-        self.__class__.q[self.previousTeam][self.previousAction] \
-        + alpha * ( self.reward + gamma * self.stateMaxValue() - self.__class__.q[self.previousTeam][self.previousAction])
+        self.__class__.q[self.previousTeam][self.previousCPS][self.previousAction] = \
+        self.__class__.q[self.previousTeam][self.previousCPS][self.previousAction] \
+        + alpha * ( self.reward + gamma * self.stateMaxValue() - self.__class__.q[self.previousTeam][self.previousCPS][self.previousAction])
 
     def checkAMMO(self):
         pass
@@ -670,20 +711,14 @@ class Agent(object):
         self.checkAMMO()
         self.check_state()
         self.state_of_team()
-        # self.check_reward()
-        self.reward = 0.0
+        self.check_reward()
         if self.previousState is not None and self.goal is not None:
             if type(self.previousState[1]) is type(tuple()):
                 if not self.equal(self.previousState[1], self.previousAction):
-                    self.reward = -10.0
-                    print "==========="
-                else:
-                    print "+"
-
-
+                    self.reward = -50.0
 
         self.choose_action("egreedy", 0.1, None)
-        #self.learning("qlearning", 0.7, 0.7)
+        self.learning("qlearning", 0.7, 0.7)
         self.updatePreviousState()
         self.drive_tank()
         self.shoot()
