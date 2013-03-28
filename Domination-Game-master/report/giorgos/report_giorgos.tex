@@ -1,26 +1,5 @@
 \documentclass[conference]{IEEEtran}
-
-\ifCLASSINFOpdf
-  % \usepackage[pdftex]{graphicx}
-  % declare the path(s) where your graphic files are
-  % \graphicspath{{../pdf/}{../jpeg/}}
-  % and their extensions so you won't have to specify these with
-  % every instance of \includegraphics
-  % \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
-\else
-  % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
-  % will default to the driver specified in the system graphics.cfg if no
-  % driver is specified.
-  % \usepackage[dvips]{graphicx}
-  % declare the path(s) where your graphic files are
-  % \graphicspath{{../eps/}}
-  % and their extensions so you won't have to specify these with
-  % every instance of \includegraphics
-  % \DeclareGraphicsExtensions{.eps}
-\fi
-
-
-\usepackage{graphics}
+\usepackage{graphicx}
 \usepackage{lmodern}
 \usepackage{epstopdf}
 \usepackage{biblatex} 
@@ -215,7 +194,7 @@ S''_{position} = S'_{position} \times S_{position} \times S_{position}
 In this test case, we are not using the information for the opponent agents' positions, in order to keep it computationally tractable, but we use the Cps states from eq. (3).
 
 \begin{figure}
-    \includegraphics[width=0.4\textwidth]{figures/snake1vs1.eps}
+    \includegraphics[width=8cm]{figures/snake1vs1.eps}
 \end{figure}
 
 For the action space, each agent has all possible position states except from the initial position.
