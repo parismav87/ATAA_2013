@@ -65,7 +65,7 @@ class Agent(object):
         self.grid = field_grid
         self.settings = settings
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
-        self.blobpath = "agents/snake_"+self.callsign
+        self.blobpath = "agents/snake_ja_"+self.callsign
 
         # Monte Carlo attributes
         self.saveTrajectory = True
@@ -126,9 +126,8 @@ class Agent(object):
         n_of_agents = 3 
         transitions = it.permutations(self.states, 2)
         state_space = it.chain(self.states, transitions)
-        pos = it.product(state_space,self.states,self.states)
         counter =0
-        for p in pos:
+        for p in state_space:
             Qtable[p] = dict()
             cps_con = [-1, 0, 1]
             cps = it.product(cps_con,cps_con, repeat = 1)
@@ -488,11 +487,10 @@ class Agent(object):
             self.driveShoot = (turn, speed, True)
 
     def state_of_team(self):
-        team = ()
-        team += (self.currentState,)
-        for agent in self.all_agents:
-            if agent.id != self.id:
-                team += (agent.goal,)
+        team = self.currentState
+        # for agent in self.all_agents:
+        #     if agent.id != self.id:
+        #         team += (agent.goal,)
         self.currentTeam =  team
 
 
