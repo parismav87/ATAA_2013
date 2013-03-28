@@ -460,17 +460,17 @@ class Game(object):
 
                 # ==============================>>>>>>
 
-                if self.step % 10 == 0:
-                    if self.score_last is not None:
-                        if (self.score_blue - self.score_last) > 0:
-                            print "Step %d: %d - %d +"%(self.step, self.score_red, self.score_blue)
-                        elif (self.score_blue - self.score_last) == 0:
-                            print "Step %d: %d - %d ="%(self.step, self.score_red, self.score_blue)
-                        else:
-                            print "Step %d: %d - %d -"%(self.step, self.score_red, self.score_blue)
-                    else:
-                        print "Step %d: %d - %d ="%(self.step, self.score_red, self.score_blue)                
-                self.score_last = self.score_blue
+                # if self.step % 10 == 0:
+                #     if self.score_last is not None:
+                #         if (self.score_blue - self.score_last) > 0:
+                #             print "Step %d: %d - %d +"%(self.step, self.score_red, self.score_blue)
+                #         elif (self.score_blue - self.score_last) == 0:
+                #             print "Step %d: %d - %d ="%(self.step, self.score_red, self.score_blue)
+                #         else:
+                #             print "Step %d: %d - %d -"%(self.step, self.score_red, self.score_blue)
+                #     else:
+                #         print "Step %d: %d - %d ="%(self.step, self.score_red, self.score_blue)                
+                # self.score_last = self.score_blue
 
                 # ==============================>>>>
 
@@ -569,7 +569,7 @@ class Game(object):
                         o.y = o._y
                         o._a = o.angle = angle_fix(o.angle)
             print "Step %d: %d - %d"%(self.step, self.score_red, self.score_blue)
-            f = open("results3vs3snake.txt", "a")
+            f = open("results3vs3django.txt", "a")
             f.write(str((3001.0 - self.step)/3000.0 * (self.score_blue - 500)/1000.0) + "\n")
             f.close
         except GameInterrupt:

@@ -93,8 +93,8 @@ SETTINGS  = core.Settings(max_steps=3000,
                               think_time=0.06,
                               capture_mode=core.CAPTURE_MODE_MAJORITY)
 
-game = core.Game('domination/agent.py','agents/snake.py', record=False, rendered=False, settings=SETTINGS , field = FIELD)
-for i in range(300):
+game = core.Game('domination/agent.py','agents/django.py', record=False, rendered=False, settings=SETTINGS , field = FIELD)
+for i in range(100):
   game.run()
 # now = datetime.datetime.now()
 # folder = os.path.join('tournaments', now.strftime("%Y%m%d-%H%M"))

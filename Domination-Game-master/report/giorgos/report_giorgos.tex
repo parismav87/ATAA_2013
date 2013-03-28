@@ -20,7 +20,9 @@
 \fi
 
 
-
+\usepackage{graphics}
+\usepackage{lmodern}
+\usepackage{epstopdf}
 \usepackage{biblatex} 
 \bibliography{report_giorgos} 
 
@@ -211,6 +213,10 @@ As you can realize, this is a simple way to add more information about states. U
 S''_{position} = S'_{position} \times S_{position} \times S_{position} 
 \end{equation}
 In this test case, we are not using the information for the opponent agents' positions, in order to keep it computationally tractable, but we use the Cps states from eq. (3).
+
+\begin{figure}
+    \includegraphics[width=0.4\textwidth]{figures/snake1vs1.eps}
+\end{figure}
 
 For the action space, each agent has all possible position states except from the initial position.
 The action set is the same as before.
