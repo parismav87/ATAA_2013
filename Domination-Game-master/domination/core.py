@@ -460,17 +460,17 @@ class Game(object):
 
                 # ==============================>>>>>>
 
-                # if self.step % 10 == 0:
-                #     if self.score_last is not None:
-                #         if (self.score_blue - self.score_last) > 0:
-                #             print "Step %d: %d - %d +"%(self.step, self.score_red, self.score_blue)
-                #         elif (self.score_blue - self.score_last) == 0:
-                #             print "Step %d: %d - %d ="%(self.step, self.score_red, self.score_blue)
-                #         else:
-                #             print "Step %d: %d - %d -"%(self.step, self.score_red, self.score_blue)
-                #     else:
-                #         print "Step %d: %d - %d ="%(self.step, self.score_red, self.score_blue)                
-                # self.score_last = self.score_blue
+                if self.step % 10 == 0:
+                    if self.score_last is not None:
+                        if (self.score_blue - self.score_last) > 0:
+                            print "Step %d: %d - %d +"%(self.step, self.score_red, self.score_blue)
+                        elif (self.score_blue - self.score_last) == 0:
+                            print "Step %d: %d - %d ="%(self.step, self.score_red, self.score_blue)
+                        else:
+                            print "Step %d: %d - %d -"%(self.step, self.score_red, self.score_blue)
+                    else:
+                        print "Step %d: %d - %d ="%(self.step, self.score_red, self.score_blue)                
+                self.score_last = self.score_blue
 
                 # ==============================>>>>
 
@@ -516,7 +516,6 @@ class Game(object):
                 # Score ending condition
                 if ((self.settings.end_condition & ENDGAME_SCORE) and 
                     (self.score_red == 0 or self.score_blue == 0)):
-                    print "Step %d: %d - %d"%(self.step, self.score_red, self.score_blue)
                     break
                 # No crumbs left ending condition
                 if ((self.settings.end_condition & ENDGAME_CRUMBS) and
@@ -569,6 +568,10 @@ class Game(object):
                         o.x = o._x
                         o.y = o._y
                         o._a = o.angle = angle_fix(o.angle)
+            print "Step %d: %d - %d"%(self.step, self.score_red, self.score_blue)
+            f = open("results3vs3snake.txt", "a")
+            f.write(str((3001.0 - self.step)/3000.0 * (self.score_blue - 500)/1000.0) + "\n")
+            f.close
         except GameInterrupt:
             self.state = Game.STATE_INTERRUPT
         except KeyboardInterrupt:

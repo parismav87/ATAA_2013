@@ -252,7 +252,7 @@ class Agent(object):
         self.previous_cps = self.cps
         self.previous_foes = self.foes
         self.previous_friends = self.friends
-        return (0,0,0)
+        return (drive[0],drive[1],shoot)
         
     def debug(self, surface):
         """ Allows the agents to draw on the game UI,

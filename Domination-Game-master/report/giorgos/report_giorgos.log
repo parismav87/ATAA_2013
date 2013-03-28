@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Debian) (format=pdflatex 2013.3.14)  28 MAR 2013 16:14
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Debian) (format=pdflatex 2013.3.14)  28 MAR 2013 20:20
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -329,24 +329,24 @@ Package biblatex Info: ... file 'report_giorgos.bbl' found.
 Package biblatex Info: Reference section=0 on input line 31.
 Package biblatex Info: Reference segment=0 on input line 31.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 123.
+(Font)              <7> on input line 116.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 123.
- [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
+(Font)              <5> on input line 116.
+ [1
 
-
-]
-Underfull \hbox (badness 3302) in paragraph at lines 161--161
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
+[2]
+Underfull \hbox (badness 3302) in paragraph at lines 236--236
 []\OT1/ptm/m/n/10 Craig Boutilier, Thomas Dean, and Steve Hanks.
  []
 
 
-Underfull \hbox (badness 3579) in paragraph at lines 161--161
+Underfull \hbox (badness 3579) in paragraph at lines 236--236
 \OT1/ptm/m/n/10 ``Decision-theoretic plan-ning: Struc-tural as-sump-tions
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 161--161
+Underfull \hbox (badness 10000) in paragraph at lines 236--236
 \OT1/ptm/m/n/10 and com-pu-ta-tional lever-age''. In: \OT1/ptm/m/it/10 arXiv pr
 eprint
  []
@@ -362,33 +362,31 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-[2] (./report_giorgos.aux)
+[3] (./report_giorgos.aux)
 Package logreq Info: Writing requests to 'report_giorgos.run.xml'.
 \openout1 = `report_giorgos.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 5624 strings out of 493485
- 95476 string characters out of 3143526
- 256507 words of memory out of 3000000
+ 5620 strings out of 493485
+ 95451 string characters out of 3143526
+ 257507 words of memory out of 3000000
  8941 multiletter control sequences out of 15000+200000
- 33007 words of font info for 62 fonts, out of 3000000 for 9000
+ 28648 words of font info for 58 fonts, out of 3000000 for 9000
  960 hyphenation exceptions out of 8191
- 34i,8n,49p,1775b,829s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 34i,5n,49p,1775b,829s stack positions out of 5000i,500n,10000p,200000b,50000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texliv
 e/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texm
 f-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/
 fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/t
 ype1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/pub
 lic/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/am
-sfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a
-.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/sha
-re/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texm
-f-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on report_giorgos.pdf (2 pages, 105868 bytes).
+sfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a
+.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on report_giorgos.pdf (3 pages, 103391 bytes).
 PDF statistics:
- 52 PDF objects out of 1000 (max. 8388607)
- 37 compressed objects within 1 object stream
+ 47 PDF objects out of 1000 (max. 8388607)
+ 33 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

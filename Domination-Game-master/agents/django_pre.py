@@ -5,7 +5,7 @@ class Agent(object):
     
     NAME = "Django"
     
-    def __init__(self, id, team, settings=None, field_rects=None, field_grid=None, nav_mesh=None, blob=None, matchinfo=None):
+    def __init__(self, id, team, settings=None, field_rects=None, field_grid=None, nav_mesh=None, blob=None, **kwargs):
         """ Each agent is initialized at the beginning of each game.
             The first agent (id==0) can use this to set up global variables.
             Note that the properties pertaining to the game field might not be
@@ -16,17 +16,57 @@ class Agent(object):
         self.mesh = nav_mesh
         self.grid = field_grid
         self.settings = settings
-        self.goal = None
+        self.goal_state = None
+        self.previous_action = None
+        self.previous_cps = None
+        self.previous_foes = None
+        self.previous_friends = None
+        self.cps = None
+        self.foes = None
+        self.friends = None
         self.callsign = '%s-%d'% (('BLU' if team == TEAM_BLUE else 'RED'), id)
         self.blobpath = "agents/django_"+self.callsign
         self.speed = None
+        self.alpha = 0.5
+        self.gamma = 0.7
         # Recommended way to share variables between agents.
         if id == 0:
             self.all_agents = self.__class__.all_agents = []
         self.all_agents.append(self)
 
         # state space -- positions on the grid for x axis
-        self.states = [(232,56),(264,216),(312,104),(184,168)]
+        if team == TEAM_BLUE:
+            self.states = [(232,56),(264,216),(312,104),(184,168),(472,136)]
+        else:
+            self.states = [(232,56),(264,216),(312,104),(184,168),(24,136)]
+
+        self.previous_state = self.states[4]
+
+        if self.id == 0:
+            if os.path.isfile(self.blobpath):
+                file = open(self.blobpath, "r")
+                self.__class__.q = pickle.load(file)
+                file.close()
+            else:
+                print "32r312r23r"
+                self.__class__.q = self.createQTable()
+
+    def createQTable(self):
+        Qtable = dict()
+        n_of_agents = 3
+        for p in self.states:
+            Qtable[p] = dict()
+            cps_con = [-1, 0, 1]
+            cps = it.product(cps_con,cps_con, repeat = 1)
+            for c in cps:  
+                Qtable[p][c] = dict()
+                foes_con = range(0,4)
+                foes = it.product(foes_con, repeat = 3)
+                for f in foes:
+                    Qtable[p][c][f] = dict()
+                    for action in self.states[0:4]:
+                        Qtable[p][c][f][action] = 20.0
+        return Qtable
     
     def observe(self, observation):
         """ Each agent is passed an observation using this function,
@@ -40,7 +80,34 @@ class Agent(object):
         if observation.selected:
             print observation
 
+    def eGreedy(self, epsilon):
+        fr = self.friends
+        fo = (self.foes[0],self.foes[1],self.foes[2])
+        cps = self.cps
+        if random.random() < epsilon :
+            return self.states[random.randint(0,len(self.states[0:4])-1)]
+        else:
+            bestMoves = []
+            bestValue = -float('Inf')
+            for move, value in self.__class__.q[fr][cps][fo].iteritems():
+                if value > bestValue:
+                    bestMoves = []
+                    bestMoves.append(move)
+                    bestValue = value
+                if value == bestValue:
+                    bestMoves.append(move)
+            r = math.floor(random.random() * len(bestMoves))
+            return bestMoves[int(r)]
 
+    def stateMaxValue(self):
+        fr = self.friends
+        fo = (self.foes[0],self.foes[1],self.foes[2])
+        cps = self.cps
+        bestValue = -float('Inf')
+        for move, value in self.__class__.q[fr][cps][fo].iteritems():
+            if value > bestValue:
+                bestValue = value
+        return bestValue
 
     def shoot(self):
         # Shoot enemies
@@ -50,7 +117,6 @@ class Agent(object):
             obs.foes and 
             point_dist(obs.foes[0][0:2], obs.loc) < self.settings.max_range and
             not line_intersects_grid(obs.loc, obs.foes[0][0:2], self.grid, self.settings.tilesize)):
-            self.goal = obs.foes[0][0:2]
             shoot = True
         return shoot
 
@@ -73,11 +139,28 @@ class Agent(object):
             controlPoint2 -= 1
         return (controlPoint1,controlPoint2)
 
+    def check_foes(self):
+        foes_table = [0,0,0]
+        foes = dict()
+        for member in self.all_agents:
+            for foe in member.observation.foes:
+                if foe[0:2] in foes:
+                    pass
+                else:
+                    foes[foe[0:2]] = 1
+        for item, value in foes.iteritems():
+            for i in range(len(self.states[0:4])):
+                 if point_dist(self.states[i], item) < 3.0 * self.settings.tilesize:
+                     foes_table[min(i,2)] += 1                      
+        return foes_table
+
+    def check_friends_previous(self):
+        return self.previous_state
 
     def drive_tank(self):
         obs = self.observation
         # Compute path, angle and drive
-        path = find_path(obs.loc, self.goal, self.mesh, self.grid, self.settings.tilesize)
+        path = find_path(obs.loc, self.goal_state, self.mesh, self.grid, self.settings.tilesize)
         if path:
             dx = path[0][0] - obs.loc[0]
             dy = path[0][1] - obs.loc[1]
@@ -87,91 +170,84 @@ class Agent(object):
                 shoot = False
             if abs(math.degrees(turn)) >= 45:
                 if self.speed is not None:
-                    speed = max(0.2 * self.speed, 1)  
+                    speed = max(0.7 * self.speed, 1)  
         else:
             turn = 0
             speed = 0
         self.speed = speed
         return (turn, speed)
 
-    def normAngle(self,angle):
-        ang = (2*3.14 + angle)%(2*3.14);
-        return ang;
+    def die_consequence(self, died):
+        if died:
+            self.goal_state = self.states[4]
+        return
 
-    def canShoot(self):
-        obs = self.observation
-        if obs.ammo==0:
-            return False
-        else:
-            #team blue starting angle is pi and red is 0. so that means, the angle is calculated facing to the right (normal stuff)
-            for foe in obs.foes:
-                dx = foe[0] - obs.loc[0]
-                dy = foe[1] - obs.loc[1]
-                angle = angle_fix(math.atan2(dy, dx))
-                da = (obs.angle-angle)
-                dist = (dx**2 + dy**2)**0.5
-                if math.degrees(abs(da))<= math.degrees(math.atan2(45,dist)) and dist<self.settings.max_range and not line_intersects_grid(obs.loc, foe[0:2], self.grid, self.settings.tilesize):
-                    friendly_fire = False
-                    for agent in self.all_agents:
-                        if agent.id != self.id:
-                            friendly_dx = agent.observation.loc[0] - obs.loc[0]
-                            friendly_dy = agent.observation.loc[1] - obs.loc[1]
-                            friendly_angle = angle_fix(math.atan2(friendly_dy, friendly_dx))
-                            friendly_da = (obs.angle-friendly_angle)
-                            friendly_dist = (friendly_dx**2 + friendly_dy**2)**0.5
-                            if math.degrees(abs(friendly_da)) <= math.degrees(math.atan2(45,friendly_dist)) and friendly_dist < dist:
-                                friendly_fire = True
-                    if not friendly_fire:
-                        return (da*(obs.angle/abs((obs.angle)+0.001)),0,True)
-        return False
+    def check_reward(self):
+        reward = 0.0
+        for i in range(len(self.cps)):
+            reward += (self.cps[i] - self.previous_cps[i]) * 10.0
+        return  reward
 
-
-
+    def updateValueTable(self):
+        # current state
+        fr = self.friends
+        fo = (self.foes[0],self.foes[1],self.foes[2])
+        cps = self.cps
+        # previous state
+        p_fr = self.previous_friends
+        p_fo = (self.previous_foes[0],self.previous_foes[1],self.previous_foes[2])
+        p_cps = self.previous_cps
+        p_a = self.previous_action
+        # other stuff
+        a = self.alpha
+        g = self.gamma
+        R = self.check_reward()
+        self.__class__.q[p_fr][p_cps][p_fo][p_a] = self.__class__.q[p_fr][p_cps][p_fo][p_a] + a * (R + g * self.stateMaxValue() - self.__class__.q[p_fr][p_cps][p_fo][p_a])
+                 
     def action(self):
         """ This function is called every step and should
             return a tuple in the form: (turn, speed, shoot)
         """
-
         # take the self observation
         obs = self.observation
-        if obs.respawn_in !=-1:
-            self.goal = None
-        # check if goal is reached
-        if self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize/2 and (self.id==0 or self.id==2):
-            self.goal = None
-            return (0,0,0)
-        elif self.goal is not None and point_dist(self.goal, obs.loc) < self.settings.tilesize and self.id==1 and obs.ammo>0:
-            if self.team == TEAM_BLUE:
-                self.goal = self.states[1]
-            else:
-                self.goal = self.states[0]
-        elif self.goal is self.states[0] or self.goal is self.states[1] and point_dist(self.goal, obs.loc) >= self.settings.tilesize and self.id==1 and obs.ammo>0:
-            if self.canShoot():
-                return self.canShoot()
-        elif self.goal is self.states[0] or self.goal is self.states[1] and self.id==1 and obs.ammo ==0:
-            if self.team == TEAM_BLUE:
-                self.goal=self.states[2]
-            else:
-                self.goal=self.states[3]
+        # check if i got hit and if i shoot another agent
+        died = (obs.respawn_in == 10)
+        self.die_consequence(died)
+        hit = obs.hit
+        # check the control points
+        self.cps = self.check_cps()
+        # check the enemies
+        self.foes = self.check_foes()
+        # check the positions of agent's friends
+        self.friends = self.check_friends_previous()
+        # Check if agent reached goalState.
+        if self.goal_state is not None and point_dist(self.goal_state, obs.loc) <= self.settings.tilesize:
+            # goalstate is reached, value table will be updated
+            self.updateValueTable()
+            # previous state is now the previous goal state
+            self.previous_state = self.goal_state
+            # next goal state is now none
+            self.goal_state = None
 
-        # Walk to random CP
-        if self.goal is None and self.id==0:
-            self.goal = self.states[0]
-        elif self.goal is None and self.id==1:
-            if self.team == TEAM_BLUE:
-                self.goal = self.states[2]
+        # agent reach its goalState, should be assigned a new action
+        if self.goal_state is None:
+            if obs.step == 1:
+                self.goal_state = self.states[self.id]
             else:
-                self.goal = self.states[3]
-        elif self.goal is None and self.id==2:
-            self.goal = self.states[1]
+                self.goal_state = self.eGreedy(0.1)
+            self.previous_action = self.goal_state
 
-
-        drive = self.drive_tank()
+        # shoot opponents
         shoot = self.shoot()
-        if not self.canShoot():
-            return (drive[0],drive[1],False)
-        return self.canShoot();
+        # driving function
+        drive = self.drive_tank()
 
+        # keep info about the previous state
+        self.previous_cps = self.cps
+        self.previous_foes = self.foes
+        self.previous_friends = self.friends
+        return (drive[0],drive[1],shoot)
+        
     def debug(self, surface):
         """ Allows the agents to draw on the game UI,
             Refer to the pygame reference to see how you can
@@ -186,8 +262,8 @@ class Agent(object):
             surface.fill((0,0,0,0))
         # Selected agents draw their info
         if self.selected:
-            if self.goal is not None:
-                pygame.draw.line(surface,(0,0,0),self.observation.loc, self.goal)
+            if self.goal_state is not None:
+                pygame.draw.line(surface,(0,0,0),self.observation.loc, self.goal_state)
         
     def finalize(self, interrupted=False):
         """ This function is called after the game ends, 
@@ -195,3 +271,14 @@ class Agent(object):
             interrupt (CTRL+C) by the user. Use it to
             store any learned variables and write logs/reports.
         """
+        if self.blobpath is not None:
+            if self.id == 0:
+                try:
+                    print "writing the q table back..."
+                    file = open(self.blobpath, "w")
+                    pickle.dump(self.__class__.q, file)
+                    file.close()
+                except:
+                    # We can't write to the blob, this is normal on AppEngine since
+                    # we don't have filesystem access there.        
+                    print "Agent %s can't write blob." % self.callsign
