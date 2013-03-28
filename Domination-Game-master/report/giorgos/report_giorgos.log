@@ -1,23 +1,22 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2013.3.28)  28 MAR 2013 13:35
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Debian) (format=pdflatex 2013.3.14)  28 MAR 2013 16:14
 entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
 **report_giorgos.tex
-
-(C:\Users\giorgos\Workspace\ATAA_2013\Domination-Game-master\report\giorgos\rep
-ort_giorgos.tex
+(./report_giorgos.tex
 LaTeX2e <2011/06/27>
-Babel <v3.8m> and hyphenation patterns for english, afrikaans, ancientgreek, ar
-abic, armenian, assamese, basque, bengali, bokmal, bulgarian, catalan, coptic, 
-croatian, czech, danish, dutch, esperanto, estonian, farsi, finnish, french, ga
-lician, german, german-x-2012-05-30, greek, gujarati, hindi, hungarian, iceland
-ic, indonesian, interlingua, irish, italian, kannada, kurmanji, latin, latvian,
- lithuanian, malayalam, marathi, mongolian, mongolianlmc, monogreek, ngerman, n
-german-x-2012-05-30, nynorsk, oriya, panjabi, pinyin, polish, portuguese, roman
-ian, russian, sanskrit, serbian, slovak, slovenian, spanish, swedish, swissgerm
-an, tamil, telugu, turkish, turkmen, ukenglish, ukrainian, uppersorbian, usengl
-ishmax, welsh, loaded.
-
-(C:\Users\giorgos\Workspace\ATAA_2013\Domination-Game-master\report\giorgos\IEE
-Etran.cls
+Babel <v3.8m> and hyphenation patterns for english, dumylang, nohyphenation, et
+hiopic, farsi, arabic, pinyin, croatian, bulgarian, ukrainian, russian, slovak,
+ czech, danish, dutch, usenglishmax, ukenglish, finnish, french, basque, ngerma
+n, german, swissgerman, ngerman-x-2012-05-30, german-x-2012-05-30, monogreek, g
+reek, ibycus, ancientgreek, hungarian, bengali, tamil, hindi, telugu, gujarati,
+ sanskrit, malayalam, kannada, assamese, marathi, oriya, panjabi, italian, lati
+n, latvian, lithuanian, mongolian, mongolianlmc, nynorsk, bokmal, indonesian, e
+speranto, coptic, welsh, irish, interlingua, serbian, serbianc, slovenian, friu
+lan, romansh, estonian, romanian, armenian, uppersorbian, turkish, afrikaans, i
+celandic, kurmanji, polish, portuguese, galician, catalan, spanish, swedish, th
+ai, loaded.
+(./IEEEtran.cls
 Document Class: IEEEtran 2007/03/05 V1.7a by Michael Shell
 -- See the "IEEEtran_HOWTO" manual for usage information.
 -- http://www.michaelshell.org/tex/ieeetran/
@@ -28,7 +27,7 @@ Document Class: IEEEtran 2007/03/05 V1.7a by Michael Shell
 \@IEEEtrantmptoksA=\toks14
 LaTeX Font Info:    Try loading font information for OT1+ptm on input line 366.
 
-("C:\Program Files\MiKTeX 2.9\tex\latex\psnfss\ot1ptm.fd"
+(/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1ptm.fd
 File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
 )
 -- Using 8.5in x 11in (letter) paper.
@@ -101,107 +100,70 @@ LaTeX Font Info:    Font shape `OT1/ptm/bx/it' in size <24> not available
 \@IEEEtmpitemindent=\dimen116
 \c@IEEEbiography=\count90
 \@IEEEtranrubishbin=\box26
-) (C:\Users\giorgos\AppData\Roaming\MiKTeX\2.9\tex\latex\biblatex\biblatex.sty
-Package: biblatex 2013/01/10 v2.5 programmable bibliographies (PK/JW/AB)
+) (/usr/share/texmf/tex/latex/biblatex/biblatex.sty
+Package: biblatex 2011/11/13 v1.7 programmable bibliographies
 
-
-Package biblatex Warning: No "backend" specified, using Biber backend.
-(biblatex)                To use BibTeX, load biblatex with 
-(biblatex)                the "backend=bibtex" option.
-
-(C:\Users\giorgos\AppData\Roaming\MiKTeX\2.9\tex\latex\biblatex\biblatex2.sty
-Package: biblatex2 2013/01/10 v2.5 programmable bibliographies (biber) (PK/JW/A
-B)
-
-(C:\Users\giorgos\AppData\Roaming\MiKTeX\2.9\tex\latex\etoolbox\etoolbox.sty
+(/usr/share/texmf/tex/latex/etoolbox/etoolbox.sty
 Package: etoolbox 2011/01/03 v2.1 e-TeX tools for LaTeX
 
-("C:\Program Files\MiKTeX 2.9\tex\latex\misc\etex.sty"
+(/usr/share/texlive/texmf-dist/tex/latex/etex-pkg/etex.sty
 Package: etex 1998/03/26 v2.0 eTeX basic definition package (PEB)
 \et@xins=\count91
 )
 \etb@tempcnta=\count92
 )
-("C:\Program Files\MiKTeX 2.9\tex\latex\graphics\keyval.sty"
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty
 Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
 \KV@toks@=\toks15
 )
-("C:\Program Files\MiKTeX 2.9\tex\latex\oberdiek\kvoptions.sty"
-Package: kvoptions 2011/06/30 v3.11 Key value format for package options (HO)
-
-("C:\Program Files\MiKTeX 2.9\tex\generic\oberdiek\ltxcmds.sty"
-Package: ltxcmds 2011/11/09 v1.22 LaTeX kernel commands for general use (HO)
-)
-("C:\Program Files\MiKTeX 2.9\tex\generic\oberdiek\kvsetkeys.sty"
-Package: kvsetkeys 2012/04/25 v1.16 Key value parser (HO)
-
-("C:\Program Files\MiKTeX 2.9\tex\generic\oberdiek\infwarerr.sty"
-Package: infwarerr 2010/04/08 v1.3 Providing info/warning/error messages (HO)
-)
-("C:\Program Files\MiKTeX 2.9\tex\generic\oberdiek\etexcmds.sty"
-Package: etexcmds 2011/02/16 v1.5 Avoid name clashes with e-TeX commands (HO)
-
-("C:\Program Files\MiKTeX 2.9\tex\generic\oberdiek\ifluatex.sty"
-Package: ifluatex 2010/03/01 v1.3 Provides the ifluatex switch (HO)
-Package ifluatex Info: LuaTeX not detected.
-)
-Package etexcmds Info: Could not find \expanded.
-(etexcmds)             That can mean that you are not using pdfTeX 1.50 or
-(etexcmds)             that some package has redefined \expanded.
-(etexcmds)             In the latter case, load this package earlier.
-)))
-(C:\Users\giorgos\AppData\Roaming\MiKTeX\2.9\tex\latex\logreq\logreq.sty
+(/usr/share/texmf/tex/latex/logreq/logreq.sty
 Package: logreq 2010/08/04 v1.0 xml request logger
 \lrq@indent=\count93
 
-(C:\Users\giorgos\AppData\Roaming\MiKTeX\2.9\tex\latex\logreq\logreq.def
+(/usr/share/texmf/tex/latex/logreq/logreq.def
 File: logreq.def 2010/08/04 v1.0 logreq spec v1.0
 ))
-("C:\Program Files\MiKTeX 2.9\tex\latex\base\ifthen.sty"
+(/usr/share/texlive/texmf-dist/tex/latex/base/ifthen.sty
 Package: ifthen 2001/05/26 v1.1c Standard LaTeX ifthen package (DPC)
 )
-("C:\Program Files\MiKTeX 2.9\tex\latex\ltxmisc\url.sty"
+(/usr/share/texlive/texmf-dist/tex/latex/url/url.sty
 \Urlmuskip=\muskip10
 Package: url 2006/04/12  ver 3.3  Verb mode for urls, etc.
 )
-\c@tabx@nest=\count94
-\c@listtotal=\count95
-\c@listcount=\count96
-\c@liststart=\count97
-\c@liststop=\count98
-\c@citecount=\count99
-\c@citetotal=\count100
-\c@multicitecount=\count101
-\c@multicitetotal=\count102
-\c@instcount=\count103
-\c@maxnames=\count104
-\c@minnames=\count105
-\c@maxitems=\count106
-\c@minitems=\count107
-\c@citecounter=\count108
-\c@savedcitecounter=\count109
-\c@uniquelist=\count110
-\c@uniquename=\count111
-\c@refsection=\count112
-\c@refsegment=\count113
-\c@maxextratitle=\count114
-\c@maxextratitleyear=\count115
-\c@maxextrayear=\count116
-\c@maxextraalpha=\count117
-\c@abbrvpenalty=\count118
-\c@highnamepenalty=\count119
-\c@lownamepenalty=\count120
-\c@maxparens=\count121
-\c@parenlevel=\count122
-\blx@tempcnta=\count123
-\blx@tempcntb=\count124
-\blx@tempcntc=\count125
-\blx@maxsection=\count126
-\blx@maxsegment@0=\count127
-\blx@notetype=\count128
-\blx@parenlevel@text=\count129
-\blx@parenlevel@foot=\count130
-\blx@sectionciteorder@0=\count131
+\c@listtotal=\count94
+\c@listcount=\count95
+\c@liststart=\count96
+\c@liststop=\count97
+\c@citecount=\count98
+\c@citetotal=\count99
+\c@multicitecount=\count100
+\c@multicitetotal=\count101
+\c@instcount=\count102
+\c@maxnames=\count103
+\c@minnames=\count104
+\c@maxitems=\count105
+\c@minitems=\count106
+\c@citecounter=\count107
+\c@savedcitecounter=\count108
+\c@uniquelist=\count109
+\c@uniquename=\count110
+\c@refsection=\count111
+\c@refsegment=\count112
+\c@maxextrayear=\count113
+\c@maxextraalpha=\count114
+\c@abbrvpenalty=\count115
+\c@highnamepenalty=\count116
+\c@lownamepenalty=\count117
+\c@maxparens=\count118
+\c@parenlevel=\count119
+\blx@tempcnta=\count120
+\blx@tempcntb=\count121
+\blx@tempcntc=\count122
+\blx@maxsection=\count123
+\blx@maxsegment=\count124
+\blx@notetype=\count125
+\blx@parenlevel@text=\count126
+\blx@parenlevel@foot=\count127
 \labelnumberwidth=\skip44
 \labelalphawidth=\skip45
 \shorthandwidth=\skip46
@@ -211,117 +173,109 @@ Package: url 2006/04/12  ver 3.3  Verb mode for urls, etc.
 \bibinitsep=\skip50
 \bibparsep=\skip51
 \bibhang=\skip52
-\blx@bcfin=\read1
-\blx@bcfout=\write3
-\c@mincomprange=\count132
-\c@maxcomprange=\count133
-\c@mincompwidth=\count134
-Package biblatex Info: Trying to load biblatex default data model...
-Package biblatex Info: ... file 'blx-dm.def' found.
-
-(C:\Users\giorgos\AppData\Roaming\MiKTeX\2.9\tex\latex\biblatex\blx-dm.def)
-Package biblatex Info: Trying to load biblatex custom data model...
-Package biblatex Info: ... file 'biblatex-dm.cfg' not found.
-\c@afterword=\count135
-\c@savedafterword=\count136
-\c@annotator=\count137
-\c@savedannotator=\count138
-\c@author=\count139
-\c@savedauthor=\count140
-\c@bookauthor=\count141
-\c@savedbookauthor=\count142
-\c@commentator=\count143
-\c@savedcommentator=\count144
-\c@editor=\count145
-\c@savededitor=\count146
-\c@editora=\count147
-\c@savededitora=\count148
-\c@editorb=\count149
-\c@savededitorb=\count150
-\c@editorc=\count151
-\c@savededitorc=\count152
-\c@foreword=\count153
-\c@savedforeword=\count154
-\c@holder=\count155
-\c@savedholder=\count156
-\c@introduction=\count157
-\c@savedintroduction=\count158
-\c@namea=\count159
-\c@savednamea=\count160
-\c@nameb=\count161
-\c@savednameb=\count162
-\c@namec=\count163
-\c@savednamec=\count164
-\c@shortauthor=\count165
-\c@savedshortauthor=\count166
-\c@shorteditor=\count167
-\c@savedshorteditor=\count168
-\c@translator=\count169
-\c@savedtranslator=\count170
-\c@labelname=\count171
-\c@savedlabelname=\count172
-\c@institution=\count173
-\c@savedinstitution=\count174
-\c@lista=\count175
-\c@savedlista=\count176
-\c@listb=\count177
-\c@savedlistb=\count178
-\c@listc=\count179
-\c@savedlistc=\count180
-\c@listd=\count181
-\c@savedlistd=\count182
-\c@liste=\count183
-\c@savedliste=\count184
-\c@listf=\count185
-\c@savedlistf=\count186
-\c@location=\count187
-\c@savedlocation=\count188
-\c@organization=\count189
-\c@savedorganization=\count190
-\c@origlocation=\count191
-\c@savedoriglocation=\count192
-\c@origpublisher=\count193
-\c@savedorigpublisher=\count194
-\c@publisher=\count195
-\c@savedpublisher=\count196
-\c@language=\count197
-\c@savedlanguage=\count198
-\c@pageref=\count199
-\c@savedpageref=\count200
+\blx@auxin=\read1
+\blx@auxout=\write3
+\c@mincomprange=\count128
+\c@maxcomprange=\count129
+\c@mincompwidth=\count130
+\c@labelname=\count131
+\c@savedlabelname=\count132
+\c@author=\count133
+\c@savedauthor=\count134
+\c@shortauthor=\count135
+\c@savedshortauthor=\count136
+\c@editor=\count137
+\c@savededitor=\count138
+\c@editora=\count139
+\c@savededitora=\count140
+\c@editorb=\count141
+\c@savededitorb=\count142
+\c@editorc=\count143
+\c@savededitorc=\count144
+\c@shorteditor=\count145
+\c@savedshorteditor=\count146
+\c@bookauthor=\count147
+\c@savedbookauthor=\count148
+\c@translator=\count149
+\c@savedtranslator=\count150
+\c@annotator=\count151
+\c@savedannotator=\count152
+\c@commentator=\count153
+\c@savedcommentator=\count154
+\c@introduction=\count155
+\c@savedintroduction=\count156
+\c@foreword=\count157
+\c@savedforeword=\count158
+\c@afterword=\count159
+\c@savedafterword=\count160
+\c@holder=\count161
+\c@savedholder=\count162
+\c@namea=\count163
+\c@savednamea=\count164
+\c@nameb=\count165
+\c@savednameb=\count166
+\c@namec=\count167
+\c@savednamec=\count168
+\c@institution=\count169
+\c@savedinstitution=\count170
+\c@language=\count171
+\c@savedlanguage=\count172
+\c@location=\count173
+\c@savedlocation=\count174
+\c@organization=\count175
+\c@savedorganization=\count176
+\c@origlocation=\count177
+\c@savedoriglocation=\count178
+\c@origpublisher=\count179
+\c@savedorigpublisher=\count180
+\c@pageref=\count181
+\c@savedpageref=\count182
+\c@publisher=\count183
+\c@savedpublisher=\count184
+\c@lista=\count185
+\c@savedlista=\count186
+\c@listb=\count187
+\c@savedlistb=\count188
+\c@listc=\count189
+\c@savedlistc=\count190
+\c@listd=\count191
+\c@savedlistd=\count192
+\c@liste=\count193
+\c@savedliste=\count194
+\c@listf=\count195
+\c@savedlistf=\count196
 Package biblatex Info: Trying to load compatibility code...
 Package biblatex Info: ... file 'blx-compat.def' found.
 
-(C:\Users\giorgos\AppData\Roaming\MiKTeX\2.9\tex\latex\biblatex\blx-compat.def
-File: blx-compat.def 2013/01/10 v2.5 biblatex compatibility (PK/JW/AB)
+(/usr/share/texmf/tex/latex/biblatex/blx-compat.def
+File: blx-compat.def 2011/11/13 v1.7 biblatex generic compatibility
 )
 Package biblatex Info: Trying to load generic definitions...
 Package biblatex Info: ... file 'biblatex.def' found.
-(C:\Users\giorgos\AppData\Roaming\MiKTeX\2.9\tex\latex\biblatex\biblatex.def
-File: biblatex.def 
-\c@biburlnumpenalty=\count201
-\c@biburlucpenalty=\count202
-\c@biburllcpenalty=\count203
-\c@smartand=\count204
+
+(/usr/share/texmf/tex/latex/biblatex/biblatex.def
+File: biblatex.def 2011/11/13 v1.7 biblatex generic definitions
+\c@biburlnumpenalty=\count197
+\c@biburlucpenalty=\count198
+\c@biburllcpenalty=\count199
+\c@smartand=\count200
 )
 Package biblatex Info: Trying to load bibliography style 'numeric'...
 Package biblatex Info: ... file 'numeric.bbx' found.
 
-(C:\Users\giorgos\AppData\Roaming\MiKTeX\2.9\tex\latex\biblatex\bbx\numeric.bbx
-File: numeric.bbx 2013/01/10 v2.5 biblatex bibliography style (PK/JW/AB)
+(/usr/share/texmf/tex/latex/biblatex/bbx/numeric.bbx
+File: numeric.bbx 2011/11/13 v1.7 biblatex bibliography style
 Package biblatex Info: Trying to load bibliography style 'standard'...
 Package biblatex Info: ... file 'standard.bbx' found.
 
-(C:\Users\giorgos\AppData\Roaming\MiKTeX\2.9\tex\latex\biblatex\bbx\standard.bb
-x
-File: standard.bbx 2013/01/10 v2.5 biblatex bibliography style (PK/JW/AB)
-\c@bbx:relatedcount=\count205
-\c@bbx:relatedtotal=\count206
+(/usr/share/texmf/tex/latex/biblatex/bbx/standard.bbx
+File: standard.bbx 2011/11/13 v1.7 biblatex bibliography style
 ))
 Package biblatex Info: Trying to load citation style 'numeric'...
 Package biblatex Info: ... file 'numeric.cbx' found.
 
-(C:\Users\giorgos\AppData\Roaming\MiKTeX\2.9\tex\latex\biblatex\cbx\numeric.cbx
-File: numeric.cbx 2013/01/10 v2.5 biblatex citation style (PK/JW/AB)
+(/usr/share/texmf/tex/latex/biblatex/cbx/numeric.cbx
+File: numeric.cbx 2011/11/13 v1.7 biblatex citation style
 Package biblatex Info: Redefining '\cite'.
 Package biblatex Info: Redefining '\parencite'.
 Package biblatex Info: Redefining '\footcite'.
@@ -335,20 +289,21 @@ Package biblatex Info: Redefining '\smartcites'.
 )
 Package biblatex Info: Trying to load configuration file...
 Package biblatex Info: ... file 'biblatex.cfg' found.
- (C:\Users\giorgos\AppData\Roaming\MiKTeX\2.9\tex\latex\biblatex\biblatex.cfg
+
+(/usr/share/texmf/tex/latex/biblatex/biblatex.cfg
 File: biblatex.cfg 
-)))
+))
 Package biblatex Info: Trying to load language 'english'...
 Package biblatex Info: ... file 'english.lbx' found.
 
-(C:\Users\giorgos\AppData\Roaming\MiKTeX\2.9\tex\latex\biblatex\lbx\english.lbx
-File: english.lbx 2013/01/10 v2.5 biblatex localization (PK/JW/AB)
+(/usr/share/texmf/tex/latex/biblatex/lbx/english.lbx
+File: english.lbx 2011/11/13 v1.7 biblatex localization
 )
-\@quotelevel=\count207
-\@quotereset=\count208
+\@quotelevel=\count201
+\@quotereset=\count202
+ (./report_giorgos.aux)
+\openout1 = `report_giorgos.aux'.
 
-(C:\Users\giorgos\Workspace\ATAA_2013\Domination-Game-master\report\giorgos\rep
-ort_giorgos.aux)
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 31.
 LaTeX Font Info:    ... okay on input line 31.
 LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 31.
@@ -365,24 +320,36 @@ Package biblatex Info: No input encoding detected.
 (biblatex)             Assuming 'ascii'.
 Package biblatex Info: Automatic encoding selection.
 (biblatex)             Assuming data encoding 'ascii'.
+\openout3 = `report_giorgos-blx.bib'.
+
 Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'report_giorgos.bbl' found.
 
-(C:\Users\giorgos\Workspace\ATAA_2013\Domination-Game-master\report\giorgos\rep
-ort_giorgos.bbl)
+(./report_giorgos.bbl)
 Package biblatex Info: Reference section=0 on input line 31.
 Package biblatex Info: Reference segment=0 on input line 31.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 122.
+(Font)              <7> on input line 123.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 122.
+(Font)              <5> on input line 123.
+ [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
 
-LaTeX Warning: Citation 'boutilier2011decision' on page 1 undefined on input li
-ne 122.
+]
+Underfull \hbox (badness 3302) in paragraph at lines 161--161
+[]\OT1/ptm/m/n/10 Craig Boutilier, Thomas Dean, and Steve Hanks.
+ []
 
 
-LaTeX Warning: Empty bibliography on input line 127.
+Underfull \hbox (badness 3579) in paragraph at lines 161--161
+\OT1/ptm/m/n/10 ``Decision-theoretic plan-ning: Struc-tural as-sump-tions
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 161--161
+\OT1/ptm/m/n/10 and com-pu-ta-tional lever-age''. In: \OT1/ptm/m/it/10 arXiv pr
+eprint
+ []
 
 
 ** Conference Paper **
@@ -395,40 +362,33 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-[1{C:/Users/giorgos/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}
-
-
-
-]
-(C:\Users\giorgos\Workspace\ATAA_2013\Domination-Game-master\report\giorgos\rep
-ort_giorgos.aux)
-
-LaTeX Warning: There were undefined references.
-
-
-Package biblatex Warning: Please (re)run Biber on the file:
-(biblatex)                report_giorgos
-(biblatex)                and rerun LaTeX afterwards.
-
+[2] (./report_giorgos.aux)
 Package logreq Info: Writing requests to 'report_giorgos.run.xml'.
+\openout1 = `report_giorgos.run.xml'.
+
  ) 
 Here is how much of TeX's memory you used:
- 6319 strings out of 493921
- 110977 string characters out of 3147276
- 485193 words of memory out of 3000000
- 9595 multiletter control sequences out of 15000+200000
- 34114 words of font info for 63 fonts, out of 3000000 for 9000
- 844 hyphenation exceptions out of 8191
- 44i,8n,35p,1244b,859s stack positions out of 5000i,500n,10000p,200000b,50000s
-{C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/fontname/8r.enc}<C:/Program File
-s/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Program Files/MiKTeX
- 2.9/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files/MiKTeX 2.9/font
-s/type1/urw/times/utmb8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times
-/utmbi8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmr8a.pfb><C:/
-Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmri8a.pfb>
-Output written on report_giorgos.pdf (1 page, 61538 bytes).
+ 5624 strings out of 493485
+ 95476 string characters out of 3143526
+ 256507 words of memory out of 3000000
+ 8941 multiletter control sequences out of 15000+200000
+ 33007 words of font info for 62 fonts, out of 3000000 for 9000
+ 960 hyphenation exceptions out of 8191
+ 34i,8n,49p,1775b,829s stack positions out of 5000i,500n,10000p,200000b,50000s
+{/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texliv
+e/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texm
+f-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/
+fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/t
+ype1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/pub
+lic/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/am
+sfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a
+.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/sha
+re/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texm
+f-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on report_giorgos.pdf (2 pages, 105868 bytes).
 PDF statistics:
- 31 PDF objects out of 1000 (max. 8388607)
+ 52 PDF objects out of 1000 (max. 8388607)
+ 37 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

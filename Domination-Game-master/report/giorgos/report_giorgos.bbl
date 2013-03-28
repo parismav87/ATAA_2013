@@ -1,0 +1,49 @@
+% $ biblatex auxiliary file $
+% $ biblatex version 1.7 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated as
+% required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+\entry{boutilier2011decision}{article}{}
+  \name{author}{3}{}{%
+    {{}%
+     {Boutilier}{B.}%
+     {Craig}{C.}%
+     {}{}%
+     {}{}}%
+    {{}%
+     {Dean}{D.}%
+     {Thomas}{T.}%
+     {}{}%
+     {}{}}%
+    {{}%
+     {Hanks}{H.}%
+     {Steve}{S.}%
+     {}{}%
+     {}{}}%
+  }
+  \strng{namehash}{BCDTHS1}
+  \strng{fullhash}{BCDTHS1}
+  \field{sortinit}{B}
+  \field{title}{Decision-theoretic planning: Structural assumptions and
+  computational leverage}
+  \field{journaltitle}{arXiv preprint arXiv:1105.5460}
+  \field{year}{2011}
+\endentry
+
+\lossort
+\endlossort
+
+\endinput
