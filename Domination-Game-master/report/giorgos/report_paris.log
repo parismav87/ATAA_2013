@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  29 MAR 2013 14:02
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  29 MAR 2013 19:09
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -631,15 +631,15 @@ Package epstopdf Info: Source file: <figures/django1vs1.eps>
 (epstopdf)                    size: 3859 bytes
 (epstopdf)             Command: <repstopdf --outfile=figures/django1vs1-eps-con
 verted-to.pdf figures/django1vs1.eps>
-(epstopdf)             \includegraphics on input line 129.
+(epstopdf)             \includegraphics on input line 152.
 Package epstopdf Info: Output file is already uptodate.
 
-<figures/django1vs1-eps-converted-to.pdf, id=132, 420.57124pt x 316.18124pt>
+<figures/django1vs1-eps-converted-to.pdf, id=36, 420.57124pt x 316.18124pt>
 File: figures/django1vs1-eps-converted-to.pdf Graphic file (type pdf)
 
 <use figures/django1vs1-eps-converted-to.pdf>
 Package pdftex.def Info: figures/django1vs1-eps-converted-to.pdf used on input 
-line 129.
+line 152.
 (pdftex.def)             Requested size: 227.62204pt x 171.12611pt.
 Package epstopdf Info: Source file: <figures/django3vs3.eps>
 (epstopdf)                    date: 2013-03-28 22:12:11
@@ -649,16 +649,17 @@ Package epstopdf Info: Source file: <figures/django3vs3.eps>
 (epstopdf)                    size: 3859 bytes
 (epstopdf)             Command: <repstopdf --outfile=figures/django3vs3-eps-con
 verted-to.pdf figures/django3vs3.eps>
-(epstopdf)             \includegraphics on input line 130.
+(epstopdf)             \includegraphics on input line 153.
 Package epstopdf Info: Output file is already uptodate.
 
-<figures/django3vs3-eps-converted-to.pdf, id=133, 420.57124pt x 316.18124pt>
+<figures/django3vs3-eps-converted-to.pdf, id=37, 420.57124pt x 316.18124pt>
 File: figures/django3vs3-eps-converted-to.pdf Graphic file (type pdf)
 
 <use figures/django3vs3-eps-converted-to.pdf>
 Package pdftex.def Info: figures/django3vs3-eps-converted-to.pdf used on input 
-line 130.
+line 153.
 (pdftex.def)             Requested size: 227.62204pt x 171.12611pt.
+ [3]
 Package epstopdf Info: Source file: <figures/snake1vs1.eps>
 (epstopdf)                    date: 2013-03-28 22:12:11
 (epstopdf)                    size: 9586 bytes
@@ -667,15 +668,15 @@ Package epstopdf Info: Source file: <figures/snake1vs1.eps>
 (epstopdf)                    size: 6021 bytes
 (epstopdf)             Command: <repstopdf --outfile=figures/snake1vs1-eps-conv
 erted-to.pdf figures/snake1vs1.eps>
-(epstopdf)             \includegraphics on input line 170.
+(epstopdf)             \includegraphics on input line 193.
 Package epstopdf Info: Output file is already uptodate.
 
-<figures/snake1vs1-eps-converted-to.pdf, id=134, 420.57124pt x 316.18124pt>
+<figures/snake1vs1-eps-converted-to.pdf, id=57, 420.57124pt x 316.18124pt>
 File: figures/snake1vs1-eps-converted-to.pdf Graphic file (type pdf)
 
 <use figures/snake1vs1-eps-converted-to.pdf>
 Package pdftex.def Info: figures/snake1vs1-eps-converted-to.pdf used on input l
-ine 170.
+ine 193.
 (pdftex.def)             Requested size: 227.62204pt x 171.12611pt.
 Package epstopdf Info: Source file: <figures/snake3vs3.eps>
 (epstopdf)                    date: 2013-03-28 22:12:11
@@ -685,19 +686,30 @@ Package epstopdf Info: Source file: <figures/snake3vs3.eps>
 (epstopdf)                    size: 3866 bytes
 (epstopdf)             Command: <repstopdf --outfile=figures/snake3vs3-eps-conv
 erted-to.pdf figures/snake3vs3.eps>
-(epstopdf)             \includegraphics on input line 171.
+(epstopdf)             \includegraphics on input line 194.
 Package epstopdf Info: Output file is already uptodate.
 
-<figures/snake3vs3-eps-converted-to.pdf, id=135, 420.57124pt x 316.18124pt>
+<figures/snake3vs3-eps-converted-to.pdf, id=58, 420.57124pt x 316.18124pt>
 File: figures/snake3vs3-eps-converted-to.pdf Graphic file (type pdf)
 
 <use figures/snake3vs3-eps-converted-to.pdf>
 Package pdftex.def Info: figures/snake3vs3-eps-converted-to.pdf used on input l
-ine 171.
+ine 194.
 (pdftex.def)             Requested size: 227.62204pt x 171.12611pt.
- [3] [4 <./figures/django1vs1-eps-converted-to.pdf> <./figures/django3vs3-eps-c
-onverted-to.pdf> <./figures/snake1vs1-eps-converted-to.pdf> <./figures/snake3vs
-3-eps-converted-to.pdf>] [5]
+
+
+LaTeX Warning: Reference `django' on page 4 undefined on input line 199.
+
+
+LaTeX Warning: Reference `django' on page 4 undefined on input line 210.
+
+[4 <./figures/django1vs1-eps-converted-to.pdf> <./figures/django3vs3-eps-conver
+ted-to.pdf>]
+
+LaTeX Warning: Reference `snake' on page 5 undefined on input line 252.
+
+[5 <./figures/snake1vs1-eps-converted-to.pdf> <./figures/snake3vs3-eps-converte
+d-to.pdf>]
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -709,19 +721,26 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 268.
-[6
-
-]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 268.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 291.
+[6]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 291.
  (./report_paris.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 268.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 268.
-Package rerunfilecheck Info: File `report_paris.out' has not changed.
-(rerunfilecheck)             Checksum: FB49E02CA17576F3EDD6CF842192FF61;1585.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 291.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 291.
 
+
+Package rerunfilecheck Warning: File `report_paris.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `report_paris.out':
+(rerunfilecheck)             Before: D41D8CD98F00B204E9800998ECF8427E;0
+(rerunfilecheck)             After:  92D5B173D0584297B95AFD3B9E524082;1679.
 
 LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 
 
 Package biblatex Warning: Please (re)run BibTeX on the file(s):
@@ -731,16 +750,16 @@ Package biblatex Warning: Please (re)run BibTeX on the file(s):
 Package logreq Info: Writing requests to 'report_paris.run.xml'.
 \openout1 = `report_paris.run.xml'.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 268.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 291.
  ) 
 Here is how much of TeX's memory you used:
- 10599 strings out of 493488
- 172375 string characters out of 3141326
+ 10576 strings out of 493488
+ 171990 string characters out of 3141326
  366494 words of memory out of 3000000
- 13730 multiletter control sequences out of 15000+200000
+ 13705 multiletter control sequences out of 15000+200000
  177280 words of font info for 107 fonts, out of 3000000 for 9000
  960 hyphenation exceptions out of 8191
- 30i,9n,28p,1553b,804s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 30i,9n,28p,1635b,804s stack positions out of 5000i,500n,10000p,200000b,50000s
 {/usr/local/texlive/2012/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{/usr/local/
 texlive/2012/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/local/texlive/20
 12/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/local/texlive/2012/texmf-d
@@ -760,10 +779,10 @@ exmf-dist/fonts/type1/public/lm/lmri10.pfb></usr/local/texlive/2012/texmf-dist/
 fonts/type1/public/lm/lmri8.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1
 /public/lm/lmsy10.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/lm
 /lmsy7.pfb>
-Output written on report_paris.pdf (6 pages, 342493 bytes).
+Output written on report_paris.pdf (6 pages, 345435 bytes).
 PDF statistics:
- 270 PDF objects out of 1000 (max. 8388607)
- 237 compressed objects within 3 object streams
- 59 named destinations out of 1000 (max. 500000)
- 213 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 196 PDF objects out of 1000 (max. 8388607)
+ 164 compressed objects within 2 object streams
+ 61 named destinations out of 1000 (max. 500000)
+ 21 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -20,21 +20,20 @@
 
 \begin{document}
 \title{Lab Report on the Domination Game}
-
 \author{\IEEEauthorblockN{Paris Mavromoustakos}
 \IEEEauthorblockA{Student ID: 10407502}
 \and
 \IEEEauthorblockN{Giorgos Methenitis}
-\IEEEauthorblockA{Student ID: 10407502}
+\IEEEauthorblockA{Student ID: 10407537}
 \and
 \IEEEauthorblockN{Marios Tzakris}
-\IEEEauthorblockA{Student ID: 10407502}
+\IEEEauthorblockA{Student ID: 10406875}
 \and
 \IEEEauthorblockN{Stathis Charitos}
-\IEEEauthorblockA{Student ID: 10407502}
+\IEEEauthorblockA{Student ID: 10408452}
 }
-\maketitle
 
+\maketitle
 
 \begin{abstract}
 Hereby we present methods and algorithms we used in order to compete in the Domination Game. Constructing effective methods and strategies for our agents has been a quite challenging task, given a multi-agent partially observable environment. We will discuss how fundamental problems were dealt with, such as the representation of states and decision making, but we will also explain how different mechanics we implemented for the agents’ movement and shooting accuracy improved their performance. Finally, we will present a learning method we have implemented as a test case, comparing it to predefined strategies and analyze the results. 
@@ -86,11 +85,34 @@ In this case, techniques like keeping only the first decimal point of the score 
 It is obvious that the state space of this game grows rapidly in respect to the number of features we use to represent the states actions our agents are represented with. As it is referred in \cite{boutilier}, the biggest difficulty when we are dealing with state-based problem formulations, is the \textit{curse of dimensionality}, the state action space grows exponentially with the number of features. We can see the DG problem as a \textit{Markov Decision Process}, which is fully observable in respect to our agents' positions, the control points' state, and the game state. However, the agents have partial observability regarding opponent agents, which of course can be represented as full observable case only when opponents are in our field of view.
 
 \section{Experimental Setup and Results}
-In this sections, we will discuss each one of the different methods we experimented with and present results from each one separately.
+In this section, we will discuss each one of the different methods we experimented with and present results from each one separately. Firstly, we will analyse the preset strategy we used to compete in the actual tournament and secondly, we will present various learning methods we implemented as test cases.
+
+\subsection{Preset Strategy Analysis}
+In order to construct an efficient preset strategy we had to balance between exploiting the ammo points and focusing on control points. Moreover, besides coming up with a "smart" strategy we had to improve the speed and shooting accuracy of the agents.
+
+It is a fact that control point domination could lead to victory, however, due to agents' respawn time after being hit being high, controlling the ammo points became a task of major importance. We divided our 3 agents so as agent 1 would head towards control point 1, agent 3 would head towards control point 2 and agent 2 would head to the ammo points.
+
+The agents dominating control points would stay still as long as they have control of the point in order to prevent foes from capturing it. On the other hand, agent 2 has a significantly more difficult task to complete. It both has to capture as much ammo as possible and head to the control points in order to eliminate foes and provide the team with an advantage.
+
+In order to achieve maximum speed in movement and accuracy in shooting, we redesigned both the agents' drive and shoot functions. Movement was enhanced using the popular A\* algorithm which finds the fastest path between a given set of nodes. We used control points and ammo points as these nodes. The agents were also given the ability to move backwards when needed, so as to turn faster around corners without exposing their back on foes.
+
+In order to shoot more efficiently, first of all we defined the occasion on which an agent would shoot. Since only agent 2 was able to move towards ammo points, the shoot function considered only his role. Agent 2 would only shoot when a foe would enter his shooting range while the angle between the two agents would be less than the maximum turn agent 2 can perform. Under those circumstances, agent 2 would compute the turn needed using this formula:
+
+\begin{equation}
+\theta_{turn} = \theta_{agent} - math.atan2(d_y,d_x)
+\end{equation}
+
+where $\theta_{agent}$ is agent 2's angle regarding the map, and $d_x$, $d_y$ are the distances between agent 2 and the foe's x and y coordinates. Since most of the enemy team's agents tend to boost straight forward movement in order to achieve maximum speed for their agents, we assume the angle will not have changed significantly between the two agents.
+
+However, in case the enemy team's agents were moving backwards or tend to take a lot of turns, agent 2 would miss his shots. In order to prevent this from happening, we designed agent 2 to drive to the control points and shoot at the "stationary" foes who were trying to dominate control points. This strategy has proven to be efficient since, moving away from a control point exposes it to the enemy team and almost all teams designed their agents so as to stay put on top of the control points. Finally, we designed agent 2 to calculate whether there are walls or friendly agents between him and a foe, in order to prevent shooting at walls or "friendly fire".
+
+We have used this set strategy to compete in the tournament, while implementing learning algorithms in parallel. The learning algorithms were not used in the tournament because of their need of a large data file which was impossible to upload on the server. Hence, we below present these learning implementations as test cases.
+
+
 \subsection{Grid World}
-In this section, we formalize the problem, and we define the state and action state space, that we used in our experiments.
+In this section, we formalize learning in DG problem, and we define the state and action space, that we used in our experiments.
 \subsubsection{State-Action Space}
-Our first approach to deal with the problem of the continuous state space was to split the map into tiles of size $16\times16$, which was also the original tile size of the game itself. A method which is similar with \textit{tile coding}, as it is described in Chapter~$7$ of \emph{Hado Van Hasselt} book, about \textit{Continuous State and Action Spaces}. So, the first feature of our state space is the position of our agent in this grid world, meaning the closest from our agent tile coordinate in the 2D space, given by the \textit{Euclidean distance}. For example, the states of the agent position can be given by, 
+Our first approach to deal with the problem of the immense state space was to split the map into tiles of size $16\times16$, which was also the original tile size of the game itself. A method which is similar with \textit{tile coding}, as it is described in Chapter~$7$ of \emph{Hado Van Hasselt} book, about \textit{Continuous State and Action Spaces}. So, the first feature of our state space is the position of our agent in this grid world, meaning the closest from our agent tile coordinate in the 2D space, given by the \textit{Euclidean distance}. For example, the states of the agent position can be given by, 
 \begin{equation}
 S_{position} = \lbrace (0,0),\ldots,(World_{width} / 16, World_{height} / 16)  \rbrace
 \end{equation} 
@@ -119,7 +141,7 @@ Reward = Reward + (Ammo^{t} - Ammo^{t-1}) \times 4
 A reward was also given when the agent succeeded in obtaining ammo, but was weighted less that the reward for capturing a control point.
 
 \subsubsection{Learning Method}
-We decided, to implement \textit{independent Q-Learning} for each one of our agents. Each agent holds its own \textit{Q-table}. The states that an agent can be are the possible position in the grid world, together with the state of the control points. Furthermore, in each of these states, it has a set of possible action that can lead the agent to drive in a neighboring tile. The update rule of the \textit{Q-Learning}, was updating the table of each independent agent every time the agent reached its target location, i.e. its previous action. We used \textit{Q-Learning} with $0.7$ learning rate-$\alpha$ and the same value for discount factor-$\gamma$.
+We decided, to implement \textit{independent Q-Learning} for each one of our agents. Each agent keeps its own \textit{Q-table}. The states that an agent can be in are its possible positions in the grid world, along with the state of the control points. Furthermore, in each of these states, it has a set of possible actions that can lead the agent to drive in a neighboring tile. The update rule of the \textit{Q-Learning}, was designed to update the Q-table of each independent agent every time the agent reached its target location, i.e. its previous action. We used \textit{Q-Learning} with $0.7$ learning rate-$\alpha$ and the same value for discount factor-$\gamma$.
 
 \subsubsection{Results}
 The results of this approach was tested in two settings. The first setting was on the same map but on a \emph{1vs1} game. The second approach, was the original game \emph{3vs3}. The results of \textit{independent Q-Learning} in this grid world representation of the problem were really bad and we think that are not even worth to be mentioned here. One explanation is that we have no information in the state space referring to the agent's orientation. So, each agent can easily choose target locations that are located in its backward direction and this caused the agents to perform really slow turns and causing a delay to the completion of their actions, as well as the update rule for several game steps.
@@ -135,11 +157,11 @@ The results of this approach was tested in two settings. The first setting was o
 \subsection{Interesting Points as States}
 In the previous subsection, we described an easy way to formalize the problem of learning in this Markov decision process setting. Our approach for selecting an ideal state and action space was not really applicable to this game. In this subsection, we are presenting a better way to represent the state and the action space.
 \subsubsection{State-Action Space}
-In \textit{Domination Game}, there are four important points in the map, the two control points and the two ammo spots. Furthermore, the initial positions of the agents can be described as an important point as well. Here, we are investigating the use of these important spots into the map as states in the MPD representation of our learning problem. Hence the feature describing the position is an important point of the map. This can be described as:
+In \textit{Domination Game}, there are four important points in the map, the two control points and the two ammo spots. Furthermore, the initial positions of the agents can be described as an important point as well. Here, we are investigating the use of these important spots into the map as states in the MDP representation of our learning problem. Hence the feature describing the position is an important point of the map. This can be described as:
 \begin{equation}
 S_{position} = \lbrace CP_1, CP_2, AM_1, AM_2, INIT  \rbrace
 \end{equation}
-But, this is a really tiny representation in contrast to the previous one, which had a grid over all map positions. So, we decided to represent a joint state space which includes information for all the three agents. Agents now, will decide their action not only depending on their own locations, but also on where their teammates are located.
+But, this is a really minimalistic representation in contrast to the previous one, which had a grid over all map positions. So, we decided to represent a joint state space which includes information for all the three agents. Agents now, will decide their action not only depending on their own locations, but also on where their teammates are located.
 \begin{equation}
 S'_{position} = S_{position} \times S_{position} \times S_{position}
 \end{equation}
@@ -149,9 +171,9 @@ The current position state of each agent is given always by its previous visited
 \begin{equation}
 S_{foes} = \lbrace <0,0,0,0>, <0,0,0,1>, \ldots, <0,0,0,3>  \rbrace
 \end{equation}
-The knowledge of the opponents' positions is known to all of our agents, even only one agent from our team can see opponents.
+The knowledge of the opponents' positions is known to all of our agents, even if only one agent of our team can see opponents.
 
-For the action space, each agent had all possible position states except from the initial position.
+The possible actions of each agent were to drive in one of the possible points of interest, and/or shoot.
 The action set was:
 \begin{equation}
 A = \lbrace CP_1, CP_2, AM_1, AM_2 \rbrace
@@ -160,11 +182,11 @@ The state-action space is now:
 \begin{equation}
 S = S'_{position} \times S_{full\_cps} \times S_{foes} \times A
 \end{equation}
-Comparing with the previous approach described in the above subsection, we can realize that this one is more compact and it allow to us use more information.
+Comparing with the previous approach described in the above subsection, we can realize that this one is more compact and it allows to us use more information.
 \subsubsection{Reward Function}
 The reward function is the same as described in the grid world approach.
 \subsubsection{Learning Method}
-One more time, we decided, to implement \textit{independent Q-Learning} for each one of our agents. Now, each agent does not hold its own \textit{Q-table}, but all agents update the same table. We can see it as a group of agents try to learn a symmetric optimal policy. As an example, imagine there are two agents in states A,B respectively. The optimal action for agent one, in state A and agent two in state B, is the same as the optimal action for the second agent in state A and agent one in state B. Again, the update rule of the \textit{Q-Learning}, updates the table of each independent agent every time the agent reaches its target state, i.e. its previous action. We used \textit{Q-Learning} with $0.7$ learning rate-$\alpha$ and the same value for discount factor-$\gamma$.
+Once more, we decided to implement \textit{independent Q-Learning} for each one of our agents. Now, each agent does not keep its own \textit{Q-table}, but all agents update the same joint Q-table. We can see it as a group of agents try to learn a symmetric optimal policy. As an example, imagine there are two agents in states A,B respectively. The optimal action for agent one, in state A and agent two in state B, is the same as the optimal action for the second agent in state A and agent one in state B. Again, the update rule of the \textit{Q-Learning}, updates the table of each independent agent every time the agent reaches its target state, i.e. its previous action. We used \textit{Q-Learning} with $0.7$ learning rate-$\alpha$ and the same value for discount factor-$\gamma$.
 \begin{figure*}[t]
 \centering  
     \includegraphics[width=8cm]{figures/snake1vs1.eps}\	
@@ -173,7 +195,7 @@ One more time, we decided, to implement \textit{independent Q-Learning} for each
    \label{snake}
 \end{figure*}
 \subsubsection{Results}
-Finally, the results of this approach are illustrated in the Figure~\ref{django}. We tested our approach against the random-default agent. The reason why we did that, was that the handcrafted agents from other teams were too good to be explored by the learning agent. The value represented by the y-axis in these figures is:
+Finally, the results of this approach are illustrated in the Figure~\ref{django}. We tested our approach against the random-default agent. The value represented by the y-axis in these figures is:
 \begin{equation}
 step = (max\_steps - end\_steps)/ max\_steps
 \end{equation}
@@ -184,11 +206,11 @@ score = (score - max\_score/2)/max\_score
 value = step \times score
 \end{equation}
 
-From the last three equations, we can refer that a win counts more if it is early in respect to the total steps that the game can continue, and a lost in the lately steps is better than a lost in the first steps. We tune the settings of the game, and these episodes last for $3000$ steps, and the maximum score is $1000$, in order to have a faster learning process. In every number of episodes in the x-axis the average of the previous $10$ episodes is computed. The whole simulation repeated three times, the mean and the standard deviation are presented. The left graph in figure~\ref{django}, is about an one vs. one game. We can see that our learning agent obtains a high reward even from the first ten completed episodes. This is normal, because the agents chooses action among only interesting points, causing to a behavior similar to the random-default agent. In addition, it learns to choose actions that are profitable for it. The same applies for the right graph, where we have a complete team of three agents against the default team. We can see only a small reduce to the value that the agents obtained over the first $10$ episodes.
+From the last three equations, we can refer that a win counts more if it is early in respect to the total steps that the game can continue, and a lost in the lately steps is better than a lost one in the early steps. We tune the settings of the game, and these episodes last for $3000$ steps, and the maximum score is $1000$, in order to have a faster learning process. In every number of episodes in the x-axis the average of the previous $10$ episodes is computed. The whole simulation repeated three times, the mean and the standard deviation are presented. The left graph in figure~\ref{django}, is about an one vs. one game. We can see that our learning agent obtains a high reward even from the first ten completed episodes. This is normal, because the agents chooses action among only interesting points, causing to a behavior similar to the random-default agent. In addition, it learns to choose actions that are profitable for it. The same applies for the right graph, where we have a complete team of three agents against the default team. Only a small reduction of the value that the agents obtained over the first $10$ episodes is observed.
 
 
 \subsection{Interesting Points and Transitions as States}
-We saw, how the performance of our agent improved using interesting points as the state space of our MDP framework. Here, we are investigating one more improvement that can lead us to a better learning scheme.In general, considering only interesting points as states, causes really delays at the update rule of \textit{Q-learning} for example. Furthermore, there might be also a lot of changes in the world state while an agent is in a transition from its previous state to another. Imagine for example, that agent A chooses an action towards the control point 1. Simultaneously, agent B chooses the same action, agent A reaches control point 1 first, but agent B cannot change its action and is forced to go to the control point no matter if it is taken by its teammate. Thus, there is a need of additional states which are going to describe transitions from one state to another. This idea is exploited through the next parts of this paper, as our last and best hope to acquire a better performance for the agent.
+We pointed out, how the performance of our agent improved using interesting points as the state space of our MDP framework. Here, we are investigating one more improvement that can lead us to a better learning scheme.In general, considering only interesting points as states, causes significant delay in the update of the \textit{Q-table} for example. Furthermore, there might be also a lot of changes in the world state while an agent is in a transition from its previous state to another. Imagine for example, that agent A chooses an action towards the control point 1. Simultaneously, agent B chooses the same action, agent A reaches control point 1 first, but agent B cannot change its action and is forced to go to the control point no matter if it is taken by its teammate. Thus, there is a need of additional states which are going to describe transitions from one state to another. This idea is exploited through the next part of this paper, in aiming at optimal decision making.
 \subsubsection{State-Action Space}
 As in previous part in this section, we are going to describe each part of the MDP representation. First of all, the feature of the state space which is going to represent the position of each agent is now different. Given a set of states as in eq. (7), and a set of transitions T, the new state space will be:
 \begin{equation}
@@ -205,13 +227,13 @@ So, the agent now, can be in state:
 \item I am in state $CP_1$ or,
 \item I am going from $CP_1$ to $CP_2$.
 \end{itemize}
-As you can realize, this is a simple way to add more information about states. Unfortunately, this is the state space now is impossible to contain the same amount of information about the teammates of our agent. So, we decided, in order to keep it feasible computationally, to represent the state of our teammates with their goal, again, in lexicographical order.
+As one can realize, this is a simple way to add more information about states. Unfortunately, the size of the new state space is already too large to contain the same amount of information for each agent in one team. So, we decided, in order to make it computationally feasible, to represent the state of our teammates with their temporal goal, again, in lexicographical order.
 \begin{equation}
 S''_{position} = S'_{position} \times S_{position} \times S_{position} 
 \end{equation}
-In this test case, we are not using the information for the opponent agents' positions, in order to keep it computationally tractable, but we use the Cps states from eq. (3).
+In this test case, we are not using the information for the opponent agents' positions, in order to contain a computationally tractable statespace, but we use the Cps states from eq. (3).
 
-For the action space, each agent has all possible position states except from the initial position.
+For the action space, each agent has all possible position states except for the initial positions.
 The action set is the same as before.
 \begin{equation}
 A = \lbrace CP_1, CP_2, AM_1, AM_2 \rbrace
@@ -223,17 +245,17 @@ S = S''_{position} \times S_{full\_cps} \times A
 \subsubsection{Reward Function}
 The reward function is the same as described in the grid world approach. This function is described in eq. (5-6).
 \subsubsection{Learning Method}
-The reason why we chose to implement \textit{Independent Q-Learning} not only in this test case, but in the previous test cases as well, was the fact that the state-action space then was really intractable. Almost $500Mb$ was the value table when we tried to include joint actions in our state and action space, which is indicative about how much the state space grows in a multi-agent setting.
+The reason why we chose to implement \textit{Independent Q-Learning} not only in this test case, but in the previous test cases as well, was the fact that the state-action space then was really intractable. Almost $500Mb$ was the necessity in memory for the Q-table when we tried to include joint actions in our state and action space, which is indicative about how much the state space grows in a multi-agent setting.
 Again, the update rule of the \textit{Q-Learning}, updates the table of each independent agent every time the agent reaches its target state, i.e. its previous action. We used \textit{Q-Learning} with $0.7$ learning rate-$\alpha$ and the same value for discount factor-$\gamma$. Each update rule is performed after each game-step and not like the previous case, when the update rule was only performed after each arrival in the target state.
 \subsubsection{Results}
-In figure~\ref{snake}, the result of the discussed approach are presented. The same values are presented here as in the previous figure for x and y axis. As it is explained before, now agents when they are choosing an action, towards a state, in the next steps they are going to be in a transition state. From this transition state, they can also choose an action, towards another state than their initial target. Hence at the beginning they preform really poor. Again, in the left graph we have only two agents playing against each other. After $100$ games-episodes, the learning agent obtain a value of greater than $0.2$, which is lower than the previous test case. Thing are worse for the three versus three game. After a huge number of episodes, $300$, the only thing that the learning team of agent learned was how not to lose quick. One possible explanation is that now the state space is really bigger, and the agents have not complete information about the opponents, and their teammates' position as in the previous test case. One possible improvement would be to include joint actions in our state-action space. Then, the policy would have been better, and the learning process would not have lead the agents to learn a symmetric optimal policy to act. However, these are the difficulties when you are dealing with huge state spaces, this framework really gave us the change to understand why learning and planning in huge state spaces is challenging, especially with the presence of multiple agents.
+In figure~\ref{snake}, the results of the discussed approach are presented. The same values are presented here as in the previous figure for x and y axis. As it is explained before, when now agents choose an action and aim towards a future state, until this is completed they will find themselves in a transition state. From this transition state, they can also choose an action, towards another state different from their initial target. This causes poor performance on the early episodes. Again, the graph on the left represents only two agents playing against each other. After $100$ games-episodes, the learning agent obtains a value of greater than $0.2$, which is lower than the previous test case. Results are worse for the three versus three game. After a huge number of episodes, $300$, the only thing that the learning team of agents actually has learned is how to lose in more timesteps than it used to. One possible explanation is that now the state space is significantly larger, and the agents have not complete information about the opponents, and their teammates' position as in the previous test case. One possible improvement would be to include joint actions in our state-action space. Then, the policy would have been better, and the learning process would not have lead the agents to learn a symmetric optimal policy to act. However, these are difficulties that appear when dealing with huge state spaces, this framework really gave us the change to understand why learning and planning in huge state spaces is challenging, especially with the presence of multiple agents.
 
 
 \section{Future Work}
 
 In this section, we present some of the features we consider worth improving, both on theoretical basis but also regarding the strategic setup of our implementation.
 
-\subsection{Testing}
+\subsection{Testing vs. Learning Agents}
 It is a fact that due to time constraints we did not have time to test our agents' performance opposed to every other team that competed in the tournament. For this reason, we only include testing cases using the default agent as the opponent team. We would like to observe how our agents would perform against learning agents aswell, but this was not possible since most teams' implementations included learning methods only in the last tournament.
 
 \subsection{Higher-level Learning}
