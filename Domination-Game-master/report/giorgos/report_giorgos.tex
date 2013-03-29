@@ -1,4 +1,6 @@
 \documentclass[conference]{IEEEtran}
+\usepackage{color}
+\usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage{lmodern}
 \usepackage{epstopdf}
@@ -7,7 +9,13 @@
 
 % correct bad hyphenation here
 \hyphenation{op-tical net-works semi-conduc-tor}
-
+\hypersetup{
+  colorlinks,%
+    citecolor=red,%
+    filecolor=red,%
+    linkcolor=red,%
+    urlcolor=red
+}
 
 \begin{document}
 
@@ -37,58 +45,6 @@ San Francisco, California 96678-2391\\
 Telephone: (800) 555--1212\\
 Fax: (888) 555--1212}}
 
-% conference papers do not typically use \thanks and this command
-% is locked out in conference mode. If really needed, such as for
-% the acknowledgment of grants, issue a \IEEEoverridecommandlockouts
-% after \documentclass
-
-% for over three affiliations, or if they all won't fit within the width
-% of the page, use this alternative format:
-% 
-%\author{\IEEEauthorblockN{Michael Shell\IEEEauthorrefmark{1},
-%Homer Simpson\IEEEauthorrefmark{2},
-%James Kirk\IEEEauthorrefmark{3}, 
-%Montgomery Scott\IEEEauthorrefmark{3} and
-%Eldon Tyrell\IEEEauthorrefmark{4}}
-%\IEEEauthorblockA{\IEEEauthorrefmark{1}School of Electrical and Computer Engineering\\
-%Georgia Institute of Technology,
-%Atlanta, Georgia 30332--0250\\ Email: see http://www.michaelshell.org/contact.html}
-%\IEEEauthorblockA{\IEEEauthorrefmark{2}Twentieth Century Fox, Springfield, USA\\
-%Email: homer@thesimpsons.com}
-%\IEEEauthorblockA{\IEEEauthorrefmark{3}Starfleet Academy, San Francisco, California 96678-2391\\
-%Telephone: (800) 555--1212, Fax: (888) 555--1212}
-%\IEEEauthorblockA{\IEEEauthorrefmark{4}Tyrell Inc., 123 Replicant Street, Los Angeles, California 90210--4321}}
-
-
-
-
-% use for special paper notices
-%\IEEEspecialpapernotice{(Invited Paper)}
-
-
-
-
-% make the title area
-% IEEEtran.cls defaults to using nonbold math in the Abstract.
-% This preserves the distinction between vectors and scalars. However,
-% if the conference you are submitting to favors bold math in the abstract,
-% then you can use LaTeX's standard command \boldmath at the very start
-% of the abstract to achieve this. Many IEEE journals/conferences frown on
-% math in the abstract anyway.
-
-% no keywords
-
-
-
-
-% For peer review papers, you can put extra information on the cover
-% page as needed:
-% \ifCLASSOPTIONpeerreview
-% \begin{center} \bfseries EDICS Category: 3-BBND \end{center}
-% \fi
-%
-% For peerreview papers, this IEEEtran command inserts a page break and
-% creates the second title. It will be ignored for other modes.
 \IEEEpeerreviewmaketitle
 
 
@@ -133,6 +89,14 @@ We decided, to implement \textit{independent Q-Learning} for each one of our age
 \subsubsection{Results}
 The results of this approach was tested in two settings. The first setting was on the same map but on a \emph{1vs1} game. The second approach, was the original game \emph{3vs3}. The results of \textit{independent Q-Learning} in this grid world representation of the problem were really bad and we think that are not even worth to be mentioned here. One explanation is that we have no information in the state space referring to the agent's orientation. So, each agent can easily choose target locations that are located in its backward direction and this caused the agents to perform really slow turns and causing a delay to the completion of their actions, as well as the update rule for several game steps.
 
+\begin{figure*}[t]
+\centering
+    \includegraphics[width=8cm]{figures/django1vs1.eps}\	
+    \includegraphics[width=8cm]{figures/django3vs3.eps}
+   \caption{Experimental results. Left, $1vs1$ agents setting. Right, $3vs3$ agents setting.}
+   \label{django}
+\end{figure*}
+
 \subsection{Interesting Points as States}
 In the previous subsection, we described an easy way to formalize the problem of learning in this Markov decision process setting. Our approach for selecting an ideal state and action space was not really applicable to this game. In this subsection, we are presenting a better way to represent the state and the action space.
 \subsubsection{State-Action Space}
@@ -166,7 +130,25 @@ Comparing with the previous approach described in the above subsection, we can r
 The reward function is the same as described in the grid world approach.
 \subsubsection{Learning Method}
 One more time, we decided, to implement \textit{independent Q-Learning} for each one of our agents. Now, each agent does not hold its own \textit{Q-table}, but all agents update the same table. We can see it as a group of agents try to learn a symmetric optimal policy. As an example, imagine there are two agents in states A,B respectively. The optimal action for agent one, in state A and agent two in state B, is the same as the optimal action for the second agent in state A and agent one in state B. Again, the update rule of the \textit{Q-Learning}, updates the table of each independent agent every time the agent reaches its target state, i.e. its previous action. We used \textit{Q-Learning} with $0.7$ learning rate-$\alpha$ and the same value for discount factor-$\gamma$.
+\begin{figure*}[t]
+\centering  
+    \includegraphics[width=8cm]{figures/snake1vs1.eps}\	
+    \includegraphics[width=8cm]{figures/snake3vs3.eps}
+   \caption{Experimental results. Left, $1vs1$ agents setting. Right, $3vs3$ agents setting.}
+   \label{snake}
+\end{figure*}
 \subsubsection{Results}
+Finally, the results of this approach are illustrated in the Figure~\ref{django}. We tested our approach against the random-default agent. The reason why we did that, was that the handcrafted agents from other teams were too good to be explored by the learning agent. The value represented by the y-axis in these figures is:
+\begin{equation}
+step = (max\_steps - end\_steps)/ max\_steps
+\end{equation}
+\begin{equation}
+score = (score - max\_score/2)/max\_score
+\end{equation}
+\begin{equation}
+value = step \times score
+\end{equation}
+From the last three equations, we can refer that a win counts more if it is early in respect to the total steps that the game can continue, and a lost in the lately steps is better than a lost in the first steps. We tune the settings of the game, and these episodes last for $3000$ steps, and the maximum score is $1000$, in order to have a faster learning process. In every number of episodes in the x-axis the average of the previous $10$ episodes is computed. The whole simulation repeated three times, the mean and the standard deviation are presented. The left graph in figure~\ref{django}, is about an one vs. one game. We can see that our learning agent obtains a high reward even from the first ten completed episodes. This is normal, because the agents chooses action among only interesting points, causing to a behavior similar to the random-default agent. In addition, it learns to choose actions that are profitable for it. The same applies for the right graph, where we have a complete team of three agents against the default team. We can see only a small reduce to the value that the agents obtained over the first $10$ episodes.
 
 
 \subsection{Interesting Points and Transitions as States}
@@ -193,10 +175,6 @@ S''_{position} = S'_{position} \times S_{position} \times S_{position}
 \end{equation}
 In this test case, we are not using the information for the opponent agents' positions, in order to keep it computationally tractable, but we use the Cps states from eq. (3).
 
-\begin{figure}
-    \includegraphics[width=8cm]{figures/snake1vs1.eps}
-\end{figure}
-
 For the action space, each agent has all possible position states except from the initial position.
 The action set is the same as before.
 \begin{equation}
@@ -212,6 +190,7 @@ The reward function is the same as described in the grid world approach. This fu
 The reason why we chose to implement \textit{Independent Q-Learning} not only in this test case, but in the previous test cases as well, was the fact that the state-action space then was really intractable. Almost $500Mb$ was the value table when we tried to include joint actions in our state and action space, which is indicative about how much the state space grows in a multi-agent setting.
 Again, the update rule of the \textit{Q-Learning}, updates the table of each independent agent every time the agent reaches its target state, i.e. its previous action. We used \textit{Q-Learning} with $0.7$ learning rate-$\alpha$ and the same value for discount factor-$\gamma$. Each update rule is performed after each game-step and not like the previous case, when the update rule was only performed after each arrival in the target state.
 \subsubsection{Results}
+In figure~\ref{snake}, the result of the discussed approach are presented. The same values are presented here as in the previous figure for x and y axis. As it is explained before, now agents when they are choosing an action, towards a state, in the next steps they are going to be in a transition state. From this transition state, they can also choose an action, towards another state than their initial target. Hence at the beginning they preform really poor. Again, in the left graph we have only two agents playing against each other. After $100$ games-episodes, the learning agent obtain a value of greater than $0.2$, which is lower than the previous test case. Thing are worse for the three versus three game. After a huge number of episodes, $300$, the only thing that the learning team of agent learned was how not to lose quick. One possible explanation is that now the state space is really bigger, and the agents have not complete information about the opponents, and their teammates' position as in the previous test case. One possible improvement would be to include joint actions in our state-action space. Then, the policy would have been better, and the learning process would not have lead the agents to learn a symmetric optimal policy to act. However, these are the difficulties when you are dealing with huge state spaces, this framework really gave us the change to understand why learning and planning in huge state spaces is challenging, especially with the presence of multiple agents.
 
 
 \subsection{}
@@ -219,7 +198,6 @@ Again, the update rule of the \textit{Q-Learning}, updates the table of each ind
 \newpage
 \printbibliography 
 
-% that's all folks
 \end{document}
 
 

@@ -1,0 +1,17 @@
+\BOOKMARK [1][-]{section.1}{Learning}{}% 1
+\BOOKMARK [2][-]{subsection.1.1}{Grid World}{section.1}% 2
+\BOOKMARK [3][-]{subsubsection.1.1.1}{State-Action Space}{subsection.1.1}% 3
+\BOOKMARK [3][-]{subsubsection.1.1.2}{Reward Function}{subsection.1.1}% 4
+\BOOKMARK [3][-]{subsubsection.1.1.3}{Learning Method}{subsection.1.1}% 5
+\BOOKMARK [3][-]{subsubsection.1.1.4}{Results}{subsection.1.1}% 6
+\BOOKMARK [2][-]{subsection.1.2}{Interesting Points as States}{section.1}% 7
+\BOOKMARK [3][-]{subsubsection.1.2.1}{State-Action Space}{subsection.1.2}% 8
+\BOOKMARK [3][-]{subsubsection.1.2.2}{Reward Function}{subsection.1.2}% 9
+\BOOKMARK [3][-]{subsubsection.1.2.3}{Learning Method}{subsection.1.2}% 10
+\BOOKMARK [3][-]{subsubsection.1.2.4}{Results}{subsection.1.2}% 11
+\BOOKMARK [2][-]{subsection.1.3}{Interesting Points and Transitions as States}{section.1}% 12
+\BOOKMARK [3][-]{subsubsection.1.3.1}{State-Action Space}{subsection.1.3}% 13
+\BOOKMARK [3][-]{subsubsection.1.3.2}{Reward Function}{subsection.1.3}% 14
+\BOOKMARK [3][-]{subsubsection.1.3.3}{Learning Method}{subsection.1.3}% 15
+\BOOKMARK [3][-]{subsubsection.1.3.4}{Results}{subsection.1.3}% 16
+\BOOKMARK [2][-]{subsection.1.4}{}{section.1}% 17
