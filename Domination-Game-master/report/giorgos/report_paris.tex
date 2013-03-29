@@ -36,7 +36,7 @@
 \maketitle
 
 \begin{abstract}
-Hereby we present methods and algorithms we used in order to compete in the Domination Game. Constructing effective methods and strategies for our agents has been a quite challenging task, given a multi-agent partially observable environment. We will discuss how fundamental problems were dealt with, such as the representation of states and decision making, but we will also explain how different mechanics we implemented for the agents’ movement and shooting accuracy improved their performance. Finally, we will present a learning method we have implemented as a test case, comparing it to predefined strategies and analyze the results. 
+Hereby we present methods and algorithms we used in order to compete in the Domination Game. Constructing effective methods and strategies for our agents has been a quite challenging task, given a multi-agent partially observable environment. We will discuss how fundamental problems were dealt with, such as the representation of states and decision making, but we will also explain how different mechanics we implemented for the agents' movement and shooting accuracy improved their performance. Finally, we will present a learning method we have implemented as a test case, comparing it to predefined strategies and analyze the results. 
 \end{abstract}
 
 \IEEEpeerreviewmaketitle
@@ -54,7 +54,7 @@ Multi agent reinforcement learning has been and still is an active area of resea
 \item Which is the optimal strategy?
 
 \end{itemize}	
-	In order to represent a state the game is in, we could use numerous features. First of all, we have to define whether each agent will keep notice of his own state or will all the agents’ states compose one “higher” state that describes the game at that particular timestep? Secondarily, we have to define which features will compose each state. Combining the agent’s possible position, all his foes’ positions, the state of the control points and ammo points, would give us a huge state space which is computationally very expensive to rely on. As a consequence, we have to think of ways to reduce the state space enough to describe it in an efficient way.
+	In order to represent a state the game is in, we could use numerous features. First of all, we have to define whether each agent will keep notice of his own state or will all the agents' states compose one "higher" state that describes the game at that particular timestep? Secondarily, we have to define which features will compose each state. Combining the agent's possible position, all his foes' positions, the state of the control points and ammo points, would give us a huge state space which is computationally very expensive to rely on. As a consequence, we have to think of ways to reduce the state space enough to describe it in an efficient way.
 	The possible action set also has to be defined in a smart way. To start with, we have to define points of interest on the map which we consider strategically important, and define as actions, movements towards these points of interest. However, depending on the strategy used, the agent might have to hunt down foes in order to temporarily remove them from the game so, this has to be implemented separately.
 	Finally, defining an optimal strategy is also a minor problem that has to be solved. Do we favor strategies that dominate control points, or is dominating the ammo spots the way to win? Both strategies had to be tested and maybe combined in order to achieve optimal results.
 
